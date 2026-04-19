@@ -50,12 +50,12 @@
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/your-org/your-repo.git
+   git clone https://github.com/TokeDit/3.-semester-Projekt-JABLST.git
    ```
 
 2. Navigate to the project directory
    ```bash
-   cd your-repo
+   cd 3.-semester-Projekt-JABLST
    ```
 
 ---
