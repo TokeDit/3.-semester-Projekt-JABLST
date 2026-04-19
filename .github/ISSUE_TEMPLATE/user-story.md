@@ -7,21 +7,16 @@ assignees: ''
 
 ---
 
-**[Beskriv Bentes/brugerens kontekst og behov]** og har brug for **[funktion eller mulighed]**
-så hun/han kan **[opnå dette mål eller løse dette problem]**.
+**As a** [type of user],
+**I want** [an action or feature],
+**So that** [a reason or benefit].
 
----
-
-### Acceptkriterier
-- [ ] Kriterium 1
-- [ ] Kriterium 2
-- [ ] Kriterium 3
+### Acceptance Criteria
+- [ ] Criteria 1
+- [ ] Criteria 2
 
 ### Definition of Done
-- [ ] Alle acceptkriterier er opfyldt
-- [ ] Kode er reviewet og godkendt
-- [ ] Tests er skrevet og består
-- [ ] Dokumentation er opdateret
-- [ ] Testet med relevante hjælpemidler (skærmlæser, stemmestyring osv.)
-
-Step 2 — Add It to Your Repo
+- [ ] All acceptance criteria are met
+- [ ] Code reviewed and approved
+- [ ] Tests written and passing
+- [ ] Documentation updated
