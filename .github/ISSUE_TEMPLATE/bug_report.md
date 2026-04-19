@@ -7,30 +7,30 @@ assignees: ''
 
 ---
 
-### Beskrivelse af fejlen
-En klar og præcis beskrivelse af hvad fejlen er.
+### Bug Description
+A clear and precise description of what the bug is.
 
-### Trin til at reproducere
-1. Gå til '...'
-2. Klik på '...'
-3. Se fejlen
+### Steps to Reproduce
+1. Go to '...'
+2. Click on '...'
+3. See the error
 
-### Forventet adfærd
-Hvad forventede du skulle ske?
+### Expected Behaviour
+What did you expect to happen?
 
-### Faktisk adfærd
-Hvad skete der i stedet?
+### Actual Behaviour
+What happened instead?
 
 ### Screenshots
-Hvis relevant, tilføj screenshots her.
+If relevant, add screenshots here.
 
-### Miljø
-- OS: [f.eks. Windows 11]
-- Browser: [f.eks. Chrome 120]
-- Version: [f.eks. 1.2.3]
+### Environment
+- OS: [e.g. Windows 11]
+- Browser: [e.g. Chrome 120]
+- Version: [e.g. 1.2.3]
 
-### Prioritet
-- [ ] Kritisk
-- [ ] Høj
+### Priority
+- [ ] Critical
+- [ ] High
 - [ ] Medium
-- [ ] Lav
+- [ ] Low
