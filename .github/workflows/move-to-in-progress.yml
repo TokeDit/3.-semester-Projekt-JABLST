@@ -1,0 +1,105 @@
+# .github/workflows/move-to-in-progress.yml
+name: Move issue to In Progress when branch is created
+
+on:
+  create:
+    branches:
+      - '**'   # triggers on any branch creation
+
+jobs:
+  move-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          script: |
+            // Extract issue number from branch name
+            // Works if branch follows pattern: feature/42-description or 42-description
+            const branch = context.ref.replace('refs/heads/', '');
+            const match = branch.match(/(\d+)/);
+            
+            if (!match) {
+              console.log('No issue number found in branch name, skipping');
+              return;
+            }
+
+            const issueNumber = parseInt(match[1]);
+            console.log(`Found issue #${issueNumber}`);
+
+            // Find the issue in the project board and move it to In Progress
+            const query = `
+              query($owner: String!, $repo: String!, $issue: Int!) {
+                repository(owner: $owner, name: $repo) {
+                  issue(number: $issue) {
+                    projectItems(first: 10) {
+                      nodes {
+                        id
+                        project {
+                          id
+                          fields(first: 20) {
+                            nodes {
+                              ... on ProjectV2SingleSelectField {
+                                id
+                                name
+                                options {
+                                  id
+                                  name
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const result = await github.graphql(query, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue: issueNumber
+            });
+
+            // Loop through project items linked to this issue
+            for (const item of result.repository.issue.projectItems.nodes) {
+              
+              // Find the Status field
+              const statusField = item.project.fields.nodes.find(
+                f => f.name === 'Status'
+              );
+              
+              if (!statusField) continue;
+
+              // Find the "In Progress" option — must match your column name exactly
+              const inProgressOption = statusField.options.find(
+                o => o.name === 'In Progress'
+              );
+
+              if (!inProgressOption) continue;
+
+              // Move the issue to In Progress
+              await github.graphql(`
+                mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                  updateProjectV2ItemFieldValue(input: {
+                    projectId: $projectId
+                    itemId: $itemId
+                    fieldId: $fieldId
+                    value: { singleSelectOptionId: $optionId }
+                  }) {
+                    projectV2Item {
+                      id
+                    }
+                  }
+                }
+              `, {
+                projectId: item.project.id,
+                itemId: item.id,
+                fieldId: statusField.id,
+                optionId: inProgressOption.id
+              });
+
+              console.log(`Moved issue #${issueNumber} to In Progress ✅`);
+            }
