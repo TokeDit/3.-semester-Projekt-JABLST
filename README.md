@@ -95,11 +95,11 @@ opening an issue first to discuss the proposed approach.
 ## Contributors
 
 - [Jonas Lolk Knudsen](https://github.com/Jonaslk727)
-- [Anders ](https://github.com/Andershgras)
-- [Toke Ditlevsen](https://github.com/TokeDit)
+- [Anders Hornbøll Godsk Rasmussen](https://github.com/Andershgras)
+- [Toke Hønning Ditlevsen](https://github.com/TokeDit)
 - [Hafiz Muhammad Bilal Sarwar](https://github.com/bilalsarwar2907)
-- [Stefan Hansen](https://github.com/Lasermorph)
-- [Lars Vedelslund](https://github.com/Omniform)
+- [Stefan Ansbjerg Selchou Hansen](https://github.com/Lasermorph)
+- [Lars Jørgen Vedelslund](https://github.com/Omniform)
 
 ---
 
