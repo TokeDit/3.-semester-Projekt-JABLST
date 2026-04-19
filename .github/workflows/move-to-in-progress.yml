@@ -1,4 +1,4 @@
-name: Move issue to In Progress when branch is created
+name: Move issue to In progress when branch is created
 
 on:
   create:
@@ -9,10 +9,11 @@ jobs:
   move-issue:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v6
+      - uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
           script: |
+            // Extract issue number from branch name
             const branch = context.ref.replace('refs/heads/', '');
             console.log(`Branch name: ${branch}`);
 
@@ -26,6 +27,7 @@ jobs:
             const issueNumber = parseInt(match[1]);
             console.log(`Found issue #${issueNumber}`);
 
+            // Query the project board for the issue
             const query = `
               query($owner: String!, $repo: String!, $issue: Int!) {
                 repository(owner: $owner, name: $repo) {
@@ -63,7 +65,52 @@ jobs:
               issue: issueNumber
             });
 
-            // Log everything so we can see what GitHub returns
             console.log('Issue title:', result.repository.issue?.title);
             console.log('Project items found:', result.repository.issue?.projectItems.nodes.length);
-            console.log('Full result:', JSON.stringify(result, null, 2));
+
+            // Loop through project items linked to this issue
+            for (const item of result.repository.issue.projectItems.nodes) {
+              
+              // Find the Status field
+              const statusField = item.project.fields.nodes.find(
+                f => f.name === 'Status'
+              );
+
+              if (!statusField) {
+                console.log('No Status field found, skipping');
+                continue;
+              }
+
+              // Find "In progress" — must match column name exactly (case sensitive!)
+              const inProgressOption = statusField.options.find(
+                o => o.name === 'In progress'
+              );
+
+              if (!inProgressOption) {
+                console.log('No In progress option found, skipping');
+                continue;
+              }
+
+              // Move the issue to In progress
+              await github.graphql(`
+                mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                  updateProjectV2ItemFieldValue(input: {
+                    projectId: $projectId
+                    itemId: $itemId
+                    fieldId: $fieldId
+                    value: { singleSelectOptionId: $optionId }
+                  }) {
+                    projectV2Item {
+                      id
+                    }
+                  }
+                }
+              `, {
+                projectId: item.project.id,
+                itemId: item.id,
+                fieldId: statusField.id,
+                optionId: inProgressOption.id
+              });
+
+              console.log(`Moved issue #${issueNumber} to In progress ✅`);
+            }
