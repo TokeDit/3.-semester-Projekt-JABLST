@@ -81,7 +81,50 @@ checks before merging. Upon merge, the pipeline automatically builds and deploys
 to Azure.
 
 ---
+## Branching Strategy
 
+To ensure automatic tracking on our **Project Kanban board**, all branches must be created directly through their corresponding **GitHub Issue**.
+
+### Naming Convention
+`type/issue-number-description`
+
+| Type | When to use |
+| :--- | :--- |
+| `feature/` | New features or enhancements |
+| `bugfix/` | Standard bug fixes found during development |
+| `hotfix/` | Urgent fixes for production environments |
+
+### Example
+```bash
+feature/12-login-endpoint
+```
+
+### Pull Request Guidelines
+
+To maintain code quality and project tracking, all Pull Requests (PRs) must adhere to the following rules:
+
+* **Link to Issue:** Every PR must be linked to a GitHub Issue (e.g., use `Closes #12` in the description) to automate Kanban movement.
+* **Code Review:** At least **one approval** from a reviewer is required before a merge.
+* **CI/CD Status:** All automated tests and status checks must pass.
+* **Protected Main:** Direct pushes to `main` are strictly prohibited.
+
+#### **Merging**
+> [!IMPORTANT]
+> Use **Squash and Merge** to keep the commit history clean and concise.
+
+---
+
+### Definition of Done (DoD)
+
+A task is officially considered **Done** only when it meets the following criteria:
+
+- [ ] **Build:** The code compiles and builds successfully without errors.
+- [ ] **Testing:** All existing and new automated tests pass.
+- [ ] **Code Quality:** The PR has been reviewed and received at least one official approval.
+- [ ] **Documentation:** README or inline documentation is updated to reflect any changes.
+- [ ] **Automation:** The PR description includes the link to the issue (e.g., `Closes #12`) to ensure the issue closes automatically upon merging.
+
+---
 ## Contributing
 
 <!-- How can others contribute? Link to a CONTRIBUTING.md if you have one -->
