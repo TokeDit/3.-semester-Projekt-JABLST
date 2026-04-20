@@ -98,7 +98,7 @@ opening an issue first to discuss the proposed approach.
 - [Anders Hornbøll Godsk Rasmussen](https://github.com/Andershgras)
 - [Toke Hønning Ditlevsen](https://github.com/TokeDit)
 - [Hafiz Muhammad Bilal Sarwar](https://github.com/bilalsarwar2907)
-- [Stefan Ansbjerg Selchou Hansen](https://github.com/Lasermorph)
+- [Stefan Ansbjerg Selchou Hansen](https://github.com/HumongusLaser)
 - [Lars Jørgen Vedelslund](https://github.com/Omniform)
 
 ---
