@@ -112,13 +112,18 @@ app.UseSwaggerUI();
 app.MapOpenApi();
 //}
 
-
-
 app.UseCors("allowAll");
+
+// Serve the Vue frontend from wwwroot
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.UseAuthentication(); // Checks "Who are you?"
 app.UseAuthorization();
-
 app.MapControllers();
+
+// Fallback to index.html so Vue Router handles all routes
+// Must be AFTER MapControllers so API routes take priority
+app.MapFallbackToFile("index.html");
 
 app.Run();
