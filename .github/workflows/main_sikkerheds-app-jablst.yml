@@ -63,4 +63,4 @@ jobs:
         with:
           app-name: sikkerheds-app-JABLST
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
-          package: ./Rest_SikkerApi/Rest_SikkerApi/publish
+          package: ./Rest_SikkerApi/publish
