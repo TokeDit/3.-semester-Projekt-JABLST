@@ -28,9 +28,4 @@
     <PackageReference Include="xunit" Version="2.9.3" />
   </ItemGroup>
 
-  <ItemGroup>
-  <!-- Tell .NET to include the wwwroot folder (Vue build output) when publishing -->
-  <Content Include="wwwroot/**/*" CopyToPublishDirectory="PreserveNewest" />
-  </ItemGroup>
-
 </Project>

@@ -35,40 +35,34 @@ jobs:
       - name: Debug - list dist contents
         run: ls -la ./FrontEnd/SikkerhedsFrontEnd/dist
 
-      # Step 6: Copy the built Vue files into the .NET project's wwwroot folder
-      # This is how .NET will serve the frontend as static files
-      - name: Copy Vue build to .NET wwwroot
-        run: |
-          mkdir -p ./Rest_SikkerApi/wwwroot
-          cp -r ./FrontEnd/SikkerhedsFrontEnd/dist/. ./Rest_SikkerApi/wwwroot/
-
-      # Step 7: Debug - verify the wwwroot folder contains the Vue files
-      - name: Debug - list wwwroot contents
-        run: ls -la ./Rest_SikkerApi/wwwroot
-
-      # Step 8: Set up .NET 9 SDK
+      # Step 6: Set up .NET 9 SDK
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
 
-      # Step 9: Build the .NET API in Release mode
+      # Step 7: Build the .NET API in Release mode
       - name: Build .NET API
         working-directory: ./Rest_SikkerApi
         run: dotnet build --configuration Release
 
-      # Step 10: Publish the .NET app (includes wwwroot with the Vue files)
-      # Using "publish" as relative output so full path becomes ./Rest_SikkerApi/publish
+      # Step 8: Publish the .NET app first
       - name: Publish .NET API
         working-directory: ./Rest_SikkerApi
         run: dotnet publish --configuration Release --output publish
 
-      # Step 11: Debug - verify the publish folder contains wwwroot
-      - name: Debug - list publish contents
+      # Step 9: Copy Vue build directly into the publish output folder
+      # We do this AFTER publish so the files are guaranteed to be there
+      - name: Copy Vue build into publish/wwwroot
+        run: |
+          mkdir -p ./Rest_SikkerApi/publish/wwwroot
+          cp -r ./FrontEnd/SikkerhedsFrontEnd/dist/. ./Rest_SikkerApi/publish/wwwroot/
+
+      # Step 10: Debug - verify wwwroot is in the publish folder
+      - name: Debug - list publish/wwwroot contents
         run: ls -la ./Rest_SikkerApi/publish/wwwroot
 
-      # Step 12: Deploy the published output to Azure App Service
-      # Path is from repo root
+      # Step 11: Deploy the published output to Azure App Service
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
