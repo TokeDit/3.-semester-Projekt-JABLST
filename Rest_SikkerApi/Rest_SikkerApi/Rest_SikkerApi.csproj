@@ -29,8 +29,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Tell .NET to include the wwwroot folder (Vue build output) when publishing -->
-    <Content Include="wwwroot\**\*" CopyToPublishDirectory="PreserveNewest" />
+  <!-- Tell .NET to include the wwwroot folder (Vue build output) when publishing -->
+  <Content Include="wwwroot/**/*" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
