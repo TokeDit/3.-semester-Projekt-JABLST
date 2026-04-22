@@ -19,6 +19,7 @@ CODE First:
 # Create migration from model classes
 dotnet ef migrations add InitialCreate
 
+
 # Apply migration to database (creates tables)
 dotnet ef database update
 
