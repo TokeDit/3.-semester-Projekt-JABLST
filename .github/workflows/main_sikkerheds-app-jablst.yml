@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and Deploy to Azure App Service
 
 on:
@@ -34,30 +31,44 @@ jobs:
         working-directory: ./FrontEnd/SikkerhedsFrontEnd
         run: npm run build
 
-      # Step 5: Copy the built Vue files into the .NET project's wwwroot folder
+      # Step 5: Debug - verify the dist folder was created and contains files
+      - name: Debug - list dist contents
+        run: ls -la ./FrontEnd/SikkerhedsFrontEnd/dist
+
+      # Step 6: Copy the built Vue files into the .NET project's wwwroot folder
       # This is how .NET will serve the frontend as static files
       - name: Copy Vue build to .NET wwwroot
         run: |
           mkdir -p ./Rest_SikkerApi/wwwroot
           cp -r ./FrontEnd/SikkerhedsFrontEnd/dist/. ./Rest_SikkerApi/wwwroot/
 
-      # Step 6: Set up .NET 9 SDK
+      # Step 7: Debug - verify the wwwroot folder contains the Vue files
+      - name: Debug - list wwwroot contents
+        run: ls -la ./Rest_SikkerApi/wwwroot
+
+      # Step 8: Set up .NET 9 SDK
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
 
-      # Step 7: Build the .NET API in Release mode
+      # Step 9: Build the .NET API in Release mode
       - name: Build .NET API
         working-directory: ./Rest_SikkerApi
         run: dotnet build --configuration Release
 
-      # Step 8: Publish the .NET app (includes wwwroot with the Vue files)
+      # Step 10: Publish the .NET app (includes wwwroot with the Vue files)
+      # Using "publish" as relative output so full path becomes ./Rest_SikkerApi/publish
       - name: Publish .NET API
         working-directory: ./Rest_SikkerApi
-        run: dotnet publish --configuration Release --output ./publish
+        run: dotnet publish --configuration Release --output publish
 
-      # Step 9: Deploy the published output to Azure App Service
+      # Step 11: Debug - verify the publish folder contains wwwroot
+      - name: Debug - list publish contents
+        run: ls -la ./Rest_SikkerApi/publish/wwwroot
+
+      # Step 12: Deploy the published output to Azure App Service
+      # Path is from repo root
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
