@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37012.4 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rest_SikkerApi", "Rest_SikkerApi\Rest_SikkerApi.csproj", "{77CFF088-72F2-4F3C-965D-88196EF0CB76}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAPI", "TestAPI\TestAPI.csproj", "{908CBE63-E011-48FE-8FEE-4EE68CF0EF28}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{77CFF088-72F2-4F3C-965D-88196EF0CB76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77CFF088-72F2-4F3C-965D-88196EF0CB76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77CFF088-72F2-4F3C-965D-88196EF0CB76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77CFF088-72F2-4F3C-965D-88196EF0CB76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{908CBE63-E011-48FE-8FEE-4EE68CF0EF28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{908CBE63-E011-48FE-8FEE-4EE68CF0EF28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{908CBE63-E011-48FE-8FEE-4EE68CF0EF28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{908CBE63-E011-48FE-8FEE-4EE68CF0EF28}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2305FA42-0209-4492-9367-17AE7C8E634F}
+	EndGlobalSection
+EndGlobal

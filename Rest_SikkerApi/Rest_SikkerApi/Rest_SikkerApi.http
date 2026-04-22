@@ -1,0 +1,6 @@
+@Rest_SikkerApi_HostAddress = http://localhost:5180
+
+GET {{Rest_SikkerApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
