@@ -1,0 +1,32 @@
+
+Scafolding cormands:
+
+DB first:
+# Scaffold entire database to models and DbContext
+Scaffold-DbContext "cornetionString" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Context AppDbContext -ContextDir Data -Force
+
+# Scaffold specific tables only
+Scaffold-DbContext "Data Source=JOLOKNU\SQLEXPRESS;Initial Catalog=MusicRecords;Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Application Intent=ReadWrite;Multi Subnet Failover=False" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Context AppDbContext -ContextDir Data -Tables MusicRecords  -Force
+
+# Parameters:
+# -OutputDir: Where to place generated model classes
+# -Context: Name of the DbContext class
+# -ContextDir: Where to place the DbContext file
+# -Tables: Specific tables to scaffold (comma-separated)
+# -Force: Overwrite existing files
+
+CODE First:
+# Create migration from model classes
+dotnet ef migrations add InitialCreate
+
+# Apply migration to database (creates tables)
+dotnet ef database update
+
+# Remove last migration (if needed)
+dotnet ef migrations remove
+
+# Update database to specific migration
+dotnet ef database update <MigrationName>
+
+# View SQL script without applying
+dotnet ef migrations script
