@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - sikkerheds-app-JABLST
+name: Build and Deploy to Azure App Service
 
 on:
   push:
@@ -10,56 +10,57 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: windows-latest
-    permissions:
-      contents: read #This is required for actions/checkout
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up .NET Core
+      # Step 2: Set up Node.js for building the Vue/Vite frontend
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Step 3: Install Vue/Vite dependencies
+      - name: Install frontend dependencies
+        working-directory: ./FrontEnd/SikkerhedsFrontEnd
+        run: npm install
+
+      # Step 4: Build the Vue app (outputs to FrontEnd/SikkerhedsFrontEnd/dist)
+      - name: Build Vue frontend
+        working-directory: ./FrontEnd/SikkerhedsFrontEnd
+        run: npm run build
+
+      # Step 5: Copy the built Vue files into the .NET project's wwwroot folder
+      # This is how .NET will serve the frontend as static files
+      - name: Copy Vue build to .NET wwwroot
+        run: |
+          mkdir -p ./Rest_SikkerApi/wwwroot
+          cp -r ./FrontEnd/SikkerhedsFrontEnd/dist/. ./Rest_SikkerApi/wwwroot/
+
+      # Step 6: Set up .NET 9 SDK
+      - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.x'
+          dotnet-version: '9.0.x'
 
-      - name: Build with dotnet
+      # Step 7: Build the .NET API in Release mode
+      - name: Build .NET API
+        working-directory: ./Rest_SikkerApi
         run: dotnet build --configuration Release
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+      # Step 8: Publish the .NET app (includes wwwroot with the Vue files)
+      - name: Publish .NET API
+        working-directory: ./Rest_SikkerApi
+        run: dotnet publish --configuration Release --output ./publish
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
-
-  deploy:
-    runs-on: windows-latest
-    needs: build
-    permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: .net-app
-      
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_4AFDFE1DFF1041BF92AD9755B79F06BF }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_D6E94DDFB9514DE68071FD38D58CA5ED }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_8DBC050BF59A4BD982E36540E853BA6A }}
-
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
+      # Step 9: Deploy the published output to Azure App Service
+      - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'sikkerheds-app-JABLST'
-          slot-name: 'Production'
-          package: .
-          
+          app-name: sikkerheds-app-JABLST
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          package: ./Rest_SikkerApi/publish
