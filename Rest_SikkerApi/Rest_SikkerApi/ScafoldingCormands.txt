@@ -15,6 +15,8 @@ Scaffold-DbContext "Data Source=JOLOKNU\SQLEXPRESS;Initial Catalog=MusicRecords;
 # -Tables: Specific tables to scaffold (comma-separated)
 # -Force: Overwrite existing files
 
+
+
 CODE First:
 # Create migration from model classes
 dotnet ef migrations add InitialCreate
