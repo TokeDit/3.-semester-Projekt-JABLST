@@ -1,0 +1,17 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# .NET
+bin/
+obj/
+# FIREBASE
+firebase-service-account.json
+# Node
+node_modules/
+dist/
+
+# Environment
+.env
+.env.local
