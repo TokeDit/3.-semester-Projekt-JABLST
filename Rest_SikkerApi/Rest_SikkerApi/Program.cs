@@ -1,10 +1,11 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-
+using Rest_SikkerApi.data;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Rest_SikkerApi.repos;
 
 var builder = WebApplication.CreateBuilder(args);
 // uddyber error msg på startup fejl, så man kan se hvad der gik galt, i stedet for en generisk "Application failed to start" besked. Det er især nyttigt under udvikling.
@@ -15,11 +16,11 @@ builder.WebHost.UseSetting("detailedErrors", "true");
 var configuration = builder.Configuration; // unecessary assignment, 
 var services = builder.Services; // unecessary assignment, Did it to try to fix an issue.
 // Add services to the container.
-/*
+
 services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
-services.AddScoped<RepoMusicRecords>();
-*/
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))); // looks in appSettings.json or environment variables for a connection string named "DefaultConnection"
+//services.AddScoped<RepoMusicRecords>();
+builder.Services.AddScoped<SikkerRepo>();
 
 // Jwt Authentication -----------------------------------------------------------------------------
 var jwtSettings = builder.Configuration.GetSection("Jwt");
