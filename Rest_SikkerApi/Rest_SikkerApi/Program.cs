@@ -97,13 +97,25 @@ builder.Services.AddSwaggerGen(opt =>
         }
     });
 });
-//Firebase Admin SDK Setup
+// Firebase Admin SDK Setup
 if (FirebaseApp.DefaultInstance is null)
 {
-    FirebaseApp.Create(new AppOptions
+    var firebaseCredentialsJson = builder.Configuration["Firebase:ServiceAccountJson"];
+
+    if (string.IsNullOrWhiteSpace(firebaseCredentialsJson))
     {
-        Credential = GoogleCredential.FromFile("firebase-service-account.json")
-    });
+        FirebaseApp.Create(new AppOptions
+        {
+            Credential = GoogleCredential.FromFile("firebase-service-account.json")
+        });
+    }
+    else
+    {
+        FirebaseApp.Create(new AppOptions
+        {
+            Credential = GoogleCredential.FromJson(firebaseCredentialsJson)
+        });
+    }
 }
 
 // Repositories and Controllers ------------------------------------------------------
