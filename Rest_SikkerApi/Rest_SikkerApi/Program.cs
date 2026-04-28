@@ -6,12 +6,13 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Rest_SikkerApi.repos;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 
 var builder = WebApplication.CreateBuilder(args);
 // uddyber error msg på startup fejl, så man kan se hvad der gik galt, i stedet for en generisk "Application failed to start" besked. Det er især nyttigt under udvikling.
 builder.WebHost.CaptureStartupErrors(true);
 builder.WebHost.UseSetting("detailedErrors", "true");
-
 
 var configuration = builder.Configuration; // unecessary assignment, 
 var services = builder.Services; // unecessary assignment, Did it to try to fix an issue.
@@ -96,7 +97,14 @@ builder.Services.AddSwaggerGen(opt =>
         }
     });
 });
-
+//Firebase Admin SDK Setup
+if (FirebaseApp.DefaultInstance is null)
+{
+    FirebaseApp.Create(new AppOptions
+    {
+        Credential = GoogleCredential.FromFile("firebase-service-account.json")
+    });
+}
 
 // Repositories and Controllers ------------------------------------------------------
 //builder.Services.AddSingleton<>();
