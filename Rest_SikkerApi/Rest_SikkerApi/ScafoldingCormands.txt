@@ -33,3 +33,13 @@ dotnet ef database update <MigrationName>
 
 # View SQL script without applying
 dotnet ef migrations script
+
+
+
+# Code first commands: ------------------------------------------------------------
+
+# Create migration
+dotnet ef migrations add <MigrationName>
+
+# Apply to database
+dotnet ef database update
