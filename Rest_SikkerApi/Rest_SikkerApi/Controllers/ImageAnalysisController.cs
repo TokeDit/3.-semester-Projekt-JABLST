@@ -17,18 +17,29 @@ public sealed class ImageAnalysisController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Analyze(IFormFile image, CancellationToken cancellationToken)
     {
-        if (image is null || image.Length == 0)
+        try
         {
-            return BadRequest("No image uploaded.");
-        }
+            if (image is null || image.Length == 0)
+            {
+                return BadRequest("No image uploaded.");
+            }
 
-        if (!image.ContentType.StartsWith("image/"))
+            if (!image.ContentType.StartsWith("image/"))
+            {
+                return BadRequest("Uploaded file must be an image.");
+            }
+
+            var result = await _imageAnalysisService.AnalyzeAsync(image, cancellationToken);
+
+            return Ok(result);
+        }
+        catch (Exception ex)
         {
-            return BadRequest("Uploaded file must be an image.");
+            return StatusCode(500, new
+            {
+                message = "Image analysis failed.",
+                error = ex.Message
+            });
         }
-
-        var result = await _imageAnalysisService.AnalyzeAsync(image, cancellationToken);
-
-        return Ok(result);
     }
 }
