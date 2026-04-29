@@ -1,6 +1,9 @@
 ﻿using System.Text;
 using System.Text.Json;
 using Rest_SikkerApi.Models;
+using Rest_SikkerApi.models;
+using Rest_SikkerApi.data;
+using Rest_SikkerApi.repos;
 
 namespace Rest_SikkerApi.Services;
 
@@ -8,8 +11,9 @@ public sealed class GeminiImageAnalysisService : IImageAnalysisService
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
+    private readonly SikkerRepo _dbContext;
 
-    public GeminiImageAnalysisService(HttpClient httpClient, IConfiguration configuration)
+    public GeminiImageAnalysisService(HttpClient httpClient, IConfiguration configuration, SikkerRepo dbContext)
     {
         _httpClient = httpClient;
         _configuration = configuration;
@@ -111,6 +115,19 @@ public sealed class GeminiImageAnalysisService : IImageAnalysisService
                 PropertyNameCaseInsensitive = true
             });
 
+        // Save the image and analysis result to the database -------------------------------------------------------------
+
+        var imageRecord = new Image
+        {
+            TimeStamp = DateTime.UtcNow.ToString("o"),
+            ImageType = base64Image,
+            Description = result.Description,
+        };
+
+        await _dbContext.SaveImageAsync(imageRecord);
+
         return result ?? throw new InvalidOperationException("Could not parse Gemini response.");
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return result;
     }
 }
