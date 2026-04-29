@@ -17,6 +17,7 @@ public sealed class GeminiImageAnalysisService : IImageAnalysisService
     {
         _httpClient = httpClient;
         _configuration = configuration;
+        _dbContext = dbContext;
     }
 
     public async Task<ImageAnalysisResult> AnalyzeAsync(IFormFile image, CancellationToken cancellationToken = default)
@@ -127,7 +128,5 @@ public sealed class GeminiImageAnalysisService : IImageAnalysisService
         await _dbContext.SaveImageAsync(imageRecord);
 
         return result ?? throw new InvalidOperationException("Could not parse Gemini response.");
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        return result;
     }
 }
