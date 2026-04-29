@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
-using Rest_SikkerApi.Models;
+using Rest_SikkerApi.models;
+using Rest_SikkerApi.data;
 
 namespace Rest_SikkerApi.Services;
 
@@ -8,17 +9,18 @@ public sealed class GeminiImageAnalysisService : IImageAnalysisService
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
+    private readonly AppDbContext _dbContext;
 
-    public GeminiImageAnalysisService(HttpClient httpClient, IConfiguration configuration)
+    public GeminiImageAnalysisService(HttpClient httpClient, IConfiguration configuration, AppDbContext dbContext)
     {
         _httpClient = httpClient;
         _configuration = configuration;
+        _dbContext = dbContext;
     }
 
     public async Task<ImageAnalysisResult> AnalyzeAsync(IFormFile image, CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
-
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             throw new InvalidOperationException("Gemini API key is missing.");
@@ -27,8 +29,8 @@ public sealed class GeminiImageAnalysisService : IImageAnalysisService
         await using var stream = image.OpenReadStream();
         using var memoryStream = new MemoryStream();
         await stream.CopyToAsync(memoryStream, cancellationToken);
-
-        var base64Image = Convert.ToBase64String(memoryStream.ToArray());
+        var imageBytes = memoryStream.ToArray();
+        var base64Image = Convert.ToBase64String(imageBytes);
 
         var requestBody = new
         {
@@ -112,5 +114,18 @@ public sealed class GeminiImageAnalysisService : IImageAnalysisService
             });
 
         return result ?? throw new InvalidOperationException("Could not parse Gemini response.");
+
+        var imageRecord = new Image
+        {
+            Id = Guid.NewGuid().ToString(),
+            TimeStamp = DateTime.UtcNow.ToString("o"),
+            ImageType = base64Image,
+            Description = result.Description
+        };
+
+        _dbContext.Images.Add(imageRecord);
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return result;
     }
 }
