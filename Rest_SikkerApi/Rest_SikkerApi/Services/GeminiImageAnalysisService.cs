@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using Rest_SikkerApi.Models;
 using Rest_SikkerApi.models;
 using Rest_SikkerApi.data;
 
