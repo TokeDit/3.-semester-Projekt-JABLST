@@ -26,6 +26,13 @@ namespace Rest_SikkerApi.repos
             return imageEntity;
         }
 
+        /// <summary>
+        /// Asynchronously retrieves all images from the data store.
+        /// </summary>
+        /// <remarks>This method executes a database query to retrieve all image records. The returned
+        /// list reflects the current state of the data store at the time of the query.</remarks>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of all images. If no
+        /// images are found, the list will be empty.</returns>
         public async Task<List<Image>> GetAllImagesAsync()
         {
             return await _context.Images.ToListAsync();

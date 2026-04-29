@@ -24,7 +24,7 @@ namespace Rest_SikkerApi.Controllers
         [HttpPost (Name = "UploadImage")]
         public async Task<IActionResult> UploadImage([FromBody] Image image)
         {
-            if (image == null || string.IsNullOrEmpty(image.ImageData))
+            if (image == null || image.ImageData == null || image.ImageData.Length == 0)
                 return BadRequest("Image object is null or Imagedata is missing");
 
             _logger.LogInformation("Received image with ID: {ImageId} and Type: {ImageType}", image.Id, image.ImageType);
@@ -47,6 +47,22 @@ namespace Rest_SikkerApi.Controllers
             }
         }
 
+        // GET: /Sikker/Images
+        [HttpGet(Name = "Images")]
+        public async Task<ActionResult<IEnumerable<Image>>> Get()
+        {
+            var images = await _repo.GetAllImagesAsync();
+            if (images == null || !images.Any())
+                return NotFound("No images found");
+
+            return Ok(images);
+        }
+
+        //[HttpGet]
+        //public IActionResult<IEnumerable<>> Get()
+        //{
+        //    return Ok();
+        //}
         // NEW: System Status Endpoint
         [HttpGet("status")]
         public IActionResult GetStatus()
