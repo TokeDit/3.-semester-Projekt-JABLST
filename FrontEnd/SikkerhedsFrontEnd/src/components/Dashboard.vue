@@ -7,6 +7,8 @@
     <h1>User Dashboard</h1>
 
     <div class="dashboard-grid">
+
+      <!-- SECTION: Motion Detection Overview -->
       <section class="dashboard-section">
         <h2>Motion Detected</h2>
         <ul>
@@ -16,6 +18,26 @@
         </ul>
       </section>
 
+      <!-- SECTION: System Status (NEWLY ADDED) -->
+      <section class="dashboard-section">
+        <h2>System Status</h2>
+
+        <!-- Dynamic status indicator -->
+        <div class="status-indicator">
+          <!-- statusClass and statusText come from Vue component data/computed -->
+          <span :class="statusClass">{{ statusText }}</span>
+        </div>
+
+        <!-- Last time the system status was checked -->
+        <p class="status-time">Last checked: {{ lastChecked }}</p>
+
+        <!-- Button to refresh system status -->
+        <button class="control-btn" @click="checkStatus">
+          Refresh Status
+        </button>
+      </section>
+
+      <!-- SECTION: Telegram Notification Preview -->
       <section class="dashboard-section">
         <h2>Telegram Notification</h2>
         <div class="phone">
@@ -32,6 +54,7 @@
         </div>
       </section>
 
+      <!-- SECTION: User Controls -->
       <section class="dashboard-section">
         <h2>User Controls</h2>
         <button class="control-btn" @click="onControl('/on')">/on System On</button>
@@ -40,6 +63,7 @@
         <button class="control-btn" @click="onControl('/help')">/help Get Commands</button>
       </section>
 
+      <!-- SECTION: History -->
       <section class="dashboard-section">
         <h2>View History</h2>
         <ul>
@@ -47,16 +71,50 @@
           <li>View Past Events</li>
         </ul>
       </section>
+
     </div>
   </div>
 </template>
 
 <script setup>
-// NO IMPORT FOR THE LOGO HERE.
-// By leaving this empty, Vite won't try to "resolve" the file.
-function onControl(cmd) {
-  alert(`Command sent: ${cmd}`);
+import { ref, onMounted } from 'vue'
+
+// --- Status state ---
+const status = ref('unknown')   // 'online' | 'offline' | 'unknown'
+const lastChecked = ref('Never')
+
+const statusText = ref('Checking...')
+const statusClass = ref('status-unknown')
+
+// --- Mock API call (swap this for real fetch later) ---
+async function checkStatus() {
+  statusText.value = 'Checking...'
+  statusClass.value = 'status-unknown'
+
+  try {
+    // MOCK — replace this with real API call when backend is ready:
+    // const res = await fetch('https://your-api.com/api/status')
+    // const data = await res.json()
+    // status.value = data.status
+
+    // Simulated response:
+    await new Promise(resolve => setTimeout(resolve, 800)) // fake delay
+    status.value = 'online' // change to 'offline' to test
+
+    statusText.value = status.value === 'online' ? '🟢 Online' : '🔴 Offline'
+    statusClass.value = status.value === 'online' ? 'status-online' : 'status-offline'
+    lastChecked.value = new Date().toLocaleTimeString()
+
+  } catch (err) {
+    statusText.value = '⚠️ Could not reach system'
+    statusClass.value = 'status-unknown'
+  }
 }
+
+// Check status when dashboard loads
+onMounted(() => {
+  checkStatus()
+})
 </script>
 
 <style scoped>
@@ -126,5 +184,18 @@ h1 {
   font-weight: 500;
   width: 90%;
   cursor: pointer;
+}
+.status-indicator {
+  margin: 1rem 0;
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+.status-online { color: #90EE90; }
+.status-offline { color: #ff8a8a; }
+.status-unknown { color: #FFD700; }
+.status-time {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-bottom: 0.5rem;
 }
 </style>
