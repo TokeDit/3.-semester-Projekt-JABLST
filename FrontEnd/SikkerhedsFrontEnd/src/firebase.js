@@ -1,9 +1,7 @@
-// src/firebase.js
-
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
-// Firebase config (fra din Firebase Console)
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAhfN8fZnZnT8NZKjxSp3MdUO06UqLXM8U",
   authDomain: "security-system-login.firebaseapp.com",
@@ -16,8 +14,8 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Auth
+// Initialize Firebase services
 export const auth = getAuth(app);
 
-// (valgfrit) eksport app hvis du senere skal bruge det
+// Export them so you can use them in Login.vue and Dashboard.vue
 export default app;
