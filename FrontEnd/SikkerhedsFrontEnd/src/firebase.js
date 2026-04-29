@@ -1,6 +1,5 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore"; // Add this line!
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -16,8 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase services
-const auth = getAuth(app);
-const db = getFirestore(app);
+export const auth = getAuth(app);
 
 // Export them so you can use them in Login.vue and Dashboard.vue
-export { auth, db };
+export default app;
