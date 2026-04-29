@@ -24,7 +24,7 @@ namespace Rest_SikkerApi.Controllers
         [HttpPost (Name = "UploadImage")]
         public async Task<IActionResult> UploadImage([FromBody] Image image)
         {
-            if (image == null || string.IsNullOrEmpty(image.ImageData))
+            if (image == null || image.ImageData == null || image.ImageData.Length == 0)
                 return BadRequest("Image object is null or Imagedata is missing");
 
             _logger.LogInformation("Received image with ID: {ImageId} and Type: {ImageType}", image.Id, image.ImageType);
