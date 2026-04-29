@@ -47,6 +47,17 @@ namespace Rest_SikkerApi.Controllers
             }
         }
 
+        // GET: /Sikker/Images
+        [HttpGet(Name = "Images")]
+        public async Task<ActionResult<IEnumerable<Image>>> Get()
+        {
+            var images = await _repo.GetAllImagesAsync();
+            if (images == null || !images.Any())
+                return NotFound("No images found");
+
+            return Ok(images);
+        }
+
         //[HttpGet]
         //public IActionResult<IEnumerable<>> Get()
         //{
