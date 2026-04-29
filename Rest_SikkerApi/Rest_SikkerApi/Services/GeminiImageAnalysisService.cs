@@ -1,8 +1,9 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Json;
 using Rest_SikkerApi.Models;
 using Rest_SikkerApi.models;
 using Rest_SikkerApi.data;
+using Rest_SikkerApi.repos;
 
 namespace Rest_SikkerApi.Services;
 
@@ -10,9 +11,9 @@ public sealed class GeminiImageAnalysisService : IImageAnalysisService
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
-    private readonly AppDbContext _dbContext;
+    private readonly SikkerRepo _dbContext;
 
-    public GeminiImageAnalysisService(HttpClient httpClient, IConfiguration configuration, AppDbContext dbContext)
+    public GeminiImageAnalysisService(HttpClient httpClient, IConfiguration configuration, SikkerRepo dbContext)
     {
         _httpClient = httpClient;
         _configuration = configuration;
@@ -22,6 +23,7 @@ public sealed class GeminiImageAnalysisService : IImageAnalysisService
     public async Task<ImageAnalysisResult> AnalyzeAsync(IFormFile image, CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
+
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             throw new InvalidOperationException("Gemini API key is missing.");
@@ -30,8 +32,8 @@ public sealed class GeminiImageAnalysisService : IImageAnalysisService
         await using var stream = image.OpenReadStream();
         using var memoryStream = new MemoryStream();
         await stream.CopyToAsync(memoryStream, cancellationToken);
-        var imageBytes = memoryStream.ToArray();
-        var base64Image = Convert.ToBase64String(imageBytes);
+
+        var base64Image = Convert.ToBase64String(memoryStream.ToArray());
 
         var requestBody = new
         {
@@ -114,19 +116,17 @@ public sealed class GeminiImageAnalysisService : IImageAnalysisService
                 PropertyNameCaseInsensitive = true
             });
 
-        return result ?? throw new InvalidOperationException("Could not parse Gemini response.");
+        // Save the image and analysis result to the database -------------------------------------------------------------
 
         var imageRecord = new Image
         {
-            Id = Guid.NewGuid().ToString(),
             TimeStamp = DateTime.UtcNow.ToString("o"),
             ImageType = base64Image,
-            Description = result.Description
+            Description = result.Description,
         };
 
-        _dbContext.Images.Add(imageRecord);
+        await _dbContext.SaveImageAsync(imageRecord);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        return result;
+        return result ?? throw new InvalidOperationException("Could not parse Gemini response.");
     }
 }
