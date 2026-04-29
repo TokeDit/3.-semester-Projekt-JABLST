@@ -16,6 +16,7 @@ namespace Rest_SikkerApi.models
         public string Description { get; set; } = string.Empty;
 
         // For API - accept/return Base64 string
+
         [NotMapped]
         public string ImageDataBase64
         {

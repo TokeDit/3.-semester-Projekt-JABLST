@@ -5,7 +5,7 @@ using Rest_SikkerApi.repos;
 
 namespace TestAPI
 {
-    public class TestImgRepo
+    public class TestSikkerRepo
     {
         private DbContextOptions<AppDbContext> CreateInMemoryDatabaseOptions()
         {
