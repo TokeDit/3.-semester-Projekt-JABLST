@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Rest_SikkerApi.repos;
 using Rest_SikkerApi.models;
 using System.Threading.Tasks;
@@ -63,5 +63,11 @@ namespace Rest_SikkerApi.Controllers
         //{
         //    return Ok();
         //}
+        // NEW: System Status Endpoint
+        [HttpGet("status")]
+        public IActionResult GetStatus()
+        {
+            return Ok(new { status = "online" });
+        }
     }
 }
