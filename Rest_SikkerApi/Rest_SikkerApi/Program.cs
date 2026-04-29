@@ -97,26 +97,26 @@ builder.Services.AddSwaggerGen(opt =>
         }
     });
 });
-//// Firebase Admin SDK Setup
-//if (FirebaseApp.DefaultInstance is null)
-//{
-//    var firebaseCredentialsJson = builder.Configuration["Firebase:ServiceAccountJson"];
+// Firebase Admin SDK Setup
+if (FirebaseApp.DefaultInstance is null)
+{
+    var firebaseCredentialsJson = builder.Configuration["Firebase:ServiceAccountJson"];
 
-//    if (string.IsNullOrWhiteSpace(firebaseCredentialsJson))
-//    {
-//        FirebaseApp.Create(new AppOptions
-//        {
-//            Credential = GoogleCredential.FromFile("firebase-service-account.json")
-//        });
-//    }
-//    else
-//    {
-//        FirebaseApp.Create(new AppOptions
-//        {
-//            Credential = GoogleCredential.FromJson(firebaseCredentialsJson)
-//        });
-//    }
-//}
+    if (string.IsNullOrWhiteSpace(firebaseCredentialsJson))
+    {
+        FirebaseApp.Create(new AppOptions
+        {
+            Credential = GoogleCredential.FromFile("firebase-service-account.json")
+        });
+    }
+    else
+    {
+        FirebaseApp.Create(new AppOptions
+        {
+            Credential = GoogleCredential.FromJson(firebaseCredentialsJson)
+        });
+    }
+}
 
 // Repositories and Controllers ------------------------------------------------------
 //builder.Services.AddSingleton<>();
