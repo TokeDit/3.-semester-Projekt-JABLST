@@ -1,4 +1,6 @@
-﻿namespace Rest_SikkerApi.models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Rest_SikkerApi.models
 {
     public class Image
     {
@@ -8,27 +10,29 @@
 
         public string ImageType { get; set; } = string.Empty;
 
-        // For JSON serialization/deserialization, use string to hold Base64 data
-        public string ImageData { get; set; } = string.Empty;
+        // Store as bytes in database
+        public byte[] ImageData { get; set; } = Array.Empty<byte>();
 
         public string Description { get; set; } = string.Empty;
 
-        // Helper method to get decoded bytes
+        // For API - accept/return Base64 string
+        [NotMapped]
+        public string ImageDataBase64
+        {
+            get => ImageData.Length > 0 ? Convert.ToBase64String(ImageData) : string.Empty;
+            set => ImageData = !string.IsNullOrEmpty(value) ? Convert.FromBase64String(value) : Array.Empty<byte>();
+        }
+
+        // Helper method to get image bytes (now direct access)
         public byte[]? GetImageBytes()
         {
-            if (string.IsNullOrEmpty(ImageData))
-                return null;
-
-            return Convert.FromBase64String(ImageData);
+            return ImageData.Length > 0 ? ImageData : null;
         }
 
         // Helper method to set image from bytes
         public void SetImageBytes(byte[] bytes)
         {
-            if (bytes == null)
-                ImageData = string.Empty;
-            else
-                ImageData = Convert.ToBase64String(bytes); // converts bytes to string
+            ImageData = bytes ?? Array.Empty<byte>();
         }
     }
 }

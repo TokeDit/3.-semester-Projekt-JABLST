@@ -44,11 +44,13 @@ namespace Rest_SikkerApi.data
                     .IsRequired()
                     .HasMaxLength(50);
 
-                // ImageData as Base64 string (TEXT or VARCHAR(MAX))
+                // Store as VARBINARY(MAX) - binary data
                 entity.Property(i => i.ImageData)
                     .IsRequired()
-                    .HasColumnType("varchar(max)"); // For SQL Server
-                                                    // Use .HasColumnType("text") for PostgreSQL or MySQL
+                    .HasColumnType("varbinary(max)");
+
+                entity.Property(i => i.Description)
+                    .HasMaxLength(500);
             });
         }
     }
