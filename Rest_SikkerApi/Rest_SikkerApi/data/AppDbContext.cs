@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Rest_SikkerApi.models;
 
 namespace Rest_SikkerApi.data
 {
@@ -13,31 +14,42 @@ namespace Rest_SikkerApi.data
         // Example:
         // Table for music records
         // public DbSet<MusicRecord> MusicRecords { get; set; }
-        // Table for users
-        // public DbSet<User> Users { get; set; }
+        // DbSet for Image entity
+
+        // Ties the Image model to a database table named "Images"
+        public DbSet<Image> Images { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(modelBuilder);
 
-            //// Configure entity relationships and constraints here
-            //modelBuilder.Entity<User>(entity =>
-            //{
-            //    // Primary key with IDENTITY(1,1)
-            //    entity.HasKey(u => u.Id);
-            //    entity.Property(u => u.Id)
-            //        .ValueGeneratedOnAdd(); // This creates IDENTITY(1,1)
+            // Configure Image entity
+            modelBuilder.Entity<Image>(entity =>
+            {
+                // Primary key
+                entity.HasKey(i => i.Id);
 
-            //    // Name as VARCHAR, NOT NULL
-            //    entity.Property(u => u.Name)
-            //        .IsRequired() // NOT NULL
-            //        .HasColumnType("varchar(100)"); // VARCHAR with max length
+                // Id as VARCHAR (since it's a string in your model)
+                entity.Property(i => i.Id)
+                    .IsRequired()
+                    .HasMaxLength(50);
 
-            //    // Age as INT
-            //    entity.Property(u => u.Age)
-            //        .HasColumnType("int");
-            //});
+                // TimeStamp as VARCHAR
+                entity.Property(i => i.TimeStamp)
+                    .IsRequired()
+                    .HasMaxLength(50);
 
+                // ImageType as VARCHAR
+                entity.Property(i => i.ImageType)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                // ImageData as Base64 string (TEXT or VARCHAR(MAX))
+                entity.Property(i => i.ImageData)
+                    .IsRequired()
+                    .HasColumnType("varchar(max)"); // For SQL Server
+                                                    // Use .HasColumnType("text") for PostgreSQL or MySQL
+            });
         }
     }
 }
