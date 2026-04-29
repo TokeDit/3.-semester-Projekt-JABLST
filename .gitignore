@@ -14,3 +14,6 @@ dist/
 # Environment
 .env
 .env.local
+
+# Claude
+CLAUDE.md
