@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Rest_SikkerApi.repos;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using Rest_SikkerApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 // uddyber error msg på startup fejl, så man kan se hvad der gik galt, i stedet for en generisk "Application failed to start" besked. Det er især nyttigt under udvikling.
@@ -22,7 +23,7 @@ services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))); // looks in appSettings.json or environment variables for a connection string named "DefaultConnection"
 //services.AddScoped<RepoMusicRecords>();
 builder.Services.AddScoped<SikkerRepo>();
-
+builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
 // Jwt Authentication -----------------------------------------------------------------------------
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
