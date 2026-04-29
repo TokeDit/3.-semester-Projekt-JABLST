@@ -92,18 +92,16 @@ async function checkStatus() {
   statusClass.value = 'status-unknown'
 
   try {
-    // MOCK — replace this with real API call when backend is ready:
-    // const res = await fetch('https://your-api.com/api/status')
-    // const data = await res.json()
-    // status.value = data.status
+  
+  const res = await fetch('https://localhost:7018/Sikker/status') // <-- replace with your real API URL
+const data = await res.json()
 
-    // Simulated response:
-    await new Promise(resolve => setTimeout(resolve, 800)) // fake delay
-    status.value = 'online' // change to 'offline' to test
+status.value = data.status  // expects "online" or "offline"
 
-    statusText.value = status.value === 'online' ? '🟢 Online' : '🔴 Offline'
-    statusClass.value = status.value === 'online' ? 'status-online' : 'status-offline'
-    lastChecked.value = new Date().toLocaleTimeString()
+statusText.value = status.value === 'online' ? '🟢 Online' : '🔴 Offline'
+statusClass.value = status.value === 'online' ? 'status-online' : 'status-offline'
+lastChecked.value = new Date().toLocaleTimeString()
+
 
   } catch (err) {
     statusText.value = '⚠️ Could not reach system'
