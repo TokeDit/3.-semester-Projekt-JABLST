@@ -128,6 +128,12 @@ async function onControl(cmd) {
     alert('Could not reach system')
   }
 }
+function formatTimestamp(date) {
+  return new Intl.DateTimeFormat('da-DK', {
+    dateStyle: 'short',
+    timeStyle: 'medium'
+  }).format(date)
+}
 
 // Check status when dashboard loads
 onMounted(() => {
