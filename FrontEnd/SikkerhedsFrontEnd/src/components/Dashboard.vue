@@ -134,6 +134,13 @@ function formatTimestamp(date) {
     timeStyle: 'medium'
   }).format(date)
 }
+function loadEvents() {
+  events.value = [
+    { id: 1, type: 'Bevægelse registreret', timestamp: formatTimestamp(new Date()) },
+    { id: 2, type: 'Bevægelse registreret', timestamp: formatTimestamp(new Date(Date.now() - 3600000)) },
+    { id: 3, type: 'Bevægelse registreret', timestamp: formatTimestamp(new Date(Date.now() - 7200000)) },
+  ]
+}
 
 // Check status when dashboard loads
 onMounted(() => {
