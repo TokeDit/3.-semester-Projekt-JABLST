@@ -17,6 +17,19 @@
           <li>Optional face recognition</li>
         </ul>
       </section>
+      <section class="dashboard-section">
+  <h2>Events</h2>
+  <ul class="event-list">
+    <li v-for="event in events" :key="event.id" class="event-item">
+      <span class="event-icon">📷</span>
+      <div class="event-details">
+        <span class="event-type">{{ event.type }}</span>
+        <span class="event-timestamp">{{ event.timestamp }}</span>
+      </div>
+    </li>
+  </ul>
+  <p v-if="events.length === 0" class="no-events">No events yet</p>
+</section>
 
       <!-- SECTION: System Status (NEWLY ADDED) -->
       <section class="dashboard-section">
@@ -84,6 +97,7 @@ const status = ref('unknown')
 const lastChecked = ref('Never')
 const statusText = ref('Checking...')
 const statusClass = ref('status-unknown')
+const events = ref([])
 
 // --- Check system status ---
 async function checkStatus() {
@@ -123,10 +137,24 @@ async function onControl(cmd) {
     alert('Could not reach system')
   }
 }
+function formatTimestamp(date) {
+  return new Intl.DateTimeFormat('da-DK', {
+    dateStyle: 'short',
+    timeStyle: 'medium'
+  }).format(date)
+}
+function loadEvents() {
+  events.value = [
+    { id: 1, type: 'Bevægelse registreret', timestamp: formatTimestamp(new Date()) },
+    { id: 2, type: 'Bevægelse registreret', timestamp: formatTimestamp(new Date(Date.now() - 3600000)) },
+    { id: 3, type: 'Bevægelse registreret', timestamp: formatTimestamp(new Date(Date.now() - 7200000)) },
+  ]
+}
 
 // Check status when dashboard loads
 onMounted(() => {
   checkStatus()
+  loadEvents() // ADD this line
 })
 </script>
 
@@ -210,5 +238,41 @@ h1 {
   font-size: 0.85rem;
   opacity: 0.8;
   margin-bottom: 0.5rem;
+}
+.event-list {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+}
+.event-item {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  margin-bottom: 0.5rem;
+}
+@media (max-width: 600px) {
+  .event-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+.event-details {
+  display: flex;
+  flex-direction: column;
+}
+.event-type {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+.event-timestamp {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+.no-events {
+  opacity: 0.7;
+  font-style: italic;
 }
 </style>

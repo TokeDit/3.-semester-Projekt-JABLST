@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Rest_SikkerApi.Controllers;
+// namespace Rest_SikkerApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -22,15 +22,15 @@ public sealed class ImageAnalysisController : ControllerBase
         _sikkerRepo = sikkerRepo;
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Analyze(IFormFile image, CancellationToken cancellationToken)
-    {
-        try
-        {
-            if (image is null || image.Length == 0)
-            {
-                return BadRequest("No image uploaded.");
-            }
+//     [HttpPost]
+//     public async Task<IActionResult> Analyze(IFormFile image, CancellationToken cancellationToken)
+//     {
+//         try
+//         {
+//             if (image is null || image.Length == 0)
+//             {
+//                 return BadRequest("No image uploaded.");
+//             }
 
             // tilgiver FirebaseUid i både HttpContext og User.Claims for at sikre kompatibilitet med forskellige autentificeringsmetoder
             var firebaseUid = HttpContext.Items["FirebaseUid"] as string ?? User.FindFirst("firebase_uid")?.Value ?? string.Empty;
