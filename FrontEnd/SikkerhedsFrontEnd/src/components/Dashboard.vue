@@ -17,6 +17,10 @@
           <li>Optional face recognition</li>
         </ul>
       </section>
+      <section class="dashboard-section">
+  <h2>Events</h2>
+  <p>Loading...</p>
+</section>
 
       <!-- SECTION: System Status (NEWLY ADDED) -->
       <section class="dashboard-section">
