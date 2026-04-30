@@ -38,8 +38,8 @@ dotnet ef migrations script
 
 # Code first commands: ------------------------------------------------------------
 
-# Create migration
-dotnet ef migrations add <MigrationName>
+# Create a migration (name it whatever you want)
+Add-Migration UpdateToImageTable
 
-# Apply to database
-dotnet ef database update
+# Apply the migration to the database
+Update-Database

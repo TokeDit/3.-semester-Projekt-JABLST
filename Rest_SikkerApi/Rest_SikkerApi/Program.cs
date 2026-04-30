@@ -8,6 +8,8 @@ using Rest_SikkerApi.repos;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Rest_SikkerApi.Services;
+using FirebaseAdmin.Auth;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 // uddyber error msg på startup fejl, så man kan se hvad der gik galt, i stedet for en generisk "Application failed to start" besked. Det er især nyttigt under udvikling.
@@ -60,7 +62,6 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
-
 
 // CORS - Cross-Origin Resource Sharing ---------------------------------------------
 builder.Services.AddCors(options =>
@@ -156,6 +157,50 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseAuthentication(); // Checks "Who are you?"
+
+// Middleware: verify Firebase ID token (if present) and store UID in HttpContext
+app.Use(async (context, next) =>
+{
+    var authHeader = context.Request.Headers["Authorization"].ToString();
+    if (!string.IsNullOrWhiteSpace(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+    {
+        var token = authHeader.Substring("Bearer ".Length).Trim();
+        try
+        {
+            var decoded = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(token);
+            var uid = decoded.Uid;
+
+            // make available to controllers/repos
+            context.Items["FirebaseUid"] = uid;
+
+            // attach as claim so existing auth/authorization can see it
+            var identity = context.User.Identity as ClaimsIdentity;
+            if (identity != null)
+            {
+                // avoid duplicate claim
+                if (!context.User.HasClaim(c => c.Type == "firebase_uid"))
+                {
+                    identity.AddClaim(new Claim("firebase_uid", uid));
+                }
+            }
+            else
+            {
+
+            }
+            {
+                var newId = new ClaimsIdentity(new[] { new Claim("firebase_uid", uid) });
+                context.User = new ClaimsPrincipal(newId);
+            }
+        }
+        catch (Exception)
+        {
+            // Token invalid/expired => ignore or log. Do not throw here (leave to controllers/auth pipeline).
+        }
+    }
+
+    await next();
+});
+
 app.UseAuthorization();
 app.MapControllers();
 
@@ -164,3 +209,5 @@ app.MapControllers();
 app.MapFallbackToFile("index.html");
 
 app.Run();
+
+
