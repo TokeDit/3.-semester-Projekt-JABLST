@@ -1,8 +1,10 @@
-﻿using System.Drawing;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Rest_SikkerApi.repos;
+using System.Drawing;
 namespace Rest_SikkerApi;
 using Rest_SikkerApi.models;
+using Rest_SikkerApi.Services;
+using System.Threading;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -17,7 +19,43 @@ public class PIController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] Image image)
     {
-        await m_repo.SaveImageAsync(image);
-        return Ok("Image saved successfully.");
+        try
+        {
+            if (image is null || image.GetImageBytes().Length == 0)
+            {
+                return BadRequest("No image uploaded.");
+            }
+
+            // tilgiver FirebaseUid i både HttpContext og User.Claims for at sikre kompatibilitet med forskellige autentificeringsmetoder
+            var firebaseUid = HttpContext.Items["FirebaseUid"] as string ?? User.FindFirst("firebase_uid")?.Value ?? string.Empty;
+
+
+
+            // Create Image entity, set OwnerUid and save
+            var imageEntity = new Image
+            {
+                Id = Guid.NewGuid().ToString(),
+                TimeStamp = DateTime.UtcNow.ToString("o"),
+                ImageType = image.ImageType,
+                ImageData = image.ImageData,
+                Description = image.Description,
+                OwnerUid = firebaseUid
+            };
+
+            await m_repo.SaveImageAsync(imageEntity);
+
+
+            
+
+            return Ok(imageEntity);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                message = "Image analysis failed.",
+                error = ex.Message
+            });
+        }
     }
 }
