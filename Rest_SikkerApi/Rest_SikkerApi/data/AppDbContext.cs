@@ -71,6 +71,8 @@ namespace Rest_SikkerApi.data
 
                 // Optional: create an index to query images by owner efficiently
                 entity.HasIndex(i => i.OwnerUid);
+                // Optional: create an index on TimeStamp for efficient querying by date
+                entity.HasIndex(i => i.TimeStamp);
             });
         }
     }
