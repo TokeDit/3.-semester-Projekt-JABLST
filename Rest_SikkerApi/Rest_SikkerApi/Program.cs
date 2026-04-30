@@ -19,7 +19,7 @@ var services = builder.Services; // unecessary assignment, Did it to try to fix 
 // Add services to the container.
 
 services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))); // looks in appSettings.json or environment variables for a connection string named "DefaultConnection"
+            options.UseSqlServer(configuration.GetConnectionString("DbConnection"))); // looks in appSettings.json or environment variables for a connection string named "DefaultConnection"
 //services.AddScoped<RepoMusicRecords>();
 builder.Services.AddScoped<SikkerRepo>();
 builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
