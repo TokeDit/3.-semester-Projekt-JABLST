@@ -88,6 +88,7 @@ const status = ref('unknown')
 const lastChecked = ref('Never')
 const statusText = ref('Checking...')
 const statusClass = ref('status-unknown')
+const events = ref([])
 
 // --- Check system status ---
 async function checkStatus() {
