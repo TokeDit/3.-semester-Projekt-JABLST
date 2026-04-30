@@ -15,6 +15,9 @@ namespace Rest_SikkerApi.models
 
         public string Description { get; set; } = string.Empty;
 
+        public float Confidence { get; set; } = 0.0f;
+        public string DetectedObject { get; set; } = string.Empty;
+
         // For API - accept/return Base64 string
 
         [NotMapped]

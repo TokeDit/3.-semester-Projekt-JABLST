@@ -34,7 +34,7 @@ services.AddDbContext<AppDbContext>(options =>
 
 //services.AddScoped<RepoMusicRecords>();
 builder.Services.AddScoped<SikkerRepo>();
-builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
+// builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
 // Jwt Authentication -----------------------------------------------------------------------------
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);

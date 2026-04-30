@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../components/Login.vue'
 import Dashboard from '../components/Dashboard.vue'
+import Home from '../components/Home.vue'
 import { auth } from '../firebase'
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -9,6 +10,7 @@ let isAuthResolved = false;
 const routes = [
   { path: '/', redirect: '/login' },
   { path: '/login', component: Login },
+  { path: '/home', component: Home },
   {
     path: '/dashboard',
     component: Dashboard,
