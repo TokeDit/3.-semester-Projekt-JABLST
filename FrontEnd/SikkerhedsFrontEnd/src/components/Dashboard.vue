@@ -253,6 +253,12 @@ h1 {
   padding: 0.6rem 1rem;
   margin-bottom: 0.5rem;
 }
+@media (max-width: 600px) {
+  .event-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
 .event-details {
   display: flex;
   flex-direction: column;
