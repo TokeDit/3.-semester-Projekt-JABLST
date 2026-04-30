@@ -239,4 +239,34 @@ h1 {
   opacity: 0.8;
   margin-bottom: 0.5rem;
 }
+.event-list {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+}
+.event-item {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  margin-bottom: 0.5rem;
+}
+.event-details {
+  display: flex;
+  flex-direction: column;
+}
+.event-type {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+.event-timestamp {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+.no-events {
+  opacity: 0.7;
+  font-style: italic;
+}
 </style>
