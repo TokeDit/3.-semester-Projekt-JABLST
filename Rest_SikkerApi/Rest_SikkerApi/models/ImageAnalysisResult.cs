@@ -1,4 +1,4 @@
-﻿namespace Rest_SikkerApi.Models;
+﻿namespace Rest_SikkerApi.models;
 
 public sealed class ImageAnalysisResult
 {
