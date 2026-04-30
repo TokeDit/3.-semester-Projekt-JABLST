@@ -19,7 +19,19 @@ var services = builder.Services; // unecessary assignment, Did it to try to fix 
 // Add services to the container.
 
 services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DbConnection"))); // looks in appSettings.json or environment variables for a connection string named "DefaultConnection"
+            options.UseSqlServer(configuration.GetConnectionString("DbConnection"), 
+            sqlServerOptions =>
+            {
+                // Enable automatic retries for transient failures
+                // Default: 6 retries with exponential backoff
+                sqlServerOptions.EnableRetryOnFailure(
+                    maxRetryCount: 3,                          // Max number of retry attempts
+                    maxRetryDelay: TimeSpan.FromSeconds(30),   // Cap the delay between retries
+                    errorNumbersToAdd: null                    // null = use default transient error list
+                );
+            })); // looks in appSettings.json or environment variables for a connection string named "DefaultConnection"
+
+
 //services.AddScoped<RepoMusicRecords>();
 builder.Services.AddScoped<SikkerRepo>();
 builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
