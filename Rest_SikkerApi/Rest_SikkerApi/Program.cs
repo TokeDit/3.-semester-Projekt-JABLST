@@ -22,7 +22,7 @@ services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))); // looks in appSettings.json or environment variables for a connection string named "DefaultConnection"
 //services.AddScoped<RepoMusicRecords>();
 builder.Services.AddScoped<SikkerRepo>();
-builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
+// builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
 // Jwt Authentication -----------------------------------------------------------------------------
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
