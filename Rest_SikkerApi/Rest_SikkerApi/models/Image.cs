@@ -15,7 +15,7 @@ namespace Rest_SikkerApi.models
 
         public string Description { get; set; } = string.Empty;
 
-        public float Confidence { get; set; }
+        public float? Confidence { get; set; } = 0f;
 
         public string DetectedObject { get; set; } = string.Empty;
         
