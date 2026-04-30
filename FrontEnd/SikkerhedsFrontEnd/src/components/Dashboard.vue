@@ -19,7 +19,16 @@
       </section>
       <section class="dashboard-section">
   <h2>Events</h2>
-  <p>Loading...</p>
+  <ul class="event-list">
+    <li v-for="event in events" :key="event.id" class="event-item">
+      <span class="event-icon">📷</span>
+      <div class="event-details">
+        <span class="event-type">{{ event.type }}</span>
+        <span class="event-timestamp">{{ event.timestamp }}</span>
+      </div>
+    </li>
+  </ul>
+  <p v-if="events.length === 0" class="no-events">No events yet</p>
 </section>
 
       <!-- SECTION: System Status (NEWLY ADDED) -->
