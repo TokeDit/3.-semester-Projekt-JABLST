@@ -39,6 +39,20 @@ namespace Rest_SikkerApi.repos
 
         }
 
+    
+      // System state - stored in memory for now
+      private static bool _systemOnline = false;
+
+        public bool GetSystemState()
+        {
+            return _systemOnline;
+        }
+
+        public bool SetSystemState(bool state)
+        {
+            _systemOnline = state;
+            return _systemOnline;
+        }
     }
 }
 

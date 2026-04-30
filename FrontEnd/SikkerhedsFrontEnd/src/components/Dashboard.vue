@@ -80,32 +80,47 @@
 import { ref, onMounted } from 'vue'
 
 // --- Status state ---
-const status = ref('unknown')   // 'online' | 'offline' | 'unknown'
+const status = ref('unknown')
 const lastChecked = ref('Never')
-
 const statusText = ref('Checking...')
 const statusClass = ref('status-unknown')
 
-// --- Mock API call (swap this for real fetch later) ---
+// --- Check system status ---
 async function checkStatus() {
   statusText.value = 'Checking...'
   statusClass.value = 'status-unknown'
 
   try {
-  
-  const res = await fetch('https://localhost:7018/Sikker/status') // <-- replace with your real API URL
-const data = await res.json()
-
-status.value = data.status  // expects "online" or "offline"
-
-statusText.value = status.value === 'online' ? '🟢 Online' : '🔴 Offline'
-statusClass.value = status.value === 'online' ? 'status-online' : 'status-offline'
-lastChecked.value = new Date().toLocaleTimeString()
-
-
+    const res = await fetch('https://localhost:7018/Sikker/status')
+    const data = await res.json()
+    status.value = data.status
+    statusText.value = status.value === 'online' ? '🟢 Online' : '🔴 Offline'
+    statusClass.value = status.value === 'online' ? 'status-online' : 'status-offline'
+    lastChecked.value = new Date().toLocaleTimeString()
   } catch (err) {
     statusText.value = '⚠️ Could not reach system'
     statusClass.value = 'status-unknown'
+  }
+}
+
+// --- ON/OFF controls ---
+async function onControl(cmd) {
+  try {
+    const method = cmd === '/status' ? 'GET' : 'POST'
+    const res = await fetch(`https://localhost:7018/Sikker${cmd}`, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' }
+    })
+    const data = await res.json()
+    
+    // Update status display after control command
+    status.value = data.status
+    statusText.value = status.value === 'online' ? '🟢 Online' : '🔴 Offline'
+    statusClass.value = status.value === 'online' ? 'status-online' : 'status-offline'
+    lastChecked.value = new Date().toLocaleTimeString()
+
+  } catch (err) {
+    alert('Could not reach system')
   }
 }
 

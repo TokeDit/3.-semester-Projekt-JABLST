@@ -63,11 +63,31 @@ namespace Rest_SikkerApi.Controllers
         //{
         //    return Ok();
         //}
-        // NEW: System Status Endpoint
+
+        // POST: /Sikker/on
+        [HttpPost("on")]
+        public IActionResult TurnOn()
+        {
+            _repo.SetSystemState(true);
+            _logger.LogInformation("System turned ON");
+            return Ok(new { status = "online", message = "System turned on" });
+        }
+
+        // POST: /Sikker/off
+        [HttpPost("off")]
+        public IActionResult TurnOff()
+        {
+            _repo.SetSystemState(false);
+            _logger.LogInformation("System turned OFF");
+            return Ok(new { status = "offline", message = "System turned off" });
+        }
+
+        // Update existing status endpoint to use real state
         [HttpGet("status")]
         public IActionResult GetStatus()
         {
-            return Ok(new { status = "online" });
+            bool isOnline = _repo.GetSystemState();
+            return Ok(new { status = isOnline ? "online" : "offline" });
         }
     }
 }
