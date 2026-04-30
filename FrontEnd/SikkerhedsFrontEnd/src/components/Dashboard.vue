@@ -145,6 +145,7 @@ function loadEvents() {
 // Check status when dashboard loads
 onMounted(() => {
   checkStatus()
+  loadEvents() // ADD this line
 })
 </script>
 
