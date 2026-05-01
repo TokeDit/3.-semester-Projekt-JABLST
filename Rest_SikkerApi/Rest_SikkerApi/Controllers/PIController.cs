@@ -37,13 +37,11 @@ public class PIController : ControllerBase
                 ImageType = image.ImageType,
                 ImageData = image.ImageData,
                 Description = image.Description,
-                OwnerUid = firebaseUid
+                OwnerUid = firebaseUid,
+                Confidence = image.Confidence
             };
 
             await m_repo.SaveImageAsync(imageEntity);
-
-
-            
 
             return Ok(imageEntity);
         }
