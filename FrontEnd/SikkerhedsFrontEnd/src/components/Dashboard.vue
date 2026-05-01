@@ -78,11 +78,7 @@
 
       <!-- SECTION: History -->
       <section class="dashboard-section">
-        <h2>View History</h2>
-        <ul>
-          <li>Access Dashboard</li>
-          <li>View Past Events</li>
-        </ul>
+        <HitorikLog />
       </section>
 
     </div>
@@ -91,7 +87,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-
+import HitorikLog from './HitorikLog.vue'
 // --- Status state ---
 const status = ref('unknown')
 const lastChecked = ref('Never')
