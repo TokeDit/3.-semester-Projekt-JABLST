@@ -103,8 +103,7 @@
         </article>
       </section>
        <!-- ----- Overview Grid (recent image + system health) from home.vue ----- -->
-      <!-- git commit: "style: keep recent image and health panels from home view" -->
-      <section class="overview-grid">
+          <section class="overview-grid">
         <div class="panel recent-image">
           <div class="panel-header">
             <h2>Recent Image</h2>
@@ -141,4 +140,148 @@
             ><span class="status-dot online"></span><span>Operational</span>
           </div>
         </div>
+      </section>
+      <!-- ----- Event Logs Table (from home.vue) ----- -->
+      <!-- git commit: "style: keep event logs table from home view" -->
+      <section class="logs-panel">
+        <div class="panel-header logs-header">
+          <h2>Event Logs</h2>
+          <div class="log-controls">
+            <input type="text" placeholder="Search logs..." />
+            <select>
+              <option>All Types</option>
+              <option>Info</option>
+              <option>Warning</option>
+              <option>Success</option>
+            </select>
+            <button>29 Apr 2025</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Type</th>
+              <th>Source</th>
+              <th>Message</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>29 Apr 2025, 14:32:12</td>
+              <td>AI Result</td>
+              <td>AI Service</td>
+              <td>Image processed successfully</td>
+              <td><span class="status success">Success</span></td>
+            </tr>
+            <tr>
+              <td>29 Apr 2025, 14:32:10</td>
+              <td>Image Captured</td>
+              <td>RASPI-01</td>
+              <td>New image captured</td>
+              <td><span class="status success">Success</span></td>
+            </tr>
+            <tr>
+              <td>29 Apr 2025, 14:32:08</td>
+              <td>Telegram</td>
+              <td>Telegram Bot</td>
+              <td>Notification sent to chat</td>
+              <td><span class="status success">Success</span></td>
+            </tr>
+            <tr>
+              <td>29 Apr 2025, 14:31:58</td>
+              <td>System</td>
+              <td>System</td>
+              <td>System health check completed</td>
+              <td><span class="status success">Success</span></td>
+            </tr>
+            <tr>
+              <td>29 Apr 2025, 14:31:45</td>
+              <td>AI Service</td>
+              <td>AI Service</td>
+              <td>AI service response time: 1.3s</td>
+              <td><span class="status success">Success</span></td>
+            </tr>
+            <tr>
+              <td>29 Apr 2025, 14:31:30</td>
+              <td>Warning</td>
+              <td>Storage</td>
+              <td>Storage usage is above 70%</td>
+              <td><span class="status warning">Warning</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <!-- ----- Event Logs Table (from home.vue) ----- -->
+      <!-- git commit: "style: keep event logs table from home view" -->
+      <section class="logs-panel">
+        <div class="panel-header logs-header">
+          <h2>Event Logs</h2>
+          <div class="log-controls">
+            <input type="text" placeholder="Search logs..." />
+            <select>
+              <option>All Types</option>
+              <option>Info</option>
+              <option>Warning</option>
+              <option>Success</option>
+            </select>
+            <button>29 Apr 2025</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Type</th>
+              <th>Source</th>
+              <th>Message</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>29 Apr 2025, 14:32:12</td>
+              <td>AI Result</td>
+              <td>AI Service</td>
+              <td>Image processed successfully</td>
+              <td><span class="status success">Success</span></td>
+            </tr>
+            <tr>
+              <td>29 Apr 2025, 14:32:10</td>
+              <td>Image Captured</td>
+              <td>RASPI-01</td>
+              <td>New image captured</td>
+              <td><span class="status success">Success</span></td>
+            </tr>
+            <tr>
+              <td>29 Apr 2025, 14:32:08</td>
+              <td>Telegram</td>
+              <td>Telegram Bot</td>
+              <td>Notification sent to chat</td>
+              <td><span class="status success">Success</span></td>
+            </tr>
+            <tr>
+              <td>29 Apr 2025, 14:31:58</td>
+              <td>System</td>
+              <td>System</td>
+              <td>System health check completed</td>
+              <td><span class="status success">Success</span></td>
+            </tr>
+            <tr>
+              <td>29 Apr 2025, 14:31:45</td>
+              <td>AI Service</td>
+              <td>AI Service</td>
+              <td>AI service response time: 1.3s</td>
+              <td><span class="status success">Success</span></td>
+            </tr>
+            <tr>
+              <td>29 Apr 2025, 14:31:30</td>
+              <td>Warning</td>
+              <td>Storage</td>
+              <td>Storage usage is above 70%</td>
+              <td><span class="status warning">Warning</span></td>
+            </tr>
+          </tbody>
+        </table>
       </section>
