@@ -1,44 +1,42 @@
-using Microsoft.AspNetCore.Mvc;
-using Telegram.Bot;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
-namespace Rest_SikkerApi.Controllers
+public class TelegramBotController
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class TelegramBotController : ControllerBase
+    private readonly TelegramService _telegramService;
+
+    public TelegramBotController(TelegramService telegramService)
     {
-        private readonly ITelegramBotClient _botClient;
-        private readonly string _chatId;
+        _telegramService = telegramService;
+    }
 
-        public TelegramBotController(ITelegramBotClient botClient, IConfiguration configuration)
+    /// <summary>
+    /// Sends a motion alert message to the configured Telegram chat.
+    /// </summary>
+    /// <param name="description">Description of the event or camera location.</param>
+    public async Task SendMotionAlertMessage(string description)
+    {
+        string message = $"Motion detected! {description}";
+        await _telegramService.SendMessage(message);
+        Console.WriteLine("Motion alert message sent to Telegram.");
+    }
+
+    /// <summary>
+    /// Sends a motion alert including a photo to the Telegram chat.
+    /// </summary>
+    /// <param name="imagePath">Path to the captured image file.</param>
+    /// <param name="description">Description of the event or camera location.</param>
+    public async Task SendMotionAlertWithPhoto(string imagePath, string description)
+    {
+        if (!File.Exists(imagePath))
         {
-            _botClient = botClient;
-            _chatId = configuration["Telegram:ChatId"];
+            Console.WriteLine("Image file not found.");
+            return;
         }
 
-        [HttpPost("receiveImage")]
-        public async Task<IActionResult> ReceiveImage(IFormFile image)
-        {
-            if (image == null || image.Length == 0)
-            {
-                return BadRequest("No image provided");
-            }
-
-            using var stream = image.OpenReadStream();
-            
-            // Create InputFileStream using the file stream
-            var inputFile = new InputFileStream(stream, image.FileName);
-
-            // Send the photo using SendPhotoAsync
-            await _botClient.SendPhoto(
-                _chatId,  // The chat ID where to send the photo
-                inputFile,  // The photo file (from the stream)
-                "Image with human from Pi"  // Optional caption
-            );
-
-            return Ok();
-        }
+        string caption = $"Motion detected! {description}";
+        await _telegramService.SendPhoto(imagePath, caption);
+        Console.WriteLine("Motion alert with photo sent to Telegram.");
     }
 }

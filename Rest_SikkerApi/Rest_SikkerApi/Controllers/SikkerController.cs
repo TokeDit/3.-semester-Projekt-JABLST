@@ -1,56 +1,67 @@
 using Microsoft.AspNetCore.Mvc;
-using Rest_SikkerApi.repos;
-using Rest_SikkerApi.models;
+using System.IO;
 using System.Threading.Tasks;
 
-
-namespace Rest_SikkerApi.Controllers
+[ApiController]
+[Route("api/[controller]")]
+[Produces("application/json")]
+public class TelegramBotController : ControllerBase
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class SikkerController : ControllerBase
+    private readonly TelegramService _telegramService;
+
+    public TelegramBotController(TelegramService telegramService)
     {
+        _telegramService = telegramService;
+    }
 
-        private readonly SikkerRepo _repo;
-        private readonly ILogger<SikkerController> _logger;
+    /// <summary>
+    /// Sends a motion alert message to the configured Telegram chat.
+    /// </summary>
+    /// <param name="description">Description of the event or camera location.</param>
+    [HttpPost("send-message")]
+    [ProducesResponseType(StatusCodes.Status200OK)]    // Success
+    [ProducesResponseType(StatusCodes.Status400BadRequest)] // Missing description
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)] // Unexpected failure
+    public async Task<IActionResult> SendMotionAlertMessage([FromQuery] string description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            return BadRequest(new { error = "Description is required." });
 
-        public SikkerController(ILogger<SikkerController> logger, SikkerRepo repo)
+        try
         {
-            _logger = logger;
-            _repo = repo;
+            string message = $"Motion detected! {description}";
+            await _telegramService.SendMessage(message);
+            return Ok(new { message = "Motion alert message sent to Telegram." });
         }
-
-        // POST: /Sikker/UploadImage
-        [HttpPost (Name = "UploadImage")]
-        public async Task<IActionResult> UploadImage([FromBody] Image image)
+        catch (System.Exception ex)
         {
-            if (image == null || string.IsNullOrEmpty(image.ImageData))
-                return BadRequest("Image object is null or Imagedata is missing");
-
-            _logger.LogInformation("Received image with ID: {ImageId} and Type: {ImageType}", image.Id, image.ImageType);
-
-            try
-            {
-                // Decode Base64 string to bytes
-                byte[] imageBytes = image.GetImageBytes() ?? Array.Empty<byte>();
-
-                // Now you can save imageBytes to database, file system, etc.
-                // For example:
-                // await _repository.SaveImageAsync(image.Id, imageBytes, image.ImageType);
-                await _repo.SaveImageAsync(image);
-
-                return Ok(new { message = "Image received successfully", size = imageBytes.Length });
-            }
-            catch (FormatException)
-            {
-                return BadRequest("Invalid Base64 string");
-            }
+            return StatusCode(500, new { error = ex.Message });
         }
+    }
 
-        //[HttpGet]
-        //public IActionResult<IEnumerable<>> Get()
-        //{
-        //    return Ok();
-        //}
+    /// <summary>
+    /// Sends a motion alert including a photo to the Telegram chat.
+    /// </summary>
+    /// <param name="description">Description of the event or camera location.</param>
+    /// <param name="imagePath">Path to the captured image file.</param>
+    [HttpPost("send-photo")]
+    [ProducesResponseType(StatusCodes.Status200OK)]    // Success
+    [ProducesResponseType(StatusCodes.Status400BadRequest)] // Missing or invalid imagePath
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)] // Unexpected failure
+    public async Task<IActionResult> SendMotionAlertWithPhoto([FromQuery] string description, [FromQuery] string imagePath)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath) || !System.IO.File.Exists(imagePath))
+            return BadRequest(new { error = "Valid imagePath is required." });
+
+        try
+        {
+            string caption = $"Motion detected! {description}";
+            await _telegramService.SendPhoto(imagePath, caption);
+            return Ok(new { message = "Motion alert with photo sent to Telegram." });
+        }
+        catch (System.Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
     }
 }
