@@ -63,8 +63,7 @@
       </header>
 
       <!-- ----- ADDED: Logo + "User Dashboard" heading from dashboard.vue ----- -->
-      <!-- git commit: "feat: add logo and User Dashboard heading from dashboard view" -->
-      <div class="user-dashboard-header">
+            <div class="user-dashboard-header">
         <div class="logo-container">
           <img src="/logo.png" alt="Project Logo" class="logo" />
         </div>
@@ -102,4 +101,44 @@
           <h3>Connected</h3>
           <p>Last message: 14:31:58</p>
         </article>
+      </section>
+       <!-- ----- Overview Grid (recent image + system health) from home.vue ----- -->
+      <!-- git commit: "style: keep recent image and health panels from home view" -->
+      <section class="overview-grid">
+        <div class="panel recent-image">
+          <div class="panel-header">
+            <h2>Recent Image</h2>
+            <span class="badge live">Live</span>
+          </div>
+          <div class="image-placeholder">
+            <span>Camera snapshot preview</span>
+          </div>
+          <div class="panel-meta">
+            <span>Captured: 29 Apr 2025, 14:32:10</span>
+            <span>Device: RASPI-01</span>
+          </div>
+        </div>
+
+        <div class="panel health-panel">
+          <div class="panel-header">
+            <h2>System Health</h2>
+            <button class="view-all">View Details</button>
+          </div>
+          <div class="health-row">
+            <span>Image Capture</span><span class="status-dot online"></span
+            ><span>Operational</span>
+          </div>
+          <div class="health-row">
+            <span>AI Processing</span><span class="status-dot online"></span
+            ><span>Operational</span>
+          </div>
+          <div class="health-row">
+            <span>Database</span><span class="status-dot online"></span
+            ><span>Operational</span>
+          </div>
+          <div class="health-row">
+            <span>Telegram Notifications</span
+            ><span class="status-dot online"></span><span>Operational</span>
+          </div>
+        </div>
       </section>
