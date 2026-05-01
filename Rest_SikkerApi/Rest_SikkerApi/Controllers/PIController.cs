@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Rest_SikkerApi.repos;
+namespace Rest_SikkerApi;
 using Rest_SikkerApi.models;
 
 [ApiController]
@@ -31,18 +32,15 @@ public class PIController : ControllerBase
             // Create Image entity, set OwnerUid and save
             var imageEntity = new Image
             {
-                Id = Guid.NewGuid().ToString(),
                 TimeStamp = DateTime.UtcNow.ToString("o"),
                 ImageType = image.ImageType,
                 ImageData = image.ImageData,
                 Description = image.Description,
-                OwnerUid = firebaseUid
+                OwnerUid = firebaseUid,
+                Confidence = image.Confidence
             };
 
             await m_repo.SaveImageAsync(imageEntity);
-
-
-            
 
             return Ok(imageEntity);
         }
