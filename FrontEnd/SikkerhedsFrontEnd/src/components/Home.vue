@@ -28,6 +28,17 @@
         <button class="nav-item">
           <span>Telegram</span>
         </button>
+
+        <div v-if="user" class="user-box">
+          <div class="user-avatar">{{ userInitials }}</div>
+          <div class="user-info">
+            <strong>Logged in</strong>
+            <span>{{ userEmail }}</span>
+          </div>
+          <button class="logout-btn" @click="handleLogout">Logout</button>
+        </div>
+
+        <button v-else class="login-nav-btn" @click="goToLogin">Login</button>
       </div>
     </aside>
 
@@ -63,7 +74,9 @@
           <p class="card-label">Storage</p>
           <h3>72%</h3>
           <p>Used: 72 GB / 100 GB</p>
-          <div class="progress-bar"><div class="progress-value" style="width: 72%"></div></div>
+          <div class="progress-bar">
+            <div class="progress-value" style="width: 72%"></div>
+          </div>
         </article>
         <article class="stat-card">
           <p class="card-label">Telegram Bot</p>
@@ -93,16 +106,20 @@
             <button class="view-all">View Details</button>
           </div>
           <div class="health-row">
-            <span>Image Capture</span><span class="status-dot online"></span><span>Operational</span>
+            <span>Image Capture</span><span class="status-dot online"></span
+            ><span>Operational</span>
           </div>
           <div class="health-row">
-            <span>AI Processing</span><span class="status-dot online"></span><span>Operational</span>
+            <span>AI Processing</span><span class="status-dot online"></span
+            ><span>Operational</span>
           </div>
           <div class="health-row">
-            <span>Database</span><span class="status-dot online"></span><span>Operational</span>
+            <span>Database</span><span class="status-dot online"></span
+            ><span>Operational</span>
           </div>
           <div class="health-row">
-            <span>Telegram Notifications</span><span class="status-dot online"></span><span>Operational</span>
+            <span>Telegram Notifications</span
+            ><span class="status-dot online"></span><span>Operational</span>
           </div>
         </div>
       </section>
@@ -182,9 +199,53 @@
 </template>
 
 <script>
+import { auth } from "../firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+
 export default {
-  name: 'Home'
-}
+  name: "Home",
+
+  data() {
+    return {
+      user: null,
+      unsubscribeAuth: null,
+    };
+  },
+
+  computed: {
+    userEmail() {
+      return this.user?.email ?? "";
+    },
+
+    userInitials() {
+      if (!this.userEmail) return "?";
+      return this.userEmail.substring(0, 2).toUpperCase();
+    },
+  },
+
+  mounted() {
+    this.unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      this.user = user;
+    });
+  },
+
+  beforeUnmount() {
+    if (this.unsubscribeAuth) {
+      this.unsubscribeAuth();
+    }
+  },
+
+  methods: {
+    async handleLogout() {
+      await signOut(auth);
+      this.$router.push("/login");
+    },
+
+    goToLogin() {
+      this.$router.push("/login");
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -194,13 +255,13 @@ export default {
   min-height: 100vh;
   background: #0f1729;
   color: #e7eefc;
-  font-family: 'Inter', Arial, sans-serif;
+  font-family: "Inter", Arial, sans-serif;
 }
 
 .sidebar {
   background: #111827;
   padding: 2rem 1.5rem;
-  border-right: 1px solid rgba(255,255,255,0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -254,7 +315,7 @@ export default {
 
 .nav-item:hover,
 .nav-item.active {
-  background: rgba(59,130,246,0.2);
+  background: rgba(59, 130, 246, 0.2);
   color: #f8fafc;
 }
 
@@ -286,8 +347,8 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(16,185,129,0.12);
-  border: 1px solid rgba(16,185,129,0.24);
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.24);
   color: #a7f3d0;
   padding: 0.8rem 1rem;
   border-radius: 999px;
@@ -301,7 +362,9 @@ export default {
   display: inline-block;
 }
 
-.status-dot.online { background: #22c55e; }
+.status-dot.online {
+  background: #22c55e;
+}
 
 .stats-grid {
   display: grid;
@@ -311,7 +374,7 @@ export default {
 
 .stat-card {
   background: #111827;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 24px;
   padding: 1.5rem;
   min-height: 130px;
@@ -336,7 +399,7 @@ export default {
 
 .progress-bar {
   margin-top: 0.85rem;
-  background: rgba(148,163,184,0.15);
+  background: rgba(148, 163, 184, 0.15);
   height: 8px;
   border-radius: 999px;
   overflow: hidden;
@@ -355,7 +418,7 @@ export default {
 
 .panel {
   background: #111827;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 24px;
   padding: 1.6rem;
 }
@@ -374,8 +437,8 @@ export default {
 }
 
 .view-all {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: #e2e8f0;
   border-radius: 999px;
   padding: 0.65rem 1rem;
@@ -390,7 +453,11 @@ export default {
 .image-placeholder {
   min-height: 250px;
   border-radius: 20px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.02)
+  );
   display: grid;
   place-items: center;
   color: #94a3b8;
@@ -425,14 +492,16 @@ export default {
   align-items: center;
   gap: 0.75rem;
   padding: 0.95rem 0;
-  border-top: 1px solid rgba(255,255,255,0.04);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-.health-panel .health-row:first-of-type { border-top: none; }
+.health-panel .health-row:first-of-type {
+  border-top: none;
+}
 
 .logs-panel {
   background: #111827;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 24px;
   padding: 1.6rem;
 }
@@ -452,13 +521,15 @@ export default {
 .log-controls select,
 .log-controls button {
   background: #0f1729;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: #e2e8f0;
   border-radius: 14px;
   padding: 0.85rem 1rem;
 }
 
-.log-controls input { min-width: 180px; }
+.log-controls input {
+  min-width: 180px;
+}
 
 .logs-panel table {
   width: 100%;
@@ -476,11 +547,11 @@ export default {
 .logs-panel thead th {
   color: #94a3b8;
   font-size: 0.95rem;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .logs-panel tbody tr {
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .status {
@@ -490,18 +561,97 @@ export default {
   font-weight: 700;
 }
 
-.status.success { background: rgba(16,185,129,0.15); color: #a7f3d0; }
-.status.warning { background: rgba(234,179,8,0.15); color: #facc15; }
+.status.success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #a7f3d0;
+}
+.status.warning {
+  background: rgba(234, 179, 8, 0.15);
+  color: #facc15;
+}
 
 @media (max-width: 1300px) {
-  .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .overview-grid { grid-template-columns: 1fr; }
+  .stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 900px) {
-  .home-dashboard { grid-template-columns: 1fr; }
-  .sidebar { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; }
-  .nav-links, .sidebar-footer { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
-  .content { padding: 1.25rem; }
+  .home-dashboard {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-links,
+  .sidebar-footer {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+  .content {
+    padding: 1.25rem;
+  }
+}
+.user-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: #334155;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+.user-info {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.user-info strong {
+  color: #f8fafc;
+  font-size: 0.95rem;
+}
+
+.user-info span {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  word-break: break-all;
+}
+
+.logout-btn,
+.login-nav-btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.logout-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.login-nav-btn {
+  margin-top: 1rem;
+  background: #2563eb;
+  color: white;
 }
 </style>

@@ -1,3 +1,48 @@
+<template>
+  <div class="login-container">
+    <div class="login-card">
+      <img src="/logo.png" alt="Logo" class="login-logo" />
+
+      <h2>System Login</h2>
+
+      <form @submit.prevent="handleLogin">
+        <div class="input-group">
+          <label>Email</label>
+          <input
+            type="email"
+            v-model="email"
+            placeholder="Enter email"
+          />
+        </div>
+
+        <div class="input-group">
+          <label>Password</label>
+          <input
+            type="password"
+            v-model="password"
+            placeholder="Enter password"
+          />
+        </div>
+
+        <button class="login-btn" type="submit">
+          Login
+        </button>
+
+        <button
+          class="register-btn"
+          type="button"
+          @click="handleRegister"
+        >
+          Create account
+        </button>
+      </form>
+
+      <p v-if="error" class="error-msg">{{ error }}</p>
+      <p v-if="message" class="success-msg">{{ message }}</p>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -77,7 +122,7 @@ async function handleLogin() {
 
   try {
     await signInWithEmailAndPassword(auth, email.value, password.value);
-    router.push('/dashboard');
+    router.push('/home');
   } catch (err) {
     error.value = mapFirebaseError(err.code);
   }
@@ -94,7 +139,7 @@ async function handleRegister() {
   try {
     await createUserWithEmailAndPassword(auth, email.value, password.value);
     message.value = 'Bruger oprettet. Du bliver sendt til dashboard.';
-    router.push('/dashboard');
+    router.push('/home');
   } catch (err) {
     error.value = mapFirebaseError(err.code);
   }
