@@ -285,8 +285,7 @@
         </table>
       </section>
 <!-- ==================== ADDED: DASHBOARD SECTIONS FROM dashboard.vue ==================== -->
-      <!-- git commit: "feat: add user dashboard cards (motion, events, status, telegram, controls, history)" -->
-      <section class="dashboard-sections">
+            <section class="dashboard-sections">
         <div class="dashboard-grid">
           <!-- Motion Detection Overview -->
           <div class="dashboard-card">
@@ -364,3 +363,116 @@
     </main>
   </div>
 </template>
+<script>
+// git commit: "chore: import firebase auth and preserve all original logic from both views"
+import { auth } from "../firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+
+export default {
+  name: "HomeDashboard",
+
+  data() {
+    return {
+      // From home.vue
+      user: null,
+      unsubscribeAuth: null,
+
+      // From dashboard.vue
+      status: "unknown",
+      lastChecked: "Never",
+      statusText: "Checking...",
+      statusClass: "status-unknown",
+      events: [],
+    };
+  },
+
+  computed: {
+    // From home.vue
+    userEmail() {
+      return this.user?.email ?? "";
+    },
+    userInitials() {
+      if (!this.userEmail) return "?";
+      return this.userEmail.substring(0, 2).toUpperCase();
+    },
+  },
+
+  mounted() {
+    // home.vue auth listener
+    this.unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      this.user = user;
+    });
+    // dashboard.vue initialization
+    this.checkStatus();
+    this.loadEvents();
+  },
+
+  beforeUnmount() {
+    if (this.unsubscribeAuth) {
+      this.unsubscribeAuth();
+    }
+  },
+
+  methods: {
+    // home.vue methods
+    async handleLogout() {
+      await signOut(auth);
+      this.$router.push("/login");
+    },
+    goToLogin() {
+      this.$router.push("/login");
+    },
+
+    // dashboard.vue methods
+    async checkStatus() {
+      this.statusText = "Checking...";
+      this.statusClass = "status-unknown";
+
+      try {
+        const res = await fetch("https://localhost:7018/Sikker/status");
+        const data = await res.json();
+        this.status = data.status;
+        this.statusText = this.status === "online" ? "🟢 Online" : "🔴 Offline";
+        this.statusClass = this.status === "online" ? "status-online" : "status-offline";
+        this.lastChecked = new Date().toLocaleTimeString();
+      } catch (err) {
+        this.statusText = "⚠️ Could not reach system";
+        this.statusClass = "status-unknown";
+      }
+    },
+
+    async onControl(cmd) {
+      try {
+        const method = cmd === "/status" ? "GET" : "POST";
+        const res = await fetch(`https://localhost:7018/Sikker${cmd}`, {
+          method: method,
+          headers: { "Content-Type": "application/json" },
+        });
+        const data = await res.json();
+
+        this.status = data.status;
+        this.statusText = this.status === "online" ? "🟢 Online" : "🔴 Offline";
+        this.statusClass = this.status === "online" ? "status-online" : "status-offline";
+        this.lastChecked = new Date().toLocaleTimeString();
+      } catch (err) {
+        alert("Could not reach system");
+      }
+    },
+
+    formatTimestamp(date) {
+      return new Intl.DateTimeFormat("da-DK", {
+        dateStyle: "short",
+        timeStyle: "medium",
+      }).format(date);
+    },
+
+    loadEvents() {
+      this.events = [
+        { id: 1, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date()) },
+        { id: 2, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date(Date.now() - 3600000)) },
+        { id: 3, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date(Date.now() - 7200000)) },
+      ];
+    },
+  },
+};
+</script>
