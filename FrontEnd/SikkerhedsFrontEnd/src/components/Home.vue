@@ -142,8 +142,7 @@
         </div>
       </section>
       <!-- ----- Event Logs Table (from home.vue) ----- -->
-      <!-- git commit: "style: keep event logs table from home view" -->
-      <section class="logs-panel">
+            <section class="logs-panel">
         <div class="panel-header logs-header">
           <h2>Event Logs</h2>
           <div class="log-controls">
@@ -285,3 +284,83 @@
           </tbody>
         </table>
       </section>
+<!-- ==================== ADDED: DASHBOARD SECTIONS FROM dashboard.vue ==================== -->
+      <!-- git commit: "feat: add user dashboard cards (motion, events, status, telegram, controls, history)" -->
+      <section class="dashboard-sections">
+        <div class="dashboard-grid">
+          <!-- Motion Detection Overview -->
+          <div class="dashboard-card">
+            <h2>Motion Detected</h2>
+            <ul>
+              <li>Detects motion</li>
+              <li>Captures image</li>
+              <li>Optional face recognition</li>
+            </ul>
+          </div>
+
+          <!-- Events list (dynamic) -->
+          <div class="dashboard-card">
+            <h2>Events</h2>
+            <ul class="event-list">
+              <li v-for="event in events" :key="event.id" class="event-item">
+                <span class="event-icon">📷</span>
+                <div class="event-details">
+                  <span class="event-type">{{ event.type }}</span>
+                  <span class="event-timestamp">{{ event.timestamp }}</span>
+                </div>
+              </li>
+            </ul>
+            <p v-if="events.length === 0" class="no-events">No events yet</p>
+          </div>
+
+          <!-- System Status with live check -->
+          <div class="dashboard-card">
+            <h2>System Status</h2>
+            <div class="status-indicator">
+              <span :class="statusClass">{{ statusText }}</span>
+            </div>
+            <p class="status-time">Last checked: {{ lastChecked }}</p>
+            <button class="control-btn" @click="checkStatus">
+              Refresh Status
+            </button>
+          </div>
+
+          <!-- Telegram Notification Preview -->
+          <div class="dashboard-card">
+            <h2>Telegram Notification</h2>
+            <div class="phone">
+              <div class="message">
+                <strong>Motion Detected</strong>
+                <div class="timestamp">12:34 PM</div>
+                <div class="event-image-placeholder">Event Image Preview</div>
+                <ul>
+                  <li>Photo of Activity</li>
+                  <li>Description</li>
+                  <li>Timestamp</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Controls -->
+          <div class="dashboard-card">
+            <h2>User Controls</h2>
+            <button class="control-btn" @click="onControl('/on')">/on System On</button>
+            <button class="control-btn" @click="onControl('/off')">/off System Off</button>
+            <button class="control-btn" @click="onControl('/status')">/status Check Status</button>
+            <button class="control-btn" @click="onControl('/help')">/help Get Commands</button>
+          </div>
+
+          <!-- View History -->
+          <div class="dashboard-card">
+            <h2>View History</h2>
+            <ul>
+              <li>Access Dashboard</li>
+              <li>View Past Events</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</template>
