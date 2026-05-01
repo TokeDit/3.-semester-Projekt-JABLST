@@ -17,17 +17,14 @@ public class PIController : ControllerBase
         m_repo = repo;
     }
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] IFormFile image)
+    public async Task<IActionResult> Post([FromBody] Image image)
     {
         try
         {
-            if (image is null || image.Length == 0)
+            if (image is null || image.GetImageBytes().Length == 0)
             {
                 return BadRequest("No image uploaded.");
             }
-
-            using var ms = new MemoryStream();
-            await image.CopyToAsync(ms);
 
             // tilgiver FirebaseUid i både HttpContext og User.Claims for at sikre kompatibilitet med forskellige autentificeringsmetoder
             var firebaseUid = HttpContext.Items["FirebaseUid"] as string ?? User.FindFirst("firebase_uid")?.Value ?? string.Empty;
@@ -39,12 +36,16 @@ public class PIController : ControllerBase
             {
                 Id = Guid.NewGuid().ToString(),
                 TimeStamp = DateTime.UtcNow.ToString("o"),
-                ImageType = image.ContentType,
-                ImageData = ms.ToArray(),
+                ImageType = image.ImageType,
+                ImageData = image.ImageData,
+                Description = image.Description,
                 OwnerUid = firebaseUid
             };
 
             await m_repo.SaveImageAsync(imageEntity);
+
+
+            
 
             return Ok(imageEntity);
         }
