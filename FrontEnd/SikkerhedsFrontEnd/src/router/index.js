@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../components/Login.vue'
 import Dashboard from '../components/Dashboard.vue'
 import { auth } from '../firebase'
+import { onAuthStateChanged } from "firebase/auth";
+
+let isAuthResolved = false;
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -20,12 +23,25 @@ const router = createRouter({
 
 // Navigation guard — redirect to login if not authenticated
 router.beforeEach((to, from, next) => {
-  const user = auth.currentUser
-  if (to.meta.requiresAuth && !user) {
-    next('/login')
+  if (!isAuthResolved) {
+    onAuthStateChanged(auth, (user) => {
+      isAuthResolved = true;
+
+      if (to.meta.requiresAuth && !user) {
+        next('/login');
+      } else {
+        next();
+      }
+    });
   } else {
-    next()
+    const user = auth.currentUser;
+
+    if (to.meta.requiresAuth && !user) {
+      next('/login');
+    } else {
+      next();
+    }
   }
-})
+});
 
 export default router

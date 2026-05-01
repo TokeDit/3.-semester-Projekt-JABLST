@@ -2,66 +2,71 @@ using Microsoft.AspNetCore.Mvc;
 using System.IO;
 using System.Threading.Tasks;
 
-[ApiController]
-[Route("api/[controller]")]
-[Produces("application/json")]
-public class TelegramBotController : ControllerBase
+
+namespace Rest_SikkerApi.Controllers
 {
-    private readonly TelegramService _telegramService;
-
-    public TelegramBotController(TelegramService telegramService)
+    [ApiController]
+    [Route("[controller]")]
+    public class SikkerController : ControllerBase
     {
-        _telegramService = telegramService;
-    }
 
-    /// <summary>
-    /// Sends a motion alert message to the configured Telegram chat.
-    /// </summary>
-    /// <param name="description">Description of the event or camera location.</param>
-    [HttpPost("send-message")]
-    [ProducesResponseType(StatusCodes.Status200OK)]    // Success
-    [ProducesResponseType(StatusCodes.Status400BadRequest)] // Missing description
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)] // Unexpected failure
-    public async Task<IActionResult> SendMotionAlertMessage([FromQuery] string description)
-    {
-        if (string.IsNullOrWhiteSpace(description))
-            return BadRequest(new { error = "Description is required." });
+        private readonly SikkerRepo _repo;
+        private readonly ILogger<SikkerController> _logger;
 
-        try
+        public SikkerController(ILogger<SikkerController> logger, SikkerRepo repo)
         {
-            string message = $"Motion detected! {description}";
-            await _telegramService.SendMessage(message);
-            return Ok(new { message = "Motion alert message sent to Telegram." });
+            _logger = logger;
+            _repo = repo;
         }
-        catch (System.Exception ex)
-        {
-            return StatusCode(500, new { error = ex.Message });
-        }
-    }
 
-    /// <summary>
-    /// Sends a motion alert including a photo to the Telegram chat.
-    /// </summary>
-    /// <param name="description">Description of the event or camera location.</param>
-    /// <param name="imagePath">Path to the captured image file.</param>
-    [HttpPost("send-photo")]
-    [ProducesResponseType(StatusCodes.Status200OK)]    // Success
-    [ProducesResponseType(StatusCodes.Status400BadRequest)] // Missing or invalid imagePath
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)] // Unexpected failure
-    public async Task<IActionResult> SendMotionAlertWithPhoto([FromQuery] string description, [FromQuery] string imagePath)
-    {
-        if (string.IsNullOrWhiteSpace(imagePath) || !System.IO.File.Exists(imagePath))
-            return BadRequest(new { error = "Valid imagePath is required." });
+        // POST: /Sikker/UploadImage
+        [HttpPost (Name = "UploadImage")]
+        public async Task<IActionResult> UploadImage([FromBody] Image image)
+        {
+            if (image == null || image.ImageData == null || image.ImageData.Length == 0)
+                return BadRequest("Image object is null or Imagedata is missing");
 
-        try
-        {
-            string caption = $"Motion detected! {description}";
-            await _telegramService.SendPhoto(imagePath, caption);
-            return Ok(new { message = "Motion alert with photo sent to Telegram." });
+            _logger.LogInformation("Received image with ID: {ImageId} and Type: {ImageType}", image.Id, image.ImageType);
+
+            try
+            {
+                // Decode Base64 string to bytes
+                byte[] imageBytes = image.GetImageBytes() ?? Array.Empty<byte>();
+
+                // Now you can save imageBytes to database, file system, etc.
+                // For example:
+                // await _repository.SaveImageAsync(image.Id, imageBytes, image.ImageType);
+                await _repo.SaveImageAsync(image);
+
+                return Ok(new { message = "Image received successfully", size = imageBytes.Length });
+            }
+            catch (FormatException)
+            {
+                return BadRequest("Invalid Base64 string");
+            }
         }
-        catch (System.Exception ex)
+
+        // GET: /Sikker/Images
+        [HttpGet(Name = "Images")]
+        public async Task<ActionResult<IEnumerable<Image>>> Get()
         {
-            return StatusCode(500, new { error = ex.Message });
+            var images = await _repo.GetAllImagesAsync();
+            if (images == null || !images.Any())
+                return NotFound("No images found");
+
+            return Ok(images);
+        }
+
+        //[HttpGet]
+        //public IActionResult<IEnumerable<>> Get()
+        //{
+        //    return Ok();
+        //}
+        // NEW: System Status Endpoint
+        [HttpGet("status")]
+        public IActionResult GetStatus()
+        {
+            return Ok(new { status = "online" });
         }
     }
 }
