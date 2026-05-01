@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Rest_SikkerApi.repos;
-using System.Drawing;
 namespace Rest_SikkerApi;
 using Rest_SikkerApi.models;
-using Rest_SikkerApi.Services;
-using System.Threading;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -17,11 +14,12 @@ public class PIController : ControllerBase
         m_repo = repo;
     }
     [HttpPost]
+    [Consumes("application/json")]
     public async Task<IActionResult> Post([FromBody] Image image)
     {
         try
         {
-            if (image is null || image.GetImageBytes().Length == 0)
+            if (image is null || image.ImageData.Length == 0)
             {
                 return BadRequest("No image uploaded.");
             }
@@ -34,18 +32,16 @@ public class PIController : ControllerBase
             // Create Image entity, set OwnerUid and save
             var imageEntity = new Image
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = 1,
                 TimeStamp = DateTime.UtcNow.ToString("o"),
                 ImageType = image.ImageType,
                 ImageData = image.ImageData,
                 Description = image.Description,
-                OwnerUid = firebaseUid
+                OwnerUid = firebaseUid,
+                Confidence = image.Confidence
             };
 
             await m_repo.SaveImageAsync(imageEntity);
-
-
-            
 
             return Ok(imageEntity);
         }
