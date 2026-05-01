@@ -1,5 +1,11 @@
-<template>
+<!--
+  FILE: HomeDashboard.vue
+  DESCRIPTION: Merged view of Home (sidebar + system stats + logs) and Dashboard (user dashboard cards + live status)
+ -->
+  <template>
   <div class="home-dashboard">
+    <!-- ==================== SIDEBAR (from home.vue) ==================== -->
+    
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-icon">📷</div>
@@ -41,8 +47,10 @@
         <button v-else class="login-nav-btn" @click="goToLogin">Login</button>
       </div>
     </aside>
-
+    <!-- ==================== MAIN CONTENT ==================== -->
     <main class="content">
+      <!-- ----- Topbar (from home.vue) ----- -->
+      <!-- git commit: "style: keep original topbar with system status chip" -->
       <header class="topbar">
         <div>
           <h1>Dashboard</h1>
@@ -54,6 +62,16 @@
         </div>
       </header>
 
+      <!-- ----- ADDED: Logo + "User Dashboard" heading from dashboard.vue ----- -->
+            <div class="user-dashboard-header">
+        <div class="logo-container">
+          <img src="/logo.png" alt="Project Logo" class="logo" />
+        </div>
+        <h1 class="user-dashboard-title">User Dashboard</h1>
+      </div>
+
+      <!-- ----- Stats Grid (from home.vue) ----- -->
+      <!-- git commit: "style: keep system stats cards from home view" -->
       <section class="stats-grid">
         <article class="stat-card">
           <p class="card-label">System Status</p>
@@ -84,8 +102,8 @@
           <p>Last message: 14:31:58</p>
         </article>
       </section>
-
-      <section class="overview-grid">
+       <!-- ----- Overview Grid (recent image + system health) from home.vue ----- -->
+          <section class="overview-grid">
         <div class="panel recent-image">
           <div class="panel-header">
             <h2>Recent Image</h2>
@@ -123,7 +141,79 @@
           </div>
         </div>
       </section>
-
+      <!-- ----- Event Logs Table (from home.vue) ----- -->
+            <section class="logs-panel">
+        <div class="panel-header logs-header">
+          <h2>Event Logs</h2>
+          <div class="log-controls">
+            <input type="text" placeholder="Search logs..." />
+            <select>
+              <option>All Types</option>
+              <option>Info</option>
+              <option>Warning</option>
+              <option>Success</option>
+            </select>
+            <button>29 Apr 2025</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Type</th>
+              <th>Source</th>
+              <th>Message</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>29 Apr 2025, 14:32:12</td>
+              <td>AI Result</td>
+              <td>AI Service</td>
+              <td>Image processed successfully</td>
+              <td><span class="status success">Success</span></td>
+            </tr>
+            <tr>
+              <td>29 Apr 2025, 14:32:10</td>
+              <td>Image Captured</td>
+              <td>RASPI-01</td>
+              <td>New image captured</td>
+              <td><span class="status success">Success</span></td>
+            </tr>
+            <tr>
+              <td>29 Apr 2025, 14:32:08</td>
+              <td>Telegram</td>
+              <td>Telegram Bot</td>
+              <td>Notification sent to chat</td>
+              <td><span class="status success">Success</span></td>
+            </tr>
+            <tr>
+              <td>29 Apr 2025, 14:31:58</td>
+              <td>System</td>
+              <td>System</td>
+              <td>System health check completed</td>
+              <td><span class="status success">Success</span></td>
+            </tr>
+            <tr>
+              <td>29 Apr 2025, 14:31:45</td>
+              <td>AI Service</td>
+              <td>AI Service</td>
+              <td>AI service response time: 1.3s</td>
+              <td><span class="status success">Success</span></td>
+            </tr>
+            <tr>
+              <td>29 Apr 2025, 14:31:30</td>
+              <td>Warning</td>
+              <td>Storage</td>
+              <td>Storage usage is above 70%</td>
+              <td><span class="status warning">Warning</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <!-- ----- Event Logs Table (from home.vue) ----- -->
+      <!-- git commit: "style: keep event logs table from home view" -->
       <section class="logs-panel">
         <div class="panel-header logs-header">
           <h2>Event Logs</h2>
@@ -194,29 +284,112 @@
           </tbody>
         </table>
       </section>
+<!-- ==================== ADDED: DASHBOARD SECTIONS FROM dashboard.vue ==================== -->
+            <section class="dashboard-sections">
+        <div class="dashboard-grid">
+          <!-- Motion Detection Overview -->
+          <div class="dashboard-card">
+            <h2>Motion Detected</h2>
+            <ul>
+              <li>Detects motion</li>
+              <li>Captures image</li>
+              <li>Optional face recognition</li>
+            </ul>
+          </div>
+
+          <!-- Events list (dynamic) -->
+          <div class="dashboard-card">
+            <h2>Events</h2>
+            <ul class="event-list">
+              <li v-for="event in events" :key="event.id" class="event-item">
+                <span class="event-icon">📷</span>
+                <div class="event-details">
+                  <span class="event-type">{{ event.type }}</span>
+                  <span class="event-timestamp">{{ event.timestamp }}</span>
+                </div>
+              </li>
+            </ul>
+            <p v-if="events.length === 0" class="no-events">No events yet</p>
+          </div>
+
+          <!-- System Status with live check -->
+          <div class="dashboard-card">
+            <h2>System Status</h2>
+            <div class="status-indicator">
+              <span :class="statusClass">{{ statusText }}</span>
+            </div>
+            <p class="status-time">Last checked: {{ lastChecked }}</p>
+            <button class="control-btn" @click="checkStatus">
+              Refresh Status
+            </button>
+          </div>
+
+          <!-- Telegram Notification Preview -->
+          <div class="dashboard-card">
+            <h2>Telegram Notification</h2>
+            <div class="phone">
+              <div class="message">
+                <strong>Motion Detected</strong>
+                <div class="timestamp">12:34 PM</div>
+                <div class="event-image-placeholder">Event Image Preview</div>
+                <ul>
+                  <li>Photo of Activity</li>
+                  <li>Description</li>
+                  <li>Timestamp</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Controls -->
+          <div class="dashboard-card">
+            <h2>User Controls</h2>
+            <button class="control-btn" @click="onControl('/on')">/on System On</button>
+            <button class="control-btn" @click="onControl('/off')">/off System Off</button>
+            <button class="control-btn" @click="onControl('/status')">/status Check Status</button>
+            <button class="control-btn" @click="onControl('/help')">/help Get Commands</button>
+          </div>
+
+          <!-- View History -->
+          <div class="dashboard-card">
+            <h2>View History</h2>
+            <ul>
+              <li>Access Dashboard</li>
+              <li>View Past Events</li>
+            </ul>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 </template>
-
 <script>
 import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 
 export default {
-  name: "Home",
+  name: "HomeDashboard",
 
   data() {
     return {
+      // From home.vue
       user: null,
       unsubscribeAuth: null,
+
+      // From dashboard.vue
+      status: "unknown",
+      lastChecked: "Never",
+      statusText: "Checking...",
+      statusClass: "status-unknown",
+      events: [],
     };
   },
 
   computed: {
+    // From home.vue
     userEmail() {
       return this.user?.email ?? "";
     },
-
     userInitials() {
       if (!this.userEmail) return "?";
       return this.userEmail.substring(0, 2).toUpperCase();
@@ -224,9 +397,13 @@ export default {
   },
 
   mounted() {
+    // home.vue auth listener
     this.unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       this.user = user;
     });
+    // dashboard.vue initialization
+    this.checkStatus();
+    this.loadEvents();
   },
 
   beforeUnmount() {
@@ -236,19 +413,71 @@ export default {
   },
 
   methods: {
+    // home.vue methods
     async handleLogout() {
       await signOut(auth);
       this.$router.push("/login");
     },
-
     goToLogin() {
       this.$router.push("/login");
+    },
+
+    // dashboard.vue methods
+    async checkStatus() {
+      this.statusText = "Checking...";
+      this.statusClass = "status-unknown";
+
+      try {
+        const res = await fetch("https://localhost:7018/Sikker/status");
+        const data = await res.json();
+        this.status = data.status;
+        this.statusText = this.status === "online" ? "🟢 Online" : "🔴 Offline";
+        this.statusClass = this.status === "online" ? "status-online" : "status-offline";
+        this.lastChecked = new Date().toLocaleTimeString();
+      } catch (err) {
+        this.statusText = "⚠️ Could not reach system";
+        this.statusClass = "status-unknown";
+      }
+    },
+
+    async onControl(cmd) {
+      try {
+        const method = cmd === "/status" ? "GET" : "POST";
+        const res = await fetch(`https://localhost:7018/Sikker${cmd}`, {
+          method: method,
+          headers: { "Content-Type": "application/json" },
+        });
+        const data = await res.json();
+
+        this.status = data.status;
+        this.statusText = this.status === "online" ? "🟢 Online" : "🔴 Offline";
+        this.statusClass = this.status === "online" ? "status-online" : "status-offline";
+        this.lastChecked = new Date().toLocaleTimeString();
+      } catch (err) {
+        alert("Could not reach system");
+      }
+    },
+
+    formatTimestamp(date) {
+      return new Intl.DateTimeFormat("da-DK", {
+        dateStyle: "short",
+        timeStyle: "medium",
+      }).format(date);
+    },
+
+    loadEvents() {
+      this.events = [
+        { id: 1, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date()) },
+        { id: 2, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date(Date.now() - 3600000)) },
+        { id: 3, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date(Date.now() - 7200000)) },
+      ];
     },
   },
 };
 </script>
-
 <style scoped>
+/* ========== ALL STYLES FROM home.vue (unchanged) ========== */
+/* git commit: "style: preserve all original dark theme styles from home view" */
 .home-dashboard {
   display: grid;
   grid-template-columns: 260px 1fr;
@@ -412,7 +641,7 @@ export default {
 
 .overview-grid {
   display: grid;
-  grid-template-columns: 1.6fr 1.1fr 0fr;
+  grid-template-columns: 1.6fr 1.1fr;
   gap: 1rem;
 }
 
@@ -468,20 +697,6 @@ export default {
   display: flex;
   justify-content: space-between;
   margin-top: 1rem;
-  color: #94a3b8;
-  font-size: 0.9rem;
-}
-
-.ai-summary p {
-  margin: 0;
-  line-height: 1.75;
-  color: #cbd5e1;
-}
-
-.summary-footer {
-  margin-top: 1.35rem;
-  display: flex;
-  justify-content: space-between;
   color: #94a3b8;
   font-size: 0.9rem;
 }
@@ -570,34 +785,6 @@ export default {
   color: #facc15;
 }
 
-@media (max-width: 1300px) {
-  .stats-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .overview-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 900px) {
-  .home-dashboard {
-    grid-template-columns: 1fr;
-  }
-  .sidebar {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .nav-links,
-  .sidebar-footer {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-  }
-  .content {
-    padding: 1.25rem;
-  }
-}
 .user-box {
   margin-top: 1rem;
   padding: 1rem;
@@ -653,5 +840,202 @@ export default {
   margin-top: 1rem;
   background: #2563eb;
   color: white;
+}
+
+/* ========== ADDED STYLES FOR DASHBOARD CARDS (adapted from dashboard.vue) ========== */
+/* git commit: "style: add dark theme styles for dashboard cards from dashboard view" */
+.user-dashboard-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #111827;
+  border-radius: 24px;
+  padding: 1rem 1.5rem;
+  margin-top: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 50px;
+  height: auto;
+}
+
+.user-dashboard-title {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #e7eefc;
+}
+
+.dashboard-sections {
+  margin-top: 1rem;
+}
+
+.dashboard-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: flex-start;
+}
+
+.dashboard-card {
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 24px;
+  padding: 1.5rem;
+  flex: 1 1 300px;
+  max-width: 360px;
+  color: #e7eefc;
+}
+
+.dashboard-card h2 {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+  color: #e7eefc;
+}
+
+.dashboard-card ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #cbd5e1;
+}
+
+.phone {
+  background: #1f2937;
+  border-radius: 12px;
+  padding: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+.event-image-placeholder {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed #4b5563;
+  padding: 12px;
+  margin: 10px 0;
+  text-align: center;
+  font-size: 0.8rem;
+  border-radius: 8px;
+}
+
+.control-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  margin: 0.4rem 0;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  width: 100%;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.control-btn:hover {
+  background: #1d4ed8;
+}
+
+.status-indicator {
+  margin: 1rem 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.status-online {
+  color: #4ade80;
+}
+.status-offline {
+  color: #f87171;
+}
+.status-unknown {
+  color: #facc15;
+}
+
+.status-time {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-bottom: 0.8rem;
+}
+
+.event-list {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+}
+
+.event-item {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 0.6rem 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.event-icon {
+  font-size: 1.2rem;
+}
+
+.event-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.event-type {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.event-timestamp {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.no-events {
+  opacity: 0.7;
+  font-style: italic;
+  text-align: center;
+}
+
+/* Responsive (extended from home.vue) */
+@media (max-width: 1300px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .home-dashboard {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-links,
+  .sidebar-footer {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+  .content {
+    padding: 1.25rem;
+  }
+  .dashboard-card {
+    max-width: 100%;
+  }
+  .user-dashboard-header {
+    flex-direction: column;
+    text-align: center;
+  }
 }
 </style>
