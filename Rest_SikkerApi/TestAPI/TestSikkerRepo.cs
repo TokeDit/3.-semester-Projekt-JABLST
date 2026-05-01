@@ -24,7 +24,7 @@ namespace TestAPI
 
             var imageEntity = new Image
             {
-                Id = "test-image-1",
+                Id = 1,
                 TimeStamp = "2026-04-29T10:00:00",
                 ImageType = "image/jpeg",
                 ImageData = new byte[] { 1, 2, 3, 4, 5 },
@@ -39,7 +39,7 @@ namespace TestAPI
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("test-image-1", result.Id);
+            Assert.Equal(1, result.Id);
             Assert.Equal("2026-04-29T10:00:00", result.TimeStamp);
             Assert.Equal("image/jpeg", result.ImageType);
             Assert.Equal(new byte[] { 1, 2, 3, 4, 5 }, result.ImageData);
@@ -49,9 +49,9 @@ namespace TestAPI
             Assert.Equal("user123", result.OwnerUid);
 
             // Verify it's actually in the database
-            var savedImage = await context.Images.FindAsync("test-image-1");
+            var savedImage = await context.Images.FindAsync(1);
             Assert.NotNull(savedImage);
-            Assert.Equal("test-image-1", savedImage.Id);
+            Assert.Equal(1, savedImage.Id);
         }
 
         [Fact]
@@ -64,7 +64,7 @@ namespace TestAPI
 
             var imageEntity = new Image
             {
-                Id = "test-image-2",
+                Id = 2,
                 TimeStamp = "2026-04-29T11:30:00",
                 ImageType = "image/png",
                 ImageData = new byte[] { 10, 20, 30 },
@@ -107,7 +107,7 @@ namespace TestAPI
 
             var imageEntity = new Image
             {
-                Id = "single-image",
+                Id = 69,
                 TimeStamp = "2026-04-29T12:00:00",
                 ImageType = "image/gif",
                 ImageData = new byte[] { 5, 10, 15 },
@@ -124,7 +124,7 @@ namespace TestAPI
             // Assert
             Assert.NotNull(result);
             Assert.Single(result);
-            Assert.Equal("single-image", result[0].Id);
+            Assert.Equal(69, result[0].Id);
             Assert.Equal("2026-04-29T12:00:00", result[0].TimeStamp);
             Assert.Equal(0.78f, result[0].Confidence);
             Assert.Equal("dog", result[0].DetectedObject);
@@ -141,7 +141,7 @@ namespace TestAPI
 
             var image1 = new Image
             {
-                Id = "image-1",
+                Id = 1,
                 TimeStamp = "2026-04-29T13:00:00",
                 ImageType = "image/jpeg",
                 ImageData = new byte[] { 1, 2, 3 },
@@ -153,7 +153,7 @@ namespace TestAPI
 
             var image2 = new Image
             {
-                Id = "image-2",
+                Id = 2,
                 TimeStamp = "2026-04-29T14:00:00",
                 ImageType = "image/png",
                 ImageData = new byte[] { 4, 5, 6 },
@@ -165,7 +165,7 @@ namespace TestAPI
 
             var image3 = new Image
             {
-                Id = "image-3",
+                Id = 3,
                 TimeStamp = "2026-04-29T15:00:00",
                 ImageType = "image/webp",
                 ImageData = new byte[] { 7, 8, 9 },
@@ -185,9 +185,9 @@ namespace TestAPI
             // Assert
             Assert.NotNull(result);
             Assert.Equal(3, result.Count);
-            Assert.Contains(result, i => i.Id == "image-1");
-            Assert.Contains(result, i => i.Id == "image-2");
-            Assert.Contains(result, i => i.Id == "image-3");
+            Assert.Contains(result, i => i.Id == 1);
+            Assert.Contains(result, i => i.Id == 2);
+            Assert.Contains(result, i => i.Id == 3);
         }
 
         [Fact]
@@ -201,7 +201,7 @@ namespace TestAPI
             var expectedImageData = new byte[] { 100, 101, 102, 103 };
             var imageEntity = new Image
             {
-                Id = "data-test",
+                Id = 1,
                 TimeStamp = "2026-04-29T16:00:00",
                 ImageType = "image/bmp",
                 ImageData = expectedImageData,
@@ -234,7 +234,7 @@ namespace TestAPI
 
             var imageEntity = new Image
             {
-                Id = "empty-data-image",
+                Id = 0,
                 TimeStamp = "2026-04-29T17:00:00",
                 ImageType = "image/jpeg",
                 ImageData = Array.Empty<byte>(),
@@ -269,7 +269,7 @@ namespace TestAPI
 
             var imageEntity = new Image
             {
-                Id = "large-image",
+                Id = 999,
                 TimeStamp = "2026-04-29T18:00:00",
                 ImageType = "image/jpeg",
                 ImageData = largeImageData,
@@ -299,7 +299,7 @@ namespace TestAPI
 
             var imageEntity = new Image
             {
-                Id = "default-values-image",
+                Id = 78,
                 TimeStamp = "2026-04-29T19:00:00",
                 ImageType = "image/jpeg",
                 ImageData = new byte[] { 1, 2, 3 }
@@ -327,7 +327,7 @@ namespace TestAPI
 
             var image1 = new Image
             {
-                Id = "owner1-image1",
+                Id = 1,
                 TimeStamp = "2026-04-29T20:00:00",
                 ImageType = "image/jpeg",
                 ImageData = new byte[] { 1 },
@@ -336,7 +336,7 @@ namespace TestAPI
 
             var image2 = new Image
             {
-                Id = "owner2-image1",
+                Id = 2,
                 TimeStamp = "2026-04-29T20:10:00",
                 ImageType = "image/jpeg",
                 ImageData = new byte[] { 2 },
@@ -352,7 +352,7 @@ namespace TestAPI
 
             // Assert
             Assert.Single(owner1Images);
-            Assert.Equal("owner1-image1", owner1Images[0].Id);
+            Assert.Equal(1, owner1Images[0].Id);
         }
 
         [Fact]
