@@ -13,12 +13,6 @@ namespace Rest_SikkerApi.repos
             _context = context;
         }
 
-        /// <summary>
-        /// Asynchronously saves a new image entity to the data store.
-        /// </summary>
-        /// <param name="imageEntity">The image entity to be saved. Cannot be null.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains the saved image entity,
-        /// including any updated properties such as generated identifiers.</returns>
         public async Task<Image> SaveImageAsync(Image imageEntity)
         {
             _context.Images.Add(imageEntity);
@@ -26,17 +20,14 @@ namespace Rest_SikkerApi.repos
             return imageEntity;
         }
 
-        /// <summary>
-        /// Asynchronously retrieves all images from the data store.
-        /// </summary>
-        /// <remarks>This method executes a database query to retrieve all image records. The returned
-        /// list reflects the current state of the data store at the time of the query.</remarks>
-        /// <returns>A task that represents the asynchronous operation. The task result contains a list of all images. If no
-        /// images are found, the list will be empty.</returns>
         public async Task<List<Image>> GetAllImagesAsync()
         {
             return await _context.Images.ToListAsync();
+        }
 
+        public async Task<Image?> GetImageByIdAsync(string id)
+        {
+            return await _context.Images.FindAsync(id);
         }
 
     }
