@@ -1,0 +1,20 @@
+﻿using System.Net.Http;
+using System.Security.Policy;
+
+namespace Rest_SikkerApi.Services
+{
+    public class TelegramService
+    {
+        private readonly string _botToken;
+        private readonly HttpClient _httpClient;
+
+        public TelegramService(IConfiguration config, HttpClient httpClient)
+        {
+            _botToken = config["Telegram:BotToken"]
+                        ?? throw new Exception("Telegram BotToken not found in configuration.");
+            _httpClient = httpClient;
+        }
+        var response = await _httpClient.PostAsync(url, content);
+        response.EnsureSuccessStatusCode();
+    }
+}
