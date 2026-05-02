@@ -81,21 +81,20 @@ namespace Rest_SikkerApi.Services
 
         public async Task HandleCommandAsync(long chatId, string command, CancellationToken ct = default)
         {
-            //  Trim and normalize command before switching to avoid
-            // whitespace or casing issues e.g. "/Help " failing to match
             var normalizedCommand = command.Trim().ToLower();
 
             _logger.LogInformation("Handling command '{Command}' for chat {ChatId}", normalizedCommand, chatId);
 
             switch (normalizedCommand)
             {
+                // --- HELP ---
                 case "/hjælp":
                 case "/help":
                     await SendHelpAsync(chatId, ct);
                     break;
 
+                // --- BACKEND COMMANDS ---
                 case "/on":
-                    //  Use configured base URL instead of hardcoded localhost
                     await CallBackendAsync(chatId, $"{_backendBaseUrl}/Sikker/on", ct);
                     break;
 
@@ -104,18 +103,29 @@ namespace Rest_SikkerApi.Services
                     break;
 
                 case "/status":
-                    // COMMIT: /Sikker/status is a GET endpoint, not POST — use GetAsync
                     await CallBackendGetAsync(chatId, $"{_backendBaseUrl}/Sikker/status", ct);
                     break;
 
+                // --- GREETINGS ---
+                case "hi":
+                case "hello":
+                case "hej":
+                case "hey":
+                case "godmorgen":
+                case "godaften":
+                    await _telegramService.SendMessageAsync(chatId,
+                        "Hej! Hvordan kan jeg hjælpe dig i dag?", ct);
+                    break;
+
+                // --- UNKNOWN ---
                 default:
-                    //  Log unknown commands so you can discover what users are trying
                     _logger.LogWarning("Unknown command '{Command}' received from chat {ChatId}", normalizedCommand, chatId);
                     await _telegramService.SendMessageAsync(chatId,
                         "Ukendt kommando. Skriv /hjælp for at se muligheder.", ct);
                     break;
             }
         }
+
 
         private async Task SendHelpAsync(long chatId, CancellationToken ct)
         {
