@@ -33,7 +33,7 @@ namespace Rest_SikkerApi.Controllers
         [HttpPost("update")]
         public async Task<IActionResult> ReceiveUpdate([FromBody] JsonElement update)
         {
-            // COMMIT 4:
+            
             // Upgrade signature to: public async Task<IActionResult> ReceiveUpdate([FromBody] JsonElement update, CancellationToken ct)
             // and pass ct to SendMessageAsync when ready
 
