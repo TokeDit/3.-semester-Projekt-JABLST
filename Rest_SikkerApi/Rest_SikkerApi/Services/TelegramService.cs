@@ -47,12 +47,12 @@ namespace Rest_SikkerApi.Services
                 text = message,
                 parse_mode = "Markdown"
             };
-            // COMMIT 11: 
+             
             var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
             var json = JsonSerializer.Serialize(payload, options);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            // COMMIT 5: Log outgoing message for observability
+            //  Log outgoing message for observability
             _logger.LogInformation("Sending Telegram message to chat {ChatId}", chatId);
 
             // COMMIT 7: Wrap HTTP call in try/catch for structured error handling
