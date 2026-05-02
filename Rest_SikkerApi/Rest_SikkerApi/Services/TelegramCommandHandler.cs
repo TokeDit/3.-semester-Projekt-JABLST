@@ -5,11 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Rest_SikkerApi.Services
 {
-       public interface ITelegramCommandHandler
-    {
-        Task HandleCommandAsync(long chatId, string command, CancellationToken ct = default);
-    }
-
+   
     public class TelegramCommandHandler : ITelegramCommandHandler
     {
         //  Depend on ITelegramService abstraction, not concrete TelegramService
