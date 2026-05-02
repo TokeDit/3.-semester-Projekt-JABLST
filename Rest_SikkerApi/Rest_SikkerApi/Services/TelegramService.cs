@@ -13,6 +13,9 @@ namespace Rest_SikkerApi.Services
         private readonly string _botToken;
         private readonly HttpClient _httpClient;
 
+        // COMMIT 5: 
+        private readonly ILogger<TelegramService> _logger;
+
         public TelegramService(IConfiguration config, HttpClient httpClient)
         {
             _botToken = config["Telegram:BotToken"]
