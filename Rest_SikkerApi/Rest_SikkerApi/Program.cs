@@ -33,6 +33,8 @@ services.AddDbContext<AppDbContext>(options =>
                 );
             })); // looks in appSettings.json or environment variables for a connection string named "DefaultConnection"
 
+//Telegram Bot API setup
+builder.Services.AddHttpClient<TelegramService>();
 
 //services.AddScoped<RepoMusicRecords>();
 builder.Services.AddScoped<SikkerRepo>();
