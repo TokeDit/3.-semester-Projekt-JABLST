@@ -41,10 +41,9 @@ namespace Rest_SikkerApi.Services
                 ?? throw new InvalidOperationException("Backend BaseUrl not found in configuration.");
         }
 
-        // COMMIT 5:
-        public async Task HandleCommandAsync(long chatId, string command, CancellationToken ct = default)
+              public async Task HandleCommandAsync(long chatId, string command, CancellationToken ct = default)
         {
-            // COMMIT 6: Trim and normalize command before switching to avoid
+            //  Trim and normalize command before switching to avoid
             // whitespace or casing issues e.g. "/Help " failing to match
             var normalizedCommand = command.Trim().ToLower();
 
@@ -58,7 +57,7 @@ namespace Rest_SikkerApi.Services
                     break;
 
                 case "/on":
-                    // COMMIT 4: Use configured base URL instead of hardcoded localhost
+                    //  Use configured base URL instead of hardcoded localhost
                     await CallBackendAsync(chatId, $"{_backendBaseUrl}/Sikker/on", ct);
                     break;
 
@@ -71,7 +70,7 @@ namespace Rest_SikkerApi.Services
                     break;
 
                 default:
-                    // COMMIT 7: Log unknown commands so you can discover what users are trying
+                    //  Log unknown commands so you can discover what users are trying
                     _logger.LogWarning("Unknown command '{Command}' received from chat {ChatId}", normalizedCommand, chatId);
                     await _telegramService.SendMessageAsync(chatId,
                         "Ukendt kommando. Skriv /hjælp for at se muligheder.", ct);
