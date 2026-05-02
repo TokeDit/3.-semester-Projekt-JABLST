@@ -506,9 +506,12 @@ export default {
     this.unsubscribeAuth = onAuthStateChanged(auth, (user) => { this.user = user; });
     this.checkStatus();
     this.loadEvents();
+     this.fetchTelegramStatus();
+  this.telegramPollInterval = setInterval(this.fetchTelegramStatus, 5000); // poll every 5s
   },
   beforeUnmount() {
     if (this.unsubscribeAuth) this.unsubscribeAuth();
+    if (this.telegramPollInterval) clearInterval(this.telegramPollInterval);
   },
   methods: {
     async handleLogout() { await signOut(auth); this.$router.push("/login"); },
