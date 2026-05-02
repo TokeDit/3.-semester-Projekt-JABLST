@@ -66,10 +66,10 @@ namespace Rest_SikkerApi.Controllers
                 ? textElement.GetString() ?? ""
                 : "";
 
-            // COMMIT 3: 
+            // Log incoming message for observability
             _logger.LogInformation("Received Telegram message from chat {ChatId}: {Text}", chatId, text);
 
-            // COMMIT 2: WARNING — static fields are shared across all requests and threads
+            //  WARNING — static fields are shared across all requests and threads
             // This is not thread-safe and will lose data under concurrent requests
             // Future commit: replace with a scoped state service or database
             _lastChatId = chatId;
@@ -85,15 +85,36 @@ namespace Rest_SikkerApi.Controllers
             }
             catch (HttpRequestException ex)
             {
-                // COMMIT 6: Catch only specific exceptions — HTTP failures sending to Telegram
+                //  Catch only specific exceptions — HTTP failures sending to Telegram
                 _logger.LogError(ex, "Failed to send Telegram reply to chat {ChatId}", chatId);
                 // Still return 200 so Telegram does not retry the webhook
                 return Ok();
             }
 
-            // COMMIT 7: Return 200 OK always on webhook — Telegram will retry on non-200 responses
+            //  Return 200 OK always on webhook — Telegram will retry on non-200 responses
             return Ok();
         }
+        [HttpGet("status")]
+        public IActionResult GetStatus()
+        {
+            // COMMIT 8: 
+            // Future commit: replace with a proper StatusResponse record/class
+            // COMMIT 2: WARNING — reading static fields here is not thread-safe
+            // Future commit: read from a scoped state service instead
+            return Ok(new
+            {
+                lastChatId = _lastChatId,
+                lastMessage = _lastMessage,
+
+                // COMMIT 9: Return ISO 8601 UTC timestamp string instead of raw DateTime
+                // Raw DateTime serialization can vary by environment and lose timezone context
+                lastMessageTime = _lastMessageTime == default
+                    ? null
+                    : (string?)_lastMessageTime.ToString("o") // "o" = round-trip ISO 8601
+            });
+        }
+    }
+}
 
     }
 }
