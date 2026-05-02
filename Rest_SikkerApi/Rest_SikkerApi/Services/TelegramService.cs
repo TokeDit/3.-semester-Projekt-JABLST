@@ -13,15 +13,22 @@ namespace Rest_SikkerApi.Services
         private readonly string _botToken;
         private readonly HttpClient _httpClient;
 
-        // COMMIT 5: 
+        
         private readonly ILogger<TelegramService> _logger;
 
-        public TelegramService(IConfiguration config, HttpClient httpClient)
+        public TelegramService(IConfiguration config, HttpClient httpClient, ILogger<TelegramService> logger)
         {
+            // COMMIT 6: 
             _botToken = config["Telegram:BotToken"]
-                        ?? throw new Exception("Telegram BotToken not found in configuration.");
+                        ?? throw new InvalidOperationException("Telegram BotToken not found in configuration.");
+
+            // COMMIT 1: Use injected HttpClient instead of new HttpClient()
             _httpClient = httpClient;
+
+            // COMMIT 5: Assign injected logger
+            _logger = logger;
         }
+
         var response = await _httpClient.PostAsync(url, content);
         response.EnsureSuccessStatusCode();
     }
