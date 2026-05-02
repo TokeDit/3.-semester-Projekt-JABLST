@@ -36,6 +36,15 @@ public class TelegramController : ControllerBase
     [HttpPost("update")]
     public async Task<IActionResult> ReceiveUpdate([FromBody] JsonElement update, CancellationToken ct)
     {
+        _logger.LogInformation("RAW Telegram update: {Json}", update.ToString());
+
+        // FIX: Ignore updates that are not JSON objects
+        if (update.ValueKind != JsonValueKind.Object)
+        {
+            _logger.LogWarning("Received non-object update: {Json}", update.ToString());
+            return Ok();
+        }
+
         // COMMIT 5: Guard against missing top-level "message" property
         if (!update.TryGetProperty("message", out var message))
         {
