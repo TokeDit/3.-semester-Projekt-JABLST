@@ -524,6 +524,21 @@ export default {
         this.lastChecked = new Date().toLocaleTimeString();
       } catch { this.statusText = "⚠️ Could not reach system"; this.statusClass = "status-unknown"; }
     },
+    async fetchTelegramStatus() {
+    try {
+      const res = await fetch("http://localhost:5180/telegram/status");
+      const data = await res.json();
+      this.telegramStatus.lastMessage = data.lastMessage || "No messages yet";
+      this.telegramStatus.lastMessageTime = data.lastMessageTime
+        ? new Date(data.lastMessageTime).toLocaleTimeString("da-DK")
+        : "Never";
+      this.telegramStatus.connected = !!data.lastMessageTime;
+    } catch {
+      this.telegramStatus.connected = false;
+      this.telegramStatus.lastMessage = "Could not reach bot";
+    }
+  },
+},
     async onControl(cmd) {
       try {
         const method = cmd === "/status" ? "GET" : "POST";
