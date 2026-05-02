@@ -80,7 +80,7 @@ namespace Rest_SikkerApi.Services
 
         private async Task SendHelpAsync(long chatId, CancellationToken ct)
         {
-            // COMMIT 8: Use verbatim string or string.Join for multiline help text — easier to maintain
+            //  Use verbatim string or string.Join for multiline help text — easier to maintain
             var helpText = string.Join("\n",
                 "Tilgængelige kommandoer:",
                 "/on – Tænd systemet",
@@ -101,14 +101,14 @@ namespace Rest_SikkerApi.Services
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    // COMMIT 9: Log the actual status code so failures are diagnosable
+                    // Log the actual status code so failures are diagnosable
                     _logger.LogWarning("Backend returned {StatusCode} for URL {Url}", (int)response.StatusCode, url);
                     await _telegramService.SendMessageAsync(chatId,
                         $"Fejl: Backend returnerede statuskode {(int)response.StatusCode}.", ct);
                     return;
                 }
 
-                // COMMIT 11: Deserialize into JsonDocument instead of object
+                // Deserialize into JsonDocument instead of object
                 // ReadFromJsonAsync<object> deserializes into a JsonElement anyway — be explicit
                 using var doc = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonDocument>(cancellationToken: ct);
 
@@ -118,7 +118,7 @@ namespace Rest_SikkerApi.Services
                     return;
                 }
 
-                // COMMIT 12: Serialize with indented options for readable Telegram output
+                //  Serialize with indented options for readable Telegram output
                 var prettyJson = System.Text.Json.JsonSerializer.Serialize(
                     doc.RootElement,
                     new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
@@ -126,7 +126,7 @@ namespace Rest_SikkerApi.Services
                 await _telegramService.SendMessageAsync(chatId,
                     $"Backend svar:\n```json\n{prettyJson}\n```", ct);
             }
-            // COMMIT 13: Catch specific exceptions instead of bare catch {}
+            //  Catch specific exceptions instead of bare catch {}
             // Bare catch swallows everything including cancellation — very dangerous
             catch (OperationCanceledException)
             {
@@ -141,7 +141,7 @@ namespace Rest_SikkerApi.Services
             }
             catch (Exception ex)
             {
-                // COMMIT 13: Log unexpected exceptions with full context before sending user feedback
+                //  Log unexpected exceptions with full context before sending user feedback
                 _logger.LogError(ex, "Unexpected error calling backend {Url} for chat {ChatId}", url, chatId);
                 await _telegramService.SendMessageAsync(chatId,
                     "Fejl: En uventet fejl opstod.", ct);

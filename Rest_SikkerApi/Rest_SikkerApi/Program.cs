@@ -39,6 +39,11 @@ services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddHttpClient<TelegramService>();
 builder.Services.AddScoped<ITelegramService, TelegramService>();
 
+// COMMIT 2: Register HttpClient for TelegramCommandHandler via IHttpClientFactory
+// COMMIT 10: Register ITelegramCommandHandler -> TelegramCommandHandler for DI and testability
+builder.Services.AddHttpClient<TelegramCommandHandler>();
+builder.Services.AddScoped<ITelegramCommandHandler, TelegramCommandHandler>();
+
 //services.AddScoped<RepoMusicRecords>();
 builder.Services.AddScoped<SikkerRepo>();
 // builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
