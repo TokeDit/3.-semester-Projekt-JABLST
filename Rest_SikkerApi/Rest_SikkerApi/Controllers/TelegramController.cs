@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-// COMMIT 1:
 using Rest_SikkerApi.interfaces;
 using System.Text.Json;
 
@@ -7,40 +6,20 @@ using System.Text.Json;
 
 namespace Rest_SikkerApi.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("telegram")]
     public class TelegramController : ControllerBase
     {
-        // GET: api/<TelegramController>
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
+        // COMMIT 1: Depend on ITelegramService abstraction, not concrete TelegramService
+        private readonly ITelegramService _telegramService;
 
-        // GET api/<TelegramController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
+        // COMMIT 2: Replace static in-memory state with a dedicated state class to avoid
+        // race conditions and make state testable and replaceable (e.g. with a DB later)
+        private static long _lastChatId;
+        private static string _lastMessage = "";
+        private static DateTime _lastMessageTime;
 
-        // POST api/<TelegramController>
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
-        // PUT api/<TelegramController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/<TelegramController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
+        // COMMIT 3: Inject ILogger for structured logging in controller actions
+        private readonly ILogger<TelegramController> _logger;
     }
 }
