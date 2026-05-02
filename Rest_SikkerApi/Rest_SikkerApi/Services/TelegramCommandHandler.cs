@@ -36,8 +36,50 @@ namespace Rest_SikkerApi.Services
             _backendBaseUrl = config["Backend:BaseUrl"]
                 ?? throw new InvalidOperationException("Backend BaseUrl not found in configuration.");
         }
+        private async Task CallBackendGetAsync(long chatId, string url, CancellationToken ct)
+        {
+            _logger.LogInformation("GET backend URL: {Url} for chat {ChatId}", url, chatId);
 
-              public async Task HandleCommandAsync(long chatId, string command, CancellationToken ct = default)
+            try
+            {
+                var response = await _httpClient.GetAsync(url, ct);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("Backend returned {StatusCode} for URL {Url}", (int)response.StatusCode, url);
+                    await _telegramService.SendMessageAsync(chatId,
+                        $"Fejl: Backend returnerede statuskode {(int)response.StatusCode}.", ct);
+                    return;
+                }
+
+                using var doc = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonDocument>(cancellationToken: ct);
+
+                if (doc == null)
+                {
+                    await _telegramService.SendMessageAsync(chatId, "Backend svarede uden indhold.", ct);
+                    return;
+                }
+
+                var prettyJson = System.Text.Json.JsonSerializer.Serialize(
+                    doc.RootElement,
+                    new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+                await _telegramService.SendMessageAsync(chatId,
+                    $"Backend svar:\n```json\n{prettyJson}\n```", ct);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("GET request to {Url} was cancelled", url);
+                throw;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "HTTP error on GET {Url} for chat {ChatId}", url, chatId);
+                await _telegramService.SendMessageAsync(chatId, "Fejl: Kunne ikke kontakte backend.", ct);
+            }
+        }
+
+        public async Task HandleCommandAsync(long chatId, string command, CancellationToken ct = default)
         {
             //  Trim and normalize command before switching to avoid
             // whitespace or casing issues e.g. "/Help " failing to match
@@ -62,7 +104,8 @@ namespace Rest_SikkerApi.Services
                     break;
 
                 case "/status":
-                    await CallBackendAsync(chatId, $"{_backendBaseUrl}/Sikker/status", ct);
+                    // COMMIT: /Sikker/status is a GET endpoint, not POST — use GetAsync
+                    await CallBackendGetAsync(chatId, $"{_backendBaseUrl}/Sikker/status", ct);
                     break;
 
                 default:
