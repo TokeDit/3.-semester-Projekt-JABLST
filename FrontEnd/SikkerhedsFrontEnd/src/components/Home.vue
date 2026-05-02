@@ -481,6 +481,11 @@ export default {
   name: "HomeDashboard",
   data() {
     return {
+       telegramStatus: {
+      lastMessage: "",
+      lastMessageTime: null,
+      connected: false,
+    },
       user: null,
       unsubscribeAuth: null,
       status: "unknown",
