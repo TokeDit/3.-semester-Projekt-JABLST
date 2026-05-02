@@ -31,14 +31,14 @@ namespace Rest_SikkerApi.Services
 
         public async Task SendMessageAsync(long chatId, string message, CancellationToken ct = default)
         {
-            // COMMIT 8: G
+           
             if (chatId == 0)
                 throw new ArgumentException("Invalid chat ID.", nameof(chatId));
 
             if (string.IsNullOrWhiteSpace(message))
                 throw new ArgumentException("Message cannot be empty.", nameof(message));
 
-            // COMMIT 9: Use extracted base URL constant
+            //  Use extracted base URL constant
             var url = $"{TelegramBaseUrl}/bot{_botToken}/sendMessage";
 
             var payload = new
@@ -47,5 +47,30 @@ namespace Rest_SikkerApi.Services
                 text = message,
                 parse_mode = "Markdown"
             };
+            // COMMIT 11: 
+            var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            var json = JsonSerializer.Serialize(payload, options);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            // COMMIT 5: Log outgoing message for observability
+            _logger.LogInformation("Sending Telegram message to chat {ChatId}", chatId);
+
+            // COMMIT 7: Wrap HTTP call in try/catch for structured error handling
+            try
+            {
+                // COMMIT 2: Check HTTP response and throw on failure instead of silently swallowing errors
+                // COMMIT 4: Pass CancellationToken to PostAsync
+                var response = await _httpClient.PostAsync(url, content, ct);
+                response.EnsureSuccessStatusCode();
+
+                _logger.LogInformation("Successfully sent Telegram message to chat {ChatId}", chatId);
+            }
+            catch (HttpRequestException ex)
+            {
+                // COMMIT 7: Log and rethrow with context on network/HTTP failure
+                _logger.LogError(ex, "Failed to send Telegram message to chat {ChatId}", chatId);
+                throw;
+            }
         }
+    }
 }
