@@ -140,15 +140,24 @@
         </article>
 
         <article class="stat-card">
-          <div class="stat-icon blue">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 12s1.5-3 4-3 4 3 4 3-1.5 3-4 3-4-3-4-3z"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
-          </div>
-          <div class="stat-body">
-            <p class="card-label">AI Service</p>
-            <h3 class="c-green">Online</h3>
-            <p>Response time: 1.2s</p>
-          </div>
-        </article>
+  <div class="stat-icon teal">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="22" y1="2" x2="11" y2="13"/>
+      <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+    </svg>
+  </div>
+  <div class="stat-body">
+    <p class="card-label">Telegram Bot</p>
+    <!-- Shows Connected/Disconnected based on real data -->
+    <h3 :class="telegramStatus.connected ? 'c-teal' : 'c-red'">
+      {{ telegramStatus.connected ? 'Connected' : 'Disconnected' }}
+    </h3>
+    <!-- Shows real last message time -->
+    <p>Last message: {{ telegramStatus.lastMessageTime ?? 'Never' }}</p>
+    <!-- Bonus: show what the last command was -->
+    <p style="font-size: 0.8rem; opacity: 0.7;">{{ telegramStatus.lastMessage }}</p>
+  </div>
+</article>
 
         <article class="stat-card">
           <div class="stat-icon indigo">
