@@ -8,6 +8,8 @@ namespace Rest_SikkerApi.Services
 {
     public class TelegramService
     {
+        private const string TelegramBaseUrl = "https://api.telegram.org";
+
         private readonly string _botToken;
         private readonly HttpClient _httpClient;
 
