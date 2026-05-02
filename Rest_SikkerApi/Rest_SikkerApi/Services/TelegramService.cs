@@ -55,11 +55,11 @@ namespace Rest_SikkerApi.Services
             //  Log outgoing message for observability
             _logger.LogInformation("Sending Telegram message to chat {ChatId}", chatId);
 
-            // COMMIT 7: Wrap HTTP call in try/catch for structured error handling
+            //  Wrap HTTP call in try/catch for structured error handling
             try
             {
-                // COMMIT 2: Check HTTP response and throw on failure instead of silently swallowing errors
-                // COMMIT 4: Pass CancellationToken to PostAsync
+                //  Check HTTP response and throw on failure instead of silently swallowing errors
+                //  Pass CancellationToken to PostAsync
                 var response = await _httpClient.PostAsync(url, content, ct);
                 response.EnsureSuccessStatusCode();
 
@@ -67,7 +67,7 @@ namespace Rest_SikkerApi.Services
             }
             catch (HttpRequestException ex)
             {
-                // COMMIT 7: Log and rethrow with context on network/HTTP failure
+                //  Log and rethrow with context on network/HTTP failure
                 _logger.LogError(ex, "Failed to send Telegram message to chat {ChatId}", chatId);
                 throw;
             }
