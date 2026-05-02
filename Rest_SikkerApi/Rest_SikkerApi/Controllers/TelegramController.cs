@@ -97,16 +97,16 @@ namespace Rest_SikkerApi.Controllers
         [HttpGet("status")]
         public IActionResult GetStatus()
         {
-            // COMMIT 8: 
+           
             // Future commit: replace with a proper StatusResponse record/class
-            // COMMIT 2: WARNING — reading static fields here is not thread-safe
+            // WARNING — reading static fields here is not thread-safe
             // Future commit: read from a scoped state service instead
             return Ok(new
             {
                 lastChatId = _lastChatId,
                 lastMessage = _lastMessage,
 
-                // COMMIT 9: Return ISO 8601 UTC timestamp string instead of raw DateTime
+                //  Return ISO 8601 UTC timestamp string instead of raw DateTime
                 // Raw DateTime serialization can vary by environment and lose timezone context
                 lastMessageTime = _lastMessageTime == default
                     ? null
@@ -116,5 +116,3 @@ namespace Rest_SikkerApi.Controllers
     }
 }
 
-    }
-}
