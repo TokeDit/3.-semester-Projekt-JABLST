@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Rest_SikkerApi.Services
 {
-    public class TelegramService
+    public class TelegramService : interfaces.ITelegramService
     {
         private const string TelegramBaseUrl = "https://api.telegram.org";
 
