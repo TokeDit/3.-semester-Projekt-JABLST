@@ -105,6 +105,9 @@ namespace Rest_SikkerApi.Services
                 case "/status":
                     await CallBackendGetAsync(chatId, $"{_backendBaseUrl}/Sikker/status", ct);
                     break;
+                case "/time":
+                    await _telegramService.SendMessageAsync(chatId, $"Server tid: {DateTime.UtcNow:O}", ct);
+                    break;
 
                 // --- GREETINGS ---
                 case "hi":
