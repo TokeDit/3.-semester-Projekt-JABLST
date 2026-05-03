@@ -87,6 +87,20 @@ namespace Rest_SikkerApi.Services
 
             switch (normalizedCommand)
             {
+                //Start Menu for Telegram Bot
+                case "/start":
+                    await _telegramService.SendMessageAsync(chatId,
+                        "\"Welcome to Vision Monitor Bot 👋\\n\\n\"" +
+                        " +\r\n       " +
+                        " \"I can help you control and monitor your system.\\n\\n\"" +
+                        " +\r\n        \"Available commands:\\n\" +\r\n      " +
+                        "  \"/on – Turn the system on\\n\" +\r\n     " +
+                        "   \"/off – Turn the system off\\n\" +\r\n       " +
+                        " \"/status – System status\\n\" +\r\n     " +
+                        "   \"/time – Server time\\n\" +\r\n       " +
+                        " \"/help – Show all commands\\n\\n\" +\r\n       " +
+                        " \"Type a command to get started.", ct);
+                    break;
                 // --- HELP ---
                 case "/hjælp":
                 case "/help":
@@ -134,12 +148,12 @@ namespace Rest_SikkerApi.Services
         {
             //  Use verbatim string or string.Join for multiline help text — easier to maintain
             var helpText = string.Join("\n",
-                "Tilgængelige kommandoer:",
-                "/on – Tænd systemet",
-                "/off – Sluk systemet",
-                "/status – Systemstatus",
-                "/hjælp – Vis kommandoer");
-
+                "Available Commands:",
+                "/on – Turn on the system",
+                "/off – Turn off the system",
+                "/status – System status",
+                "/time – Server time",
+                "/help – Show commands");
             await _telegramService.SendMessageAsync(chatId, helpText, ct);
         }
 
