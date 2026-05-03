@@ -170,18 +170,7 @@
             <div class="progress-bar"><div class="progress-fill" style="width:72%"></div></div>
           </div>
         </article>
-
-        <article class="stat-card">
-          <div class="stat-icon teal">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          </div>
-          <div class="stat-body">
-            <p class="card-label">Telegram Bot</p>
-            <h3 class="c-teal">Connected</h3>
-            <p>Last message: 14:31:58</p>
-          </div>
-        </article>
-
+     
       </section>
 
       <!-- MIDDLE ROW -->
@@ -261,15 +250,21 @@
               </span>
             </div>
             <div class="health-row">
-              <div class="health-left">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                <span>Telegram Notifications</span>
-              </div>
-              <span class="health-pill">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                Operational
-              </span>
-            </div>
+  <div class="health-left">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="22" y1="2" x2="11" y2="13"/>
+      <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+    </svg>
+    <span>Telegram Notifications</span>
+  </div>
+  <!-- Dynamically green or red based on connection -->
+  <span class="health-pill" :class="telegramStatus.connected ? 'pill-green' : 'pill-red'">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+    {{ telegramStatus.connected ? 'Operational' : 'Unavailable' }}
+  </span>
+</div>
           </div>
         </div>
 
@@ -481,20 +476,19 @@
 </template>
 
 <script>
-// ==================== SCRIPT: ZERO CHANGES ====================
-// git commit -m "chore: script fully preserved - all logic from home.vue + dashboard.vue untouched"
 import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 
 export default {
   name: "HomeDashboard",
+
   data() {
     return {
-       telegramStatus: {
-      lastMessage: "",
-      lastMessageTime: null,
-      connected: false,
-    },
+      telegramStatus: {
+        lastMessage: "",
+        lastMessageTime: null,
+        connected: false,
+      },
       user: null,
       unsubscribeAuth: null,
       status: "unknown",
@@ -504,67 +498,93 @@ export default {
       events: [],
     };
   },
+
   computed: {
-    userEmail()    { return this.user?.email ?? ""; },
+    userEmail() { return this.user?.email ?? ""; },
     userInitials() {
       if (!this.userEmail) return "?";
       return this.userEmail.substring(0, 2).toUpperCase();
     },
   },
+
   mounted() {
     this.unsubscribeAuth = onAuthStateChanged(auth, (user) => { this.user = user; });
     this.checkStatus();
     this.loadEvents();
-     this.fetchTelegramStatus();
-  this.telegramPollInterval = setInterval(this.fetchTelegramStatus, 5000); // poll every 5s
+    this.fetchTelegramStatus();
+    this.telegramPollInterval = setInterval(this.fetchTelegramStatus, 5000);
   },
+
   beforeUnmount() {
     if (this.unsubscribeAuth) this.unsubscribeAuth();
     if (this.telegramPollInterval) clearInterval(this.telegramPollInterval);
   },
+
   methods: {
-    async handleLogout() { await signOut(auth); this.$router.push("/login"); },
-    goToLogin()          { this.$router.push("/login"); },
+    async handleLogout() {
+      await signOut(auth);
+      this.$router.push("/login");
+    },
+
+    goToLogin() {
+      this.$router.push("/login");
+    },
+
     async checkStatus() {
-      this.statusText = "Checking..."; this.statusClass = "status-unknown";
+      this.statusText = "Checking...";
+      this.statusClass = "status-unknown";
       try {
-        const res  = await fetch("https://localhost:7018/Sikker/status");
+        const res = await fetch("https://localhost:7018/Sikker/status");
         const data = await res.json();
-        this.status    = data.status;
-        this.statusText  = this.status === "online" ? "🟢 Online" : "🔴 Offline";
+        this.status = data.status;
+        this.statusText = this.status === "online" ? "🟢 Online" : "🔴 Offline";
         this.statusClass = this.status === "online" ? "status-online" : "status-offline";
         this.lastChecked = new Date().toLocaleTimeString();
-      } catch { this.statusText = "⚠️ Could not reach system"; this.statusClass = "status-unknown"; }
+      } catch {
+        this.statusText = "⚠️ Could not reach system";
+        this.statusClass = "status-unknown";
+      }
     },
+
     async fetchTelegramStatus() {
-    try {
-      const res = await fetch("http://localhost:5180/telegram/status");
-      const data = await res.json();
-      this.telegramStatus.lastMessage = data.lastMessage || "No messages yet";
-      this.telegramStatus.lastMessageTime = data.lastMessageTime
-        ? new Date(data.lastMessageTime).toLocaleTimeString("da-DK")
-        : "Never";
-      this.telegramStatus.connected = !!data.lastMessageTime;
-    } catch {
-      this.telegramStatus.connected = false;
-      this.telegramStatus.lastMessage = "Could not reach bot";
-    }
-  },
-},
+      try {
+        const res = await fetch("http://localhost:5180/telegram/status");
+        const data = await res.json();
+        this.telegramStatus.lastMessage = data.lastMessage || "No messages yet";
+        this.telegramStatus.lastMessageTime = data.lastMessageTime
+          ? new Date(data.lastMessageTime).toLocaleTimeString("da-DK")
+          : "Never";
+        this.telegramStatus.connected = !!data.lastMessageTime;
+      } catch {
+        this.telegramStatus.connected = false;
+        this.telegramStatus.lastMessage = "Could not reach bot";
+      }
+    },
+
     async onControl(cmd) {
       try {
         const method = cmd === "/status" ? "GET" : "POST";
-        const res  = await fetch(`https://localhost:7018/Sikker${cmd}`, { method, headers: { "Content-Type": "application/json" } });
+        const res = await fetch(`https://localhost:7018/Sikker${cmd}`, {
+          method,
+          headers: { "Content-Type": "application/json" },
+        });
         const data = await res.json();
-        this.status    = data.status;
-        this.statusText  = this.status === "online" ? "🟢 Online" : "🔴 Offline";
+        this.status = data.status;
+        this.statusText = this.status === "online" ? "🟢 Online" : "🔴 Offline";
         this.statusClass = this.status === "online" ? "status-online" : "status-offline";
         this.lastChecked = new Date().toLocaleTimeString();
-      } catch { alert("Could not reach system"); }
+      } catch {
+        alert("Could not reach system");
+      }
     },
+
     formatTimestamp(date) {
-      return new Intl.DateTimeFormat("da-DK", { dateStyle: "short", timeStyle: "medium" }).format(date);
+      return new Intl.DateTimeFormat("da-DK", {
+        dateStyle: "short",
+        timeStyle: "medium",
+      }).format(date);
     },
+
     loadEvents() {
       this.events = [
         { id: 1, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date()) },
@@ -575,6 +595,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 /*
