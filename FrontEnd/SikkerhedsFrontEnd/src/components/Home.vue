@@ -472,12 +472,14 @@ export default {
 async pingBot() {
   const start = Date.now();
   try {
-    const res = await fetch("https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/Sikker/ping");
+    const res = await fetch(`${this.apiBase}/Sikker/ping`);
     const ms = Date.now() - start;
     this.pingResult = `Pong! ${ms}ms`;
+    this.pingSuccess = true;  // ADD THIS
     this.telegramStatus.connected = true;
   } catch {
     this.pingResult = "Bot unreachable";
+    this.pingSuccess = false;  // ADD THIS
     this.telegramStatus.connected = false;
   }
 },
