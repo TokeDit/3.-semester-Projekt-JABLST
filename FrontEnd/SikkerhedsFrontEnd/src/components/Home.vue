@@ -498,20 +498,23 @@ async checkStatus() {
   }
 },
 
-    async fetchTelegramStatus() {
-      try {
-        const res = await fetch("https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/telegram/status");
-        const data = await res.json();
-        this.telegramStatus.lastMessage = data.lastMessage || "No messages yet";
-        this.telegramStatus.lastMessageTime = data.lastMessageTime
-          ? new Date(data.lastMessageTime).toLocaleTimeString("da-DK")
-          : "Never";
-        this.telegramStatus.connected = !!data.lastMessageTime;
-      } catch {
-        this.telegramStatus.connected = false;
-        this.telegramStatus.lastMessage = "Could not reach bot";
-      }
-    },
+  async fetchTelegramStatus() {
+  try {
+    const res = await fetch(`${this.apiBase}/telegram/status`);
+    const data = await res.json();
+    this.telegramStatus.lastMessage = data.lastMessage || "No messages yet";
+    this.telegramStatus.lastMessageTime = data.lastMessageTime
+      ? new Date(data.lastMessageTime).toLocaleTimeString("da-DK")
+      : "Never";
+    // FIX: only update connected from poll if ping hasn't already confirmed it
+    if (!this.telegramStatus.connected) {
+      this.telegramStatus.connected = !!data.lastMessageTime;
+    }
+  } catch {
+    this.telegramStatus.connected = false;
+    this.telegramStatus.lastMessage = "Could not reach bot";
+  }
+},
     async fetchPiStatus() {                                                                                                                                                         try {
         const res = await fetch("https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/PI/status");
         const data = await res.json();
