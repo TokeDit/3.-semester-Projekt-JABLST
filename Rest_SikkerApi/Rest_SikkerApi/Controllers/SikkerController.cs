@@ -89,5 +89,16 @@ namespace Rest_SikkerApi.Controllers
             bool isOnline = _repo.GetSystemState();
             return Ok(new { status = isOnline ? "online" : "offline" });
         }
+        //To Test and Call GET /Secure/ping and measure round-trip time
+        [HttpGet("ping")]
+
+        public IActionResult Ping() {
+            return Ok(new
+            {
+                message = "pong",
+                timestamp = DateTime.UtcNow,
+            });
+        }
+
     }
 }

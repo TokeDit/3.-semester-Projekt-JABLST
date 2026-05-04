@@ -1,15 +1,16 @@
+using FirebaseAdmin;
+using FirebaseAdmin.Auth;
+using Google.Apis.Auth.OAuth2;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Rest_SikkerApi.data;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using Rest_SikkerApi.interfaces;
 using Rest_SikkerApi.repos;
-using FirebaseAdmin;
-using Google.Apis.Auth.OAuth2;
 using Rest_SikkerApi.Services;
-using FirebaseAdmin.Auth;
 using System.Security.Claims;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 // uddyber error msg på startup fejl, så man kan se hvad der gik galt, i stedet for en generisk "Application failed to start" besked. Det er især nyttigt under udvikling.
@@ -33,6 +34,15 @@ services.AddDbContext<AppDbContext>(options =>
                 );
             })); // looks in appSettings.json or environment variables for a connection string named "DefaultConnection"
 
+// COMMIT 1: Register HttpClient via AddHttpClient to use IHttpClientFactory under the hood
+// COMMIT 10: Register ITelegramService -> TelegramService for DI and testability
+builder.Services.AddHttpClient<TelegramService>();
+builder.Services.AddScoped<ITelegramService, TelegramService>();
+
+//  Register HttpClient for TelegramCommandHandler via IHttpClientFactory
+// Register ITelegramCommandHandler -> TelegramCommandHandler for DI and testability
+builder.Services.AddHttpClient<TelegramCommandHandler>();
+builder.Services.AddScoped<ITelegramCommandHandler, TelegramCommandHandler>();
 
 //services.AddScoped<RepoMusicRecords>();
 builder.Services.AddScoped<SikkerRepo>();
