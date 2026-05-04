@@ -500,22 +500,23 @@ async checkStatus() {
   }
 },
 
- async fetchTelegramStatus() {
+async fetchTelegramStatus() {
   try {
     const res = await fetch(`${this.apiBase}/telegram/status`);
     const data = await res.json();
-    this.telegramStatus.lastMessage = data.lastMessage || "No messages yet";
+    this.telegramStatus.lastMessage = data.lastMessage || "No commands received yet";
     this.telegramStatus.lastMessageTime = data.lastMessageTime
       ? new Date(data.lastMessageTime).toLocaleTimeString("da-DK")
       : "Never";
-    // FIX: pingSuccess wins — poll can only set connected if ping never succeeded
     this.telegramStatus.connected = this.pingSuccess || !!data.lastMessageTime;
   } catch {
-    // Only disconnect if ping also failed
     if (!this.pingSuccess) {
       this.telegramStatus.connected = false;
     }
-    this.telegramStatus.lastMessage = "Could not reach bot";
+    // FIX: don't say "Could not reach bot" if ping already confirmed it's up
+    this.telegramStatus.lastMessage = this.pingSuccess 
+      ? "Waiting for first message..." 
+      : "Could not reach bot";
   }
 },
     async fetchPiStatus() {                                                                                                                                                         try {
