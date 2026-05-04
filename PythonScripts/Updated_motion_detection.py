@@ -96,7 +96,7 @@ def send_to_api(frame, timestamp, confidence):
         "Description": "person",
         "DetectedObject": "person",
         "Confidence": round(confidence, 4),
-        "TimeStamp": timestamp.isoformat(),
+        "TimeStamp": timestamp.isoformat(timespec = 'minutes'),
     }
 
     try:
@@ -160,7 +160,7 @@ while True:
 
             if current_time - last_upload_time >= COOLDOWN_SECONDS:
                 timestamp = datetime.datetime.now()
-                print(f"Human detected at {timestamp.strftime('%Y-%m-%d %H:%M:%S')} ({confidence:.1%} confidence) — uploading...")
+                print(f"Human detected at {timestamp.strftime('%Y-%m-%d %H:%M')} ({confidence:.1%} confidence) — uploading...")
 
                 success = send_to_api(frame1, timestamp, confidence)
 
