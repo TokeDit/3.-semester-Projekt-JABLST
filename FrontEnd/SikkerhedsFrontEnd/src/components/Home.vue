@@ -268,7 +268,7 @@
           </div>
         </div>
 
-      </section>
+      
 
       <!-- EVENT LOGS — single table, duplicate removed -->
       <!-- git commit -m "refactor: remove duplicate event logs section" -->
