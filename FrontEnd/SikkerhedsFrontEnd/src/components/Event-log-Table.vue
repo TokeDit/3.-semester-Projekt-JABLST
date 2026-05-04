@@ -3,6 +3,8 @@
     <table>
       <thead>
         <tr>
+          <th style="width: 50px;"></th>
+          <th>Image</th>
           <th>Time</th>
           <th>Confidence</th>
           <th>Status</th>
@@ -10,25 +12,77 @@
       </thead>
 
       <tbody v-if="items.length > 0">
-        <tr v-for="(item, index) in items" :key="item.id ?? index">
-          <td class="td-time">{{ formatTimestamp(item) }}</td>
-          <td>
-            <span class="confidence-badge" :class="getConfidenceClass(item.confidence ?? item.Confidence)">
-              {{ formatConfidence(item.confidence ?? item.Confidence) }}
-            </span>
-          </td>
-          <td>
-            <span class="sdot" :class="getStatusClass(item.confidence ?? item.Confidence)"></span>
-            <span class="slabel" :class="getStatusClass(item.confidence ?? item.Confidence)">
-              {{ getStatusText(item.confidence ?? item.Confidence) }}
-            </span>
-          </td>
-        </tr>
+        <template v-for="(item, index) in items" :key="`row-${item.id ?? index}`">
+          <tr class="data-row" @click="toggleExpanded(index)" :class="{ expanded: expandedIndex === index }">
+            <td class="expand-icon">
+              <svg v-if="expandedIndex === index" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+              <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </td>
+            <td class="img-cell">
+              <div v-if="item.imageDataBase64" class="thumbnail">
+                <img :src="`data:image/jpeg;base64,${item.imageDataBase64}`" :alt="`Image ${item.id}`" />
+              </div>
+              <div v-else class="thumbnail placeholder">No image</div>
+            </td>
+            <td class="td-time">{{ formatTimestamp(item) }}</td>
+            <td>
+              <span class="confidence-badge" :class="getConfidenceClass(item.confidence ?? item.Confidence)">
+                {{ formatConfidence(item.confidence ?? item.Confidence) }}
+              </span>
+            </td>
+            <td>
+              <span class="sdot" :class="getStatusClass(item.confidence ?? item.Confidence)"></span>
+              <span class="slabel" :class="getStatusClass(item.confidence ?? item.Confidence)">
+                {{ getStatusText(item.confidence ?? item.Confidence) }}
+              </span>
+            </td>
+          </tr>
+
+          <tr v-if="expandedIndex === index" :key="`detail-${item.id ?? index}`" class="detail-row">
+            <td colspan="5" class="detail-cell">
+              <div class="detail-content">
+                <div class="detail-grid">
+                  <div class="detail-item">
+                    <span class="detail-label">ID</span>
+                    <span class="detail-value">{{ item.id }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Timestamp</span>
+                    <span class="detail-value">{{ formatTimestamp(item) }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Confidence</span>
+                    <span class="detail-value">{{ formatConfidence(item.confidence ?? item.Confidence) }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Image Type</span>
+                    <span class="detail-value">{{ item.imageType || '-' }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Detected Object</span>
+                    <span class="detail-value">{{ item.detectedObject || '-' }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Description</span>
+                    <span class="detail-value">{{ item.description || '-' }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Owner UID</span>
+                    <span class="detail-value detail-mono">{{ item.ownerUid || '-' }}</span>
+                  </div>
+                </div>
+                <div v-if="item.imageDataBase64" class="detail-image">
+                  <img :src="`data:image/jpeg;base64,${item.imageDataBase64}`" :alt="`Full image ${item.id}`" />
+                </div>
+              </div>
+            </td>
+          </tr>
+        </template>
       </tbody>
 
       <tbody v-else>
         <tr>
-          <td colspan="3" class="no-data">Ingen data endnu.</td>
+          <td colspan="5" class="no-data">Ingen data endnu.</td>
         </tr>
       </tbody>
     </table>
@@ -49,6 +103,11 @@ const url = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azu
 const items = ref([])
 const error = ref('')
 const loading = ref(false)
+const expandedIndex = ref(null)
+
+function toggleExpanded(index) {
+  expandedIndex.value = expandedIndex.value === index ? null : index
+}
 
 function getConfidenceClass(value) {
   const numeric = Number(value)
@@ -155,6 +214,15 @@ th {
   white-space: nowrap;
 }
 
+.data-row {
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.data-row:hover {
+  background: #182032 !important;
+}
+
 td {
   padding: 0.7rem 0.8rem;
   font-size: 0.8rem;
@@ -167,13 +235,137 @@ tbody tr:last-child td {
   border-bottom: none;
 }
 
-tbody tr:hover td {
-  background: #182032;
+.expand-icon {
+  padding: 0.7rem 0.4rem;
+  color: #4b5e77;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+}
+
+.expand-icon svg {
+  transition: transform 0.2s;
 }
 
 .td-time {
   color: #4b5e77;
   font-size: 0.76rem;
+}
+
+.img-cell {
+  padding: 0.5rem 0.8rem;
+}
+
+.thumbnail {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1a3a52, #0f1729);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.thumbnail:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbnail.placeholder {
+  font-size: 0.65rem;
+  color: #4b5e77;
+}
+
+.detail-row {
+  background: linear-gradient(180deg, #182032, #111827) !important;
+  border: none;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detail-cell {
+  padding: 1.2rem !important;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.15) !important;
+  background: rgba(17, 24, 39, 0.6) !important;
+}
+
+.detail-content {
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.5rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.8rem;
+  background: rgba(27, 58, 82, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.detail-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+}
+
+.detail-value {
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.detail-mono {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: #a5b4fc;
+}
+
+.detail-image {
+  flex-shrink: 0;
+}
+
+.detail-image img {
+  width: 100%;
+  height: auto;
+  max-height: 280px;
+  border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .confidence-badge {
