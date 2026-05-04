@@ -36,12 +36,20 @@ namespace Rest_SikkerApi.repos
         public async Task<List<Image>> GetAllImagesAsync()
         {
             return await _context.Images.ToListAsync();
-
         }
 
+        public IEnumerable<Image> GetAmountImage(int amount = 20)
+        {
+            return _context.Images.OrderBy(i => i.Id).Take(amount);
+        }
+
+        public IEnumerable<Image> GetAfterIDImage(int id, int amount = 20)
+        {
+            return _context.Images.Where(i => i.Id > id).OrderBy(i => i.Id).Take(amount);
+        }
     
             // System state - stored in memory for now
-         private static bool _systemOnline = false;
+        private static bool _systemOnline = false;
 
         public bool GetSystemState()
         {

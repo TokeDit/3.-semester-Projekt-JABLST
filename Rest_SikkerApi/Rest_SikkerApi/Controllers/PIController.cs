@@ -13,7 +13,11 @@ public class PIController : ControllerBase
     {
         m_repo = repo;
     }
+
     [HttpPost]
+    [ProducesResponseType (StatusCodes.Status200OK)]
+    [ProducesResponseType (StatusCodes.Status400BadRequest)]
+    [ProducesResponseType (StatusCodes.Status500InternalServerError)]
     [Consumes("application/json")]
     public async Task<IActionResult> Post([FromBody] Image image)
     {

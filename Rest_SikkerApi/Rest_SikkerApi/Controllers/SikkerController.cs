@@ -48,7 +48,7 @@ namespace Rest_SikkerApi.Controllers
         }
 
         // GET: /Sikker/Images
-        [HttpGet(Name = "Images")]
+        [HttpGet("images", Name = "Images")]
         public async Task<ActionResult<IEnumerable<Image>>> Get()
         {
             var images = await _repo.GetAllImagesAsync();
