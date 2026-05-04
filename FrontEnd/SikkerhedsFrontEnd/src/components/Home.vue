@@ -134,8 +134,10 @@
           </div>
           <div class="stat-body">
             <p class="card-label">Raspberry Pi</p>
-            <h3 class="c-green">Online</h3>
-            <p>Last seen: 14:32:10</p>
+            <h3 :class="piStatus.isAlive ? 'c-green' : 'c-red'" >
+              {{ piStatus.isAlive ? 'Online' : 'Offline' }}
+            </h3>
+            <p>Last seen: {{ piStatus.lastSeen ?? 'Never' }}</p>
           </div>
         </article>
 
@@ -419,6 +421,10 @@ export default {
         connected: false,
         pingResult: "",
       },
+      piStatus: {
+        lastseen : null,
+        isAlive : false,
+      },
       user: null,
       unsubscribeAuth: null,
       status: "unknown",
@@ -442,12 +448,15 @@ export default {
     this.checkStatus();
     this.loadEvents();
     this.fetchTelegramStatus();
+    this.fetchPiStatus();
     this.telegramPollInterval = setInterval(this.fetchTelegramStatus, 5000);
+    this.piPollInterval = setInterval(this.fetchPiStatus, 30000);
   },
 
   beforeUnmount() {
     if (this.unsubscribeAuth) this.unsubscribeAuth();
     if (this.telegramPollInterval) clearInterval(this.telegramPollInterval);
+    if (this.piPollInterval) clearInterval(this.piPollInterval);
   },
 
   methods: {
@@ -500,7 +509,19 @@ export default {
         this.telegramStatus.lastMessage = "Could not reach bot";
       }
     },
-
+    async fetchPiStatus() {                                                                                                                                                         try {
+        const res = await fetch("https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/PI/status");
+        const data = await res.json();
+        this.piStatus.lastSeen = data.lastSeen
+          ? new Date(data.lastSeen).toLocaleTimeString("da-DK")
+          : "Never";
+        this.piStatus.isAlive = data.isAlive;
+      } catch {
+        this.piStatus.isAlive = false;
+        this.piStatus.lastSeen = "Unreachable";
+      }
+    },
+    
     async onControl(cmd) {
       try {
         const method = cmd === "/status" ? "GET" : "POST";
