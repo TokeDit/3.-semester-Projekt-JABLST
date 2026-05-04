@@ -45,10 +45,27 @@ namespace Rest_SikkerApi.Services
         /// <returns>Task that completes when the message is sent.</returns>
         public virtual async Task SendMessageAsync(string message)
         {
+            await SendMessageAsync(message, _chatId);
+        }
+
+        /// <summary>
+        /// Send a text message to a specific Telegram chat.
+        /// </summary>
+        /// <param name="message">The text message to send.</param>
+        /// <param name="chatId">Target Telegram chat ID.</param>
+        /// <returns>Task that completes when the message is sent.</returns>
+        public virtual async Task SendMessageAsync(string message, string chatId)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+                throw new ArgumentException("Message text must be provided.", nameof(message));
+
+            if (string.IsNullOrWhiteSpace(chatId))
+                throw new ArgumentException("Chat ID must be provided.", nameof(chatId));
+
             var url = $"https://api.telegram.org/bot{_botToken}/sendMessage";
             var content = new FormUrlEncodedContent(new[]
             {
-                new KeyValuePair<string, string>("chat_id", _chatId),
+                new KeyValuePair<string, string>("chat_id", chatId),
                 new KeyValuePair<string, string>("text", message)
             });
 
@@ -64,6 +81,11 @@ namespace Rest_SikkerApi.Services
         /// <returns>Task that completes when the message is sent.</returns>
         public virtual async Task SendImageLinkAsync(string imageUrl, string description)
         {
+            await SendImageLinkAsync(imageUrl, description, _chatId);
+        }
+
+        public virtual async Task SendImageLinkAsync(string imageUrl, string description, string chatId)
+        {
             if (string.IsNullOrWhiteSpace(imageUrl))
                 throw new ArgumentException("Image URL must be provided.", nameof(imageUrl));
 
@@ -71,7 +93,7 @@ namespace Rest_SikkerApi.Services
                 ? $"Nyt billede modtaget. Se det her: {imageUrl}"
                 : $"Nyt billede modtaget: {description}\nSe det her: {imageUrl}";
 
-            await SendMessageAsync(message);
+            await SendMessageAsync(message, chatId);
         }
     }
 }

@@ -4,7 +4,7 @@ using Rest_SikkerApi.models;
 
 namespace Rest_SikkerApi.repos
 {
-    public class SikkerRepo
+    public class SikkerRepo : ISikkerRepo
     {
         private readonly AppDbContext _context;
         // måske implementer en user, så they can't get others imges
@@ -30,6 +30,25 @@ namespace Rest_SikkerApi.repos
             return await _context.Images.FindAsync(id);
         }
 
+        public virtual async Task<User?> GetUserByFirebaseIdAsync(string firebaseId)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.FirebaseId == firebaseId);
+        }
+
+        public virtual async Task UpdateUserChatIdAsync(int userId, string chatId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                user.ChatId = chatId;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public virtual async Task<User?> GetUserByChatIdAsync(string chatId)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.ChatId == chatId);
+        }
     }
 }
 

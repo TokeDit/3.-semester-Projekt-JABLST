@@ -19,6 +19,8 @@ namespace Rest_SikkerApi.data
         // Ties the Image model to a database table named "Images"
         public DbSet<Image> Images { get; set; }
 
+        public DbSet<User> Users { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -51,6 +53,17 @@ namespace Rest_SikkerApi.data
 
                 entity.Property(i => i.Description)
                     .HasMaxLength(500);
+            });
+
+            // Configure User entity
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(u => u.Id);
+                entity.Property(u => u.FirebaseId)
+                    .IsRequired()
+                    .HasMaxLength(100);
+                entity.Property(u => u.ChatId)
+                    .HasMaxLength(50);
             });
         }
     }

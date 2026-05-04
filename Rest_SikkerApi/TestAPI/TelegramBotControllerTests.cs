@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Rest_SikkerApi.Controllers;
 using Rest_SikkerApi.Services;
+using Rest_SikkerApi.repos;
+using Rest_SikkerApi.models;
 using Xunit;
 
 namespace TestAPI
@@ -17,8 +19,9 @@ namespace TestAPI
             {
                 CallBase = false
             };
+            var repoMock = new Mock<ISikkerRepo>();
 
-            var controller = new TelegramBotController(serviceMock.Object);
+            var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
             var result = await controller.SendMotionAlertMessage(string.Empty);
 
             Assert.IsType<BadRequestObjectResult>(result);
@@ -35,8 +38,9 @@ namespace TestAPI
             serviceMock.Setup(s => s.SendMessageAsync("Motion detected! Front door"))
                        .Returns(Task.CompletedTask)
                        .Verifiable();
+            var repoMock = new Mock<ISikkerRepo>();
 
-            var controller = new TelegramBotController(serviceMock.Object);
+            var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
             var result = await controller.SendMotionAlertMessage("Front door");
 
             Assert.IsType<OkObjectResult>(result);
@@ -50,7 +54,9 @@ namespace TestAPI
             {
                 CallBase = false
             };
-            var controller = new TelegramBotController(serviceMock.Object);
+            var repoMock = new Mock<ISikkerRepo>();
+
+            var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
 
             var result = await controller.SendMotionAlertLink(null!);
 
@@ -65,7 +71,9 @@ namespace TestAPI
             {
                 CallBase = false
             };
-            var controller = new TelegramBotController(serviceMock.Object);
+            var repoMock = new Mock<ISikkerRepo>();
+
+            var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
 
             var result = await controller.SendMotionAlertLink(new TelegramLinkRequest { ImageUrl = string.Empty, Description = "Test" });
 
@@ -83,8 +91,9 @@ namespace TestAPI
             serviceMock.Setup(s => s.SendImageLinkAsync("https://dashboard.example", "Door alert"))
                        .Returns(Task.CompletedTask)
                        .Verifiable();
+            var repoMock = new Mock<ISikkerRepo>();
 
-            var controller = new TelegramBotController(serviceMock.Object);
+            var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
             var request = new TelegramLinkRequest
             {
                 ImageUrl = "https://dashboard.example",
@@ -95,6 +104,129 @@ namespace TestAPI
 
             Assert.IsType<OkObjectResult>(result);
             serviceMock.Verify();
+        }
+
+        [Fact]
+        public async Task HandleWebhook_ReturnsBadRequest_WhenRequestIsInvalid()
+        {
+            var serviceMock = new Mock<TelegramService>("bot-token", "123", new HttpClient())
+            {
+                CallBase = false
+            };
+            var repoMock = new Mock<ISikkerRepo>();
+            var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
+
+            var result = await controller.HandleWebhook(null!);
+
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task HandleWebhook_RegistersChatId_WhenFirebaseIdIsValid()
+        {
+            var serviceMock = new Mock<TelegramService>("bot-token", "123", new HttpClient())
+            {
+                CallBase = false
+            };
+            var repoMock = new Mock<ISikkerRepo>();
+            repoMock.Setup(r => r.GetUserByFirebaseIdAsync("valid-firebase-id-very-long"))
+                    .ReturnsAsync(new User { Id = 1, FirebaseId = "valid-firebase-id-very-long" });
+            repoMock.Setup(r => r.UpdateUserChatIdAsync(1, "123456789"))
+                    .Returns(Task.CompletedTask)
+                    .Verifiable();
+
+            var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
+            var request = new TelegramWebhookRequest
+            {
+                Message = new TelegramMessage
+                {
+                    Chat = new TelegramChat { Id = 123456789 },
+                    Text = "valid-firebase-id-very-long"
+                }
+            };
+
+            var result = await controller.HandleWebhook(request);
+
+            Assert.IsType<OkObjectResult>(result);
+            repoMock.Verify();
+        }
+
+        [Fact]
+        public async Task HandleWebhook_ReturnsBadRequest_WhenFirebaseIdNotFound()
+        {
+            var serviceMock = new Mock<TelegramService>("bot-token", "123", new HttpClient())
+            {
+                CallBase = false
+            };
+            var repoMock = new Mock<ISikkerRepo>();
+            repoMock.Setup(r => r.GetUserByFirebaseIdAsync("invalid-firebase-id-very-long"))
+                    .ReturnsAsync((User?)null);
+
+            var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
+            var request = new TelegramWebhookRequest
+            {
+                Message = new TelegramMessage
+                {
+                    Chat = new TelegramChat { Id = 123456789 },
+                    Text = "invalid-firebase-id-very-long"
+                }
+            };
+
+            var result = await controller.HandleWebhook(request);
+
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task HandleWebhook_ReturnsOk_WhenChatIdIsRegistered()
+        {
+            var serviceMock = new Mock<TelegramService>("bot-token", "123", new HttpClient())
+            {
+                CallBase = false
+            };
+            var repoMock = new Mock<ISikkerRepo>();
+            repoMock.Setup(r => r.GetUserByChatIdAsync("123456789"))
+                    .ReturnsAsync(new User { Id = 1, ChatId = "123456789" });
+
+            var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
+            var request = new TelegramWebhookRequest
+            {
+                Message = new TelegramMessage
+                {
+                    Chat = new TelegramChat { Id = 123456789 },
+                    Text = "some message"
+                }
+            };
+
+            var result = await controller.HandleWebhook(request);
+
+            Assert.IsType<OkObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task HandleWebhook_ReturnsBadRequest_WhenChatIdNotRegistered()
+        {
+            var serviceMock = new Mock<TelegramService>("bot-token", "123", new HttpClient())
+            {
+                CallBase = false
+            };
+            var repoMock = new Mock<ISikkerRepo>();
+            repoMock.Setup(r => r.GetUserByChatIdAsync("123456789"))
+                    .ReturnsAsync((User?)null);
+
+            var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
+            var request = new TelegramWebhookRequest
+            {
+                Message = new TelegramMessage
+                {
+                    Chat = new TelegramChat { Id = 123456789 },
+                    Text = "some message"
+                }
+            };
+
+            var result = await controller.HandleWebhook(request);
+
+            Assert.IsType<BadRequestObjectResult>(result);
         }
     }
 }

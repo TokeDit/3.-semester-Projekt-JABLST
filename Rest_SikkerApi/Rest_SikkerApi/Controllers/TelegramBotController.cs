@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Rest_SikkerApi.Services;
+using Rest_SikkerApi.repos;
 
 namespace Rest_SikkerApi.Controllers
 {
@@ -12,16 +13,64 @@ namespace Rest_SikkerApi.Controllers
     /// Endpoints:
     /// - POST /api/TelegramBot/message : Send a text message
     /// - POST /api/TelegramBot/link : Send a message with a link (dashboard URL)
+    /// - POST /api/TelegramBot/webhook : Handle Telegram webhook updates
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public sealed class TelegramBotController : ControllerBase
     {
         private readonly TelegramService _telegramService;
+        private readonly ISikkerRepo _repo;
 
-        public TelegramBotController(TelegramService telegramService)
+        public TelegramBotController(TelegramService telegramService, ISikkerRepo repo)
         {
             _telegramService = telegramService;
+            _repo = repo;
+        }
+
+        /// <summary>
+        /// Handle Telegram webhook updates: register chat ID if message contains Firebase ID, or check registration for other messages.
+        /// </summary>
+        [HttpPost("webhook")]
+        public async Task<IActionResult> HandleWebhook([FromBody] TelegramWebhookRequest request)
+        {
+            if (request?.Message?.Chat == null || string.IsNullOrWhiteSpace(request.Message.Text))
+            {
+                return BadRequest("Invalid Telegram webhook payload.");
+            }
+
+            var chatId = request.Message.Chat.Id.ToString();
+            var messageText = request.Message.Text.Trim();
+
+            // Check if message text is a Firebase ID (assume it's a valid Firebase ID format, e.g., length > 20 or contains specific chars)
+            if (!string.IsNullOrWhiteSpace(messageText) && messageText.Length > 20) // Adjust threshold as needed
+            {
+                // Try to register: find user by Firebase ID and save chat ID
+                var user = await _repo.GetUserByFirebaseIdAsync(messageText);
+                if (user != null)
+                {
+                    await _repo.UpdateUserChatIdAsync(user.Id, chatId);
+                    return Ok(new { message = "Chat ID registered successfully." });
+                }
+                else
+                {
+                    return BadRequest("Firebase ID not found.");
+                }
+            }
+            else
+            {
+                // For other messages, check if chat ID is registered
+                var user = await _repo.GetUserByChatIdAsync(chatId);
+                if (user != null)
+                {
+                    // User is registered, process the message (e.g., acknowledge)
+                    return Ok(new { message = "Message received from registered user." });
+                }
+                else
+                {
+                    return BadRequest("Chat ID not registered.");
+                }
+            }
         }
 
         /// <summary>
@@ -72,6 +121,22 @@ namespace Rest_SikkerApi.Controllers
     {
         public string ImageUrl { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+    }
+
+    public sealed class TelegramWebhookRequest
+    {
+        public TelegramMessage? Message { get; set; }
+    }
+
+    public sealed class TelegramMessage
+    {
+        public TelegramChat? Chat { get; set; }
+        public string? Text { get; set; }
+    }
+
+    public sealed class TelegramChat
+    {
+        public long Id { get; set; }
     }
 }
 
