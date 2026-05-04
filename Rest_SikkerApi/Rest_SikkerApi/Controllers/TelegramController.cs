@@ -4,6 +4,7 @@ using Rest_SikkerApi.data;
 using Rest_SikkerApi.interfaces;
 using Rest_SikkerApi.models;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("telegram")]
@@ -104,16 +105,17 @@ public class TelegramController : ControllerBase
     }
 
     [HttpGet("status")]
-    public IActionResult GetStatus()
+    public async Task<IActionResult> GetStatus()
     {
+        var last = await _db.TelegramMessages
+            .OrderByDescending(m => m.ReceivedAt)
+            .FirstOrDefaultAsync();
+
         return Ok(new
         {
-            lastChatId = _lastChatId,
-            lastMessage = _lastMessage,
-            // Return ISO 8601 UTC timestamp string
-            lastMessageTime = _lastMessageTime == default
-                ? null
-                : (string?)_lastMessageTime.ToString("o")
+            lastChatId = last?.ChatId ?? 0,
+            lastMessage = last?.Message ?? "",
+            lastMessageTime = last?.ReceivedAt.ToString("o")
         });
     }
 }
