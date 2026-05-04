@@ -422,8 +422,8 @@ export default {
         pingResult: "",
       },
       piStatus: {
-        lastseen : null,
-        isAlive : false,
+        lastSeen: null,
+        isAlive: false,
       },
       user: null,
       unsubscribeAuth: null,
