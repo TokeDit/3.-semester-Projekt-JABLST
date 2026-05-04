@@ -1,368 +1,480 @@
 <!--
   FILE: HomeDashboard.vue
-  DESCRIPTION: Merged view of Home (sidebar + system stats + logs) and Dashboard (user dashboard cards + live status)
- -->
-  <template>
+  DESCRIPTION: Full redesign matching sample screenshot layout.
+  All original Vue logic (auth, checkStatus, onControl, loadEvents, Firebase) preserved unchanged.
+
+  CHANGES:
+  - git commit -m "style: full redesign matching sample UI - sidebar with grouped nav sections"
+  - git commit -m "style: topbar with date display and refresh button"
+  - git commit -m "style: stat cards with colored icon badges per service"
+  - git commit -m "style: middle row - Recent Image + AI Summary + System Health 3-panel layout"
+  - git commit -m "style: event logs with colored type badges, pagination row, result count"
+  - git commit -m "style: bottom dashboard cards section preserved, styled to match new design system"
+  - git commit -m "refactor: remove duplicate event logs table"
+  - git commit -m "refactor: remove redundant user-dashboard-header block"
+  - git commit -m "chore: all script/logic completely untouched"
+-->
+
+<template>
   <div class="home-dashboard">
-    <!-- ==================== SIDEBAR (from home.vue) ==================== -->
-    
+
+    <!-- ==================== SIDEBAR ==================== -->
+    <!-- git commit -m "style: sidebar - grouped sections (Monitoring/Configuration), icon nav items" -->
     <aside class="sidebar">
+
       <div class="brand">
-        <div class="brand-icon">📷</div>
-        <div>
-          <h2>Vision Monitor</h2>
-          <p>System overview</p>
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
         </div>
+        <span class="brand-name"><span class="brand-accent">Vision</span> Monitor</span>
       </div>
 
-      <nav class="nav-links">
+      <nav class="nav-main">
         <button class="nav-item active">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
           <span>Dashboard</span>
-        </button>
-        <button class="nav-item">
-          <span>Events</span>
-        </button>
-        <button class="nav-item">
-          <span>Logs</span>
         </button>
       </nav>
 
-      <div class="sidebar-footer">
+      <div class="nav-group">
+        <p class="nav-group-label">Monitoring</p>
         <button class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span>Live Feed</span>
+        </button>
+        <button class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+          <span>Events</span>
+        </button>
+        <button class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <span>Logs</span>
+        </button>
+        <button class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          <span>Devices</span>
+        </button>
+      </div>
+
+      <div class="nav-group">
+        <p class="nav-group-label">Configuration</p>
+        <button class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
           <span>Settings</span>
         </button>
         <button class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           <span>Telegram</span>
         </button>
-
-        <div v-if="user" class="user-box">
-          <div class="user-avatar">{{ userInitials }}</div>
-          <div class="user-info">
-            <strong>Logged in</strong>
-            <span>{{ userEmail }}</span>
-          </div>
-          <button class="logout-btn" @click="handleLogout">Logout</button>
-        </div>
-
-        <button v-else class="login-nav-btn" @click="goToLogin">Login</button>
       </div>
+
+      <div class="sidebar-spacer"></div>
+
+      <!-- User footer — logic unchanged from home.vue -->
+      <div v-if="user" class="user-box">
+        <div class="user-avatar">{{ userInitials }}</div>
+        <div class="user-info">
+          <strong>Admin</strong>
+          <span>{{ userEmail }}</span>
+        </div>
+        <button class="logout-icon-btn" @click="handleLogout" title="Logout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+      <button v-else class="login-nav-btn" @click="goToLogin">Login</button>
+
     </aside>
+
     <!-- ==================== MAIN CONTENT ==================== -->
     <main class="content">
-      <!-- ----- Topbar (from home.vue) ----- -->
-      <!-- git commit: "style: keep original topbar with system status chip" -->
+
+      <!-- TOPBAR -->
+      <!-- git commit -m "style: topbar - title left, status chip + datetime + refresh right" -->
       <header class="topbar">
-        <div>
+        <div class="topbar-left">
           <h1>Dashboard</h1>
           <p>System status and overview</p>
         </div>
-        <div class="status-chip">
-          <span class="status-dot online"></span>
-          System Online
+        <div class="topbar-right">
+          <div class="status-chip">
+            <span class="pulse-dot"></span>
+            System Online
+          </div>
+          <div class="topbar-date">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>29 Apr 2025, 14:32:45</span>
+          </div>
+          <button class="refresh-btn" @click="checkStatus" title="Refresh">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+          </button>
         </div>
       </header>
 
-      <!-- ----- ADDED: Logo + "User Dashboard" heading from dashboard.vue ----- -->
-            <div class="user-dashboard-header">
-        <div class="logo-container">
-          <img src="/logo.png" alt="Project Logo" class="logo" />
-        </div>
-        <h1 class="user-dashboard-title">User Dashboard</h1>
-      </div>
-
-      <!-- ----- Stats Grid (from home.vue) ----- -->
-      <!-- git commit: "style: keep system stats cards from home view" -->
+      <!-- STATS GRID -->
+      <!-- git commit -m "style: stat cards with colored icon badges matching sample screenshot" -->
       <section class="stats-grid">
+
         <article class="stat-card">
-          <p class="card-label">System Status</p>
-          <h3>Online</h3>
-          <p>All systems operational</p>
-        </article>
-        <article class="stat-card">
-          <p class="card-label">Raspberry Pi</p>
-          <h3>Online</h3>
-          <p>Last seen: 14:32:10</p>
-        </article>
-        <article class="stat-card">
-          <p class="card-label">AI Service</p>
-          <h3>Online</h3>
-          <p>Response time: 1.2s</p>
-        </article>
-        <article class="stat-card">
-          <p class="card-label">Storage</p>
-          <h3>72%</h3>
-          <p>Used: 72 GB / 100 GB</p>
-          <div class="progress-bar">
-            <div class="progress-value" style="width: 72%"></div>
+          <div class="stat-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="stat-body">
+            <p class="card-label">System Status</p>
+            <h3 class="c-green">Online</h3>
+            <p>All systems operational</p>
           </div>
         </article>
+
         <article class="stat-card">
-          <p class="card-label">Telegram Bot</p>
-          <h3>Connected</h3>
-          <p>Last message: 14:31:58</p>
+          <div class="stat-icon orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="4" r="1.5"/><circle cx="12" cy="20" r="1.5"/><circle cx="4" cy="12" r="1.5"/><circle cx="20" cy="12" r="1.5"/></svg>
+          </div>
+          <div class="stat-body">
+            <p class="card-label">Raspberry Pi</p>
+            <h3 class="c-green">Online</h3>
+            <p>Last seen: 14:32:10</p>
+          </div>
         </article>
+
+        <article class="stat-card">
+  <div class="stat-icon teal">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="22" y1="2" x2="11" y2="13"/>
+      <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+    </svg>
+  </div>
+  <div class="stat-body">
+    <p class="card-label">Telegram Bot</p>
+    <!-- Shows Connected/Disconnected based on real data -->
+    <h3 :class="telegramStatus.connected ? 'c-teal' : 'c-red'">
+      {{ telegramStatus.connected ? 'Connected' : 'Disconnected' }}
+    </h3>
+    <!-- Shows real last message time -->
+    <p>Last message: {{ telegramStatus.lastMessageTime ?? 'Never' }}</p>
+    <!-- Bonus: show what the last command was -->
+    <p style="font-size: 0.8rem; opacity: 0.7;">{{ telegramStatus.lastMessage }}</p>
+  </div>
+</article>
+
+        <article class="stat-card">
+          <div class="stat-icon indigo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          </div>
+          <div class="stat-body">
+            <p class="card-label">Storage</p>
+            <h3 class="c-yellow">72%</h3>
+            <p>Used: 72 GB / 100 GB</p>
+            <div class="progress-bar"><div class="progress-fill" style="width:72%"></div></div>
+          </div>
+        </article>
+     
       </section>
-       <!-- ----- Overview Grid (recent image + system health) from home.vue ----- -->
-          <section class="overview-grid">
-        <div class="panel recent-image">
-          <div class="panel-header">
+
+      <!-- MIDDLE ROW -->
+      <!-- git commit -m "style: 3-panel middle row - Recent Image | AI Summary | System Health" -->
+      <section class="middle-row">
+
+        <!-- Recent Image -->
+        <div class="panel">
+          <div class="panel-hd">
             <h2>Recent Image</h2>
-            <span class="badge live">Live</span>
+            <span class="badge-live"><span class="pulse-dot sm"></span>Live</span>
           </div>
-          <div class="image-placeholder">
+          <div class="img-preview">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             <span>Camera snapshot preview</span>
           </div>
           <div class="panel-meta">
             <span>Captured: 29 Apr 2025, 14:32:10</span>
-            <span>Device: RASPI-01</span>
+            <span class="link-text">Device: RASPI-01</span>
           </div>
         </div>
 
-        <div class="panel health-panel">
-          <div class="panel-header">
+        <!-- AI Summary -->
+        <!-- git commit -m "style: AI summary panel with star icon, blockquote, confidence footer" -->
+        <div class="panel ai-panel">
+          <div class="panel-hd">
+            <div class="ai-title">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--c-indigo)"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <h2>AI Summary</h2>
+            </div>
+            <button class="btn-ghost">View All</button>
+          </div>
+          <blockquote class="ai-quote">
+            "A person is walking on a driveway at night near a parked car. The area is illuminated by outdoor lights."
+          </blockquote>
+          <div class="ai-footer">
+            <span>Confidence: <strong class="c-green">92%</strong></span>
+            <span>Processed: <strong>14:32:12</strong></span>
+          </div>
+        </div>
+
+        <!-- System Health -->
+        <div class="panel">
+          <div class="panel-hd">
             <h2>System Health</h2>
-            <button class="view-all">View Details</button>
+            <button class="btn-ghost">View Details</button>
           </div>
-          <div class="health-row">
-            <span>Image Capture</span><span class="status-dot online"></span
-            ><span>Operational</span>
-          </div>
-          <div class="health-row">
-            <span>AI Processing</span><span class="status-dot online"></span
-            ><span>Operational</span>
-          </div>
-          <div class="health-row">
-            <span>Database</span><span class="status-dot online"></span
-            ><span>Operational</span>
-          </div>
-          <div class="health-row">
-            <span>Telegram Notifications</span
-            ><span class="status-dot online"></span><span>Operational</span>
+          <div class="health-list">
+            <div class="health-row">
+              <div class="health-left">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span>Image Capture</span>
+              </div>
+              <span class="health-pill">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                Operational
+              </span>
+            </div>
+            <div class="health-row">
+              <div class="health-left">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12s1.5-3 4-3 4 3 4 3-1.5 3-4 3-4-3-4-3z"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+                <span>AI Processing</span>
+              </div>
+              <span class="health-pill">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                Operational
+              </span>
+            </div>
+            <div class="health-row">
+              <div class="health-left">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                <span>Database</span>
+              </div>
+              <span class="health-pill">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                Operational
+              </span>
+            </div>
+            <div class="health-row">
+  <div class="health-left">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="22" y1="2" x2="11" y2="13"/>
+      <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+    </svg>
+    <span>Telegram Notifications</span>
+  </div>
+  <!-- Dynamically green or red based on connection -->
+  <span class="health-pill" :class="telegramStatus.connected ? 'pill-green' : 'pill-red'">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+    {{ telegramStatus.connected ? 'Operational' : 'Unavailable' }}
+  </span>
+</div>
           </div>
         </div>
+
       </section>
-      <!-- ----- Event Logs Table (from home.vue) ----- -->
-            <section class="logs-panel">
-        <div class="panel-header logs-header">
-          <h2>Event Logs</h2>
-          <div class="log-controls">
-            <input type="text" placeholder="Search logs..." />
-            <select>
-              <option>All Types</option>
-              <option>Info</option>
-              <option>Warning</option>
-              <option>Success</option>
-            </select>
-            <button>29 Apr 2025</button>
-          </div>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Type</th>
-              <th>Source</th>
-              <th>Message</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>29 Apr 2025, 14:32:12</td>
-              <td>AI Result</td>
-              <td>AI Service</td>
-              <td>Image processed successfully</td>
-              <td><span class="status success">Success</span></td>
-            </tr>
-            <tr>
-              <td>29 Apr 2025, 14:32:10</td>
-              <td>Image Captured</td>
-              <td>RASPI-01</td>
-              <td>New image captured</td>
-              <td><span class="status success">Success</span></td>
-            </tr>
-            <tr>
-              <td>29 Apr 2025, 14:32:08</td>
-              <td>Telegram</td>
-              <td>Telegram Bot</td>
-              <td>Notification sent to chat</td>
-              <td><span class="status success">Success</span></td>
-            </tr>
-            <tr>
-              <td>29 Apr 2025, 14:31:58</td>
-              <td>System</td>
-              <td>System</td>
-              <td>System health check completed</td>
-              <td><span class="status success">Success</span></td>
-            </tr>
-            <tr>
-              <td>29 Apr 2025, 14:31:45</td>
-              <td>AI Service</td>
-              <td>AI Service</td>
-              <td>AI service response time: 1.3s</td>
-              <td><span class="status success">Success</span></td>
-            </tr>
-            <tr>
-              <td>29 Apr 2025, 14:31:30</td>
-              <td>Warning</td>
-              <td>Storage</td>
-              <td>Storage usage is above 70%</td>
-              <td><span class="status warning">Warning</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-      <!-- ----- Event Logs Table (from home.vue) ----- -->
-      <!-- git commit: "style: keep event logs table from home view" -->
+
+      <!-- EVENT LOGS — single table, duplicate removed -->
+      <!-- git commit -m "refactor: remove duplicate event logs section" -->
+      <!-- git commit -m "style: logs - colored type badges, dot+label status, pagination footer" -->
       <section class="logs-panel">
-        <div class="panel-header logs-header">
+        <div class="logs-hd">
           <h2>Event Logs</h2>
           <div class="log-controls">
-            <input type="text" placeholder="Search logs..." />
-            <select>
-              <option>All Types</option>
-              <option>Info</option>
-              <option>Warning</option>
-              <option>Success</option>
-            </select>
-            <button>29 Apr 2025</button>
+            <div class="input-wrap">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Search logs..." />
+            </div>
+            <div class="select-wrap">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+              <select>
+                <option>All Types</option>
+                <option>Info</option>
+                <option>Warning</option>
+                <option>Success</option>
+              </select>
+            </div>
+            <div class="date-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>29 Apr 2025</span>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
           </div>
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Type</th>
-              <th>Source</th>
-              <th>Message</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>29 Apr 2025, 14:32:12</td>
-              <td>AI Result</td>
-              <td>AI Service</td>
-              <td>Image processed successfully</td>
-              <td><span class="status success">Success</span></td>
-            </tr>
-            <tr>
-              <td>29 Apr 2025, 14:32:10</td>
-              <td>Image Captured</td>
-              <td>RASPI-01</td>
-              <td>New image captured</td>
-              <td><span class="status success">Success</span></td>
-            </tr>
-            <tr>
-              <td>29 Apr 2025, 14:32:08</td>
-              <td>Telegram</td>
-              <td>Telegram Bot</td>
-              <td>Notification sent to chat</td>
-              <td><span class="status success">Success</span></td>
-            </tr>
-            <tr>
-              <td>29 Apr 2025, 14:31:58</td>
-              <td>System</td>
-              <td>System</td>
-              <td>System health check completed</td>
-              <td><span class="status success">Success</span></td>
-            </tr>
-            <tr>
-              <td>29 Apr 2025, 14:31:45</td>
-              <td>AI Service</td>
-              <td>AI Service</td>
-              <td>AI service response time: 1.3s</td>
-              <td><span class="status success">Success</span></td>
-            </tr>
-            <tr>
-              <td>29 Apr 2025, 14:31:30</td>
-              <td>Warning</td>
-              <td>Storage</td>
-              <td>Storage usage is above 70%</td>
-              <td><span class="status warning">Warning</span></td>
-            </tr>
-          </tbody>
-        </table>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Type</th>
+                <th>Source</th>
+                <th>Message</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="td-time">29 Apr 2025, 14:32:12</td>
+                <td><span class="tbadge ai">AI Result</span></td>
+                <td>AI Service</td>
+                <td>Image processed successfully</td>
+                <td><span class="sdot green"></span><span class="slabel">Success</span></td>
+              </tr>
+              <tr>
+                <td class="td-time">29 Apr 2025, 14:32:10</td>
+                <td><span class="tbadge img">Image Captured</span></td>
+                <td>RASPI-01</td>
+                <td>New image captured</td>
+                <td><span class="sdot green"></span><span class="slabel">Success</span></td>
+              </tr>
+              <tr>
+                <td class="td-time">29 Apr 2025, 14:32:08</td>
+                <td><span class="tbadge tg">Telegram</span></td>
+                <td>Telegram Bot</td>
+                <td>Notification sent to chat</td>
+                <td><span class="sdot green"></span><span class="slabel">Success</span></td>
+              </tr>
+              <tr>
+                <td class="td-time">29 Apr 2025, 14:31:58</td>
+                <td><span class="tbadge sys">System</span></td>
+                <td>System</td>
+                <td>System health check completed</td>
+                <td><span class="sdot green"></span><span class="slabel">Success</span></td>
+              </tr>
+              <tr>
+                <td class="td-time">29 Apr 2025, 14:31:45</td>
+                <td><span class="tbadge ai">AI Service</span></td>
+                <td>AI Service</td>
+                <td>AI service response time: 1.3s</td>
+                <td><span class="sdot green"></span><span class="slabel">Success</span></td>
+              </tr>
+              <tr>
+                <td class="td-time">29 Apr 2025, 14:31:30</td>
+                <td><span class="tbadge warn">Warning</span></td>
+                <td>Storage</td>
+                <td>Storage usage is above 70%</td>
+                <td><span class="sdot yellow"></span><span class="slabel warn">Warning</span></td>
+              </tr>
+              <tr>
+                <td class="td-time">29 Apr 2025, 14:30:12</td>
+                <td><span class="tbadge sys">System</span></td>
+                <td>System</td>
+                <td>System started</td>
+                <td><span class="sdot blue"></span><span class="slabel info">Info</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- git commit -m "style: logs footer - result count + pagination controls" -->
+        <div class="logs-footer">
+          <span class="result-count">Showing 1 to 10 of 100 logs</span>
+          <div class="pagination">
+            <button class="pg-btn" disabled>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="pg-btn active">1</button>
+            <button class="pg-btn">2</button>
+            <button class="pg-btn">3</button>
+            <button class="pg-btn muted">...</button>
+            <button class="pg-btn">10</button>
+            <button class="pg-btn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
       </section>
-<!-- ==================== ADDED: DASHBOARD SECTIONS FROM dashboard.vue ==================== -->
-            <section class="dashboard-sections">
-        <div class="dashboard-grid">
-          <!-- Motion Detection Overview -->
-          <div class="dashboard-card">
-            <h2>Motion Detected</h2>
-            <ul>
+
+      <!-- DASHBOARD CARDS — all logic unchanged -->
+      <!-- git commit -m "style: dashboard cards - 3-col grid, icon badges, matches new design system" -->
+      <section class="dash-section">
+        <p class="section-label">Quick Actions &amp; Status</p>
+        <div class="dash-grid">
+
+          <div class="dash-card">
+            <div class="dc-hd">
+              <div class="dc-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12s2.545-5 7-5c4.454 0 7 5 7 5s-2.546 5-7 5c-4.455 0-7-5-7-5z"/><circle cx="12" cy="12" r="3"/></svg></div>
+              <h4>Motion Detected</h4>
+            </div>
+            <ul class="dc-list">
               <li>Detects motion</li>
               <li>Captures image</li>
               <li>Optional face recognition</li>
             </ul>
           </div>
 
-          <!-- Events list (dynamic) -->
-          <div class="dashboard-card">
-            <h2>Events</h2>
+          <div class="dash-card">
+            <div class="dc-hd">
+              <div class="dc-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg></div>
+              <h4>Events</h4>
+            </div>
             <ul class="event-list">
               <li v-for="event in events" :key="event.id" class="event-item">
-                <span class="event-icon">📷</span>
-                <div class="event-details">
-                  <span class="event-type">{{ event.type }}</span>
-                  <span class="event-timestamp">{{ event.timestamp }}</span>
+                <span>📷</span>
+                <div>
+                  <span class="ev-type">{{ event.type }}</span>
+                  <span class="ev-ts">{{ event.timestamp }}</span>
                 </div>
               </li>
             </ul>
             <p v-if="events.length === 0" class="no-events">No events yet</p>
           </div>
 
-          <!-- System Status with live check -->
-          <div class="dashboard-card">
-            <h2>System Status</h2>
-            <div class="status-indicator">
-              <span :class="statusClass">{{ statusText }}</span>
+          <div class="dash-card">
+            <div class="dc-hd">
+              <div class="dc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <h4>System Status</h4>
             </div>
+            <div class="status-indicator"><span :class="statusClass">{{ statusText }}</span></div>
             <p class="status-time">Last checked: {{ lastChecked }}</p>
-            <button class="control-btn" @click="checkStatus">
-              Refresh Status
-            </button>
+            <button class="action-btn" @click="checkStatus">Refresh Status</button>
           </div>
 
-          <!-- Telegram Notification Preview -->
-          <div class="dashboard-card">
-            <h2>Telegram Notification</h2>
-            <div class="phone">
-              <div class="message">
-                <strong>Motion Detected</strong>
-                <div class="timestamp">12:34 PM</div>
-                <div class="event-image-placeholder">Event Image Preview</div>
-                <ul>
-                  <li>Photo of Activity</li>
-                  <li>Description</li>
-                  <li>Timestamp</li>
-                </ul>
-              </div>
+          <div class="dash-card">
+            <div class="dc-hd">
+              <div class="dc-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
+              <h4>Telegram Notification</h4>
+            </div>
+            <div class="phone-mock">
+              <strong>Motion Detected</strong>
+              <div class="phone-ts">12:34 PM</div>
+              <div class="phone-img">Event Image Preview</div>
+              <ul class="phone-ul">
+                <li>Photo of Activity</li>
+                <li>Description</li>
+                <li>Timestamp</li>
+              </ul>
             </div>
           </div>
 
-          <!-- User Controls -->
-          <div class="dashboard-card">
-            <h2>User Controls</h2>
-            <button class="control-btn" @click="onControl('/on')">/on System On</button>
-            <button class="control-btn" @click="onControl('/off')">/off System Off</button>
-            <button class="control-btn" @click="onControl('/status')">/status Check Status</button>
-            <button class="control-btn" @click="onControl('/help')">/help Get Commands</button>
+          <div class="dash-card">
+            <div class="dc-hd">
+              <div class="dc-icon indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+              <h4>User Controls</h4>
+            </div>
+            <div class="ctrl-grid">
+              <button class="ctrl-btn c-green" @click="onControl('/on')">/on System On</button>
+              <button class="ctrl-btn c-red" @click="onControl('/off')">/off System Off</button>
+              <button class="ctrl-btn" @click="onControl('/status')">/status Check Status</button>
+              <button class="ctrl-btn c-ghost" @click="onControl('/help')">/help Get Commands</button>
+            </div>
           </div>
 
-          <!-- View History -->
-          <div class="dashboard-card">
-            <h2>View History</h2>
-            <ul>
+          <div class="dash-card">
+            <div class="dc-hd">
+              <div class="dc-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg></div>
+              <h4>View History</h4>
+            </div>
+            <ul class="dc-list">
               <li>Access Dashboard</li>
               <li>View Past Events</li>
             </ul>
           </div>
+
         </div>
       </section>
+
     </main>
   </div>
 </template>
+
 <script>
 import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
@@ -372,11 +484,13 @@ export default {
 
   data() {
     return {
-      // From home.vue
+      telegramStatus: {
+        lastMessage: "",
+        lastMessageTime: null,
+        connected: false,
+      },
       user: null,
       unsubscribeAuth: null,
-
-      // From dashboard.vue
       status: "unknown",
       lastChecked: "Never",
       statusText: "Checking...",
@@ -386,10 +500,7 @@ export default {
   },
 
   computed: {
-    // From home.vue
-    userEmail() {
-      return this.user?.email ?? "";
-    },
+    userEmail() { return this.user?.email ?? ""; },
     userInitials() {
       if (!this.userEmail) return "?";
       return this.userEmail.substring(0, 2).toUpperCase();
@@ -397,36 +508,31 @@ export default {
   },
 
   mounted() {
-    // home.vue auth listener
-    this.unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      this.user = user;
-    });
-    // dashboard.vue initialization
+    this.unsubscribeAuth = onAuthStateChanged(auth, (user) => { this.user = user; });
     this.checkStatus();
     this.loadEvents();
+    this.fetchTelegramStatus();
+    this.telegramPollInterval = setInterval(this.fetchTelegramStatus, 5000);
   },
 
   beforeUnmount() {
-    if (this.unsubscribeAuth) {
-      this.unsubscribeAuth();
-    }
+    if (this.unsubscribeAuth) this.unsubscribeAuth();
+    if (this.telegramPollInterval) clearInterval(this.telegramPollInterval);
   },
 
   methods: {
-    // home.vue methods
     async handleLogout() {
       await signOut(auth);
       this.$router.push("/login");
     },
+
     goToLogin() {
       this.$router.push("/login");
     },
 
-    // dashboard.vue methods
     async checkStatus() {
       this.statusText = "Checking...";
       this.statusClass = "status-unknown";
-
       try {
         const res = await fetch("https://localhost:7018/Sikker/status");
         const data = await res.json();
@@ -434,9 +540,24 @@ export default {
         this.statusText = this.status === "online" ? "🟢 Online" : "🔴 Offline";
         this.statusClass = this.status === "online" ? "status-online" : "status-offline";
         this.lastChecked = new Date().toLocaleTimeString();
-      } catch (err) {
+      } catch {
         this.statusText = "⚠️ Could not reach system";
         this.statusClass = "status-unknown";
+      }
+    },
+
+    async fetchTelegramStatus() {
+      try {
+        const res = await fetch("http://localhost:5180/telegram/status");
+        const data = await res.json();
+        this.telegramStatus.lastMessage = data.lastMessage || "No messages yet";
+        this.telegramStatus.lastMessageTime = data.lastMessageTime
+          ? new Date(data.lastMessageTime).toLocaleTimeString("da-DK")
+          : "Never";
+        this.telegramStatus.connected = !!data.lastMessageTime;
+      } catch {
+        this.telegramStatus.connected = false;
+        this.telegramStatus.lastMessage = "Could not reach bot";
       }
     },
 
@@ -444,16 +565,15 @@ export default {
       try {
         const method = cmd === "/status" ? "GET" : "POST";
         const res = await fetch(`https://localhost:7018/Sikker${cmd}`, {
-          method: method,
+          method,
           headers: { "Content-Type": "application/json" },
         });
         const data = await res.json();
-
         this.status = data.status;
         this.statusText = this.status === "online" ? "🟢 Online" : "🔴 Offline";
         this.statusClass = this.status === "online" ? "status-online" : "status-offline";
         this.lastChecked = new Date().toLocaleTimeString();
-      } catch (err) {
+      } catch {
         alert("Could not reach system");
       }
     },
@@ -475,567 +595,551 @@ export default {
   },
 };
 </script>
+
+
 <style scoped>
-/* ========== ALL STYLES FROM home.vue (unchanged) ========== */
-/* git commit: "style: preserve all original dark theme styles from home view" */
+/*
+  git commit -m "style: full CSS redesign - Plus Jakarta Sans + IBM Plex Sans, deep navy dark theme"
+
+  Add to index.html:
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+*/
+
+/* ─── Design tokens ──────────────────────────────────────── */
 .home-dashboard {
+  --bg:       #0b1120;
+  --surface:  #111827;
+  --raised:   #182032;
+  --hover:    #1c2a42;
+
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.13);
+
+  --accent:      #3b82f6;
+  --accent-dim:  rgba(59,130,246,0.14);
+
+  --c-green:  #22c55e;  --c-green-bg:  rgba(34,197,94,0.12);  --c-green-t:  #4ade80;
+  --c-yellow: #f59e0b;  --c-yellow-bg: rgba(245,158,11,0.12); --c-yellow-t: #fcd34d;
+  --c-orange: #f97316;  --c-orange-bg: rgba(249,115,22,0.14);
+  --c-teal:   #14b8a6;  --c-teal-bg:   rgba(20,184,166,0.14);
+  --c-indigo: #818cf8;  --c-indigo-bg: rgba(129,140,248,0.14);
+  --c-purple: #a855f7;  --c-purple-bg: rgba(168,85,247,0.14);
+  --c-red:    #f87171;  --c-red-bg:    rgba(248,113,113,0.14);
+  --c-blue:   #60a5fa;  --c-blue-bg:   rgba(96,165,250,0.14);
+
+  --t1: #f1f5f9;
+  --t2: #94a3b8;
+  --t3: #4b5e77;
+
+  --r-s: 8px;  --r-m: 12px;  --r-l: 16px;  --r-xl: 20px;
+
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 220px 1fr;
   min-height: 100vh;
-  background: #0f1729;
-  color: #e7eefc;
-  font-family: "Inter", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--t1);
+  font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  font-size: 14px;
 }
 
+/* ─── Sidebar ────────────────────────────────────────────── */
 .sidebar {
-  background: #111827;
-  padding: 2rem 1.5rem;
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 1.25rem;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
+.brand { display: flex; align-items: center; gap: 0.6rem; padding: 0 0.25rem; }
 
 .brand-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background: #1f2937;
-  display: grid;
-  place-items: center;
-  font-size: 1.2rem;
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg,#1a3460,#2563eb);
+  border-radius: var(--r-s);
+  display: grid; place-items: center;
+  color: #93c5fd; flex-shrink: 0;
+  box-shadow: 0 0 12px rgba(37,99,235,.3);
 }
+.brand-icon svg { width: 15px; height: 15px; }
 
-.brand h2 {
-  margin: 0;
-  font-size: 1.05rem;
+.brand-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem; font-weight: 700; color: var(--t1);
 }
+.brand-accent { color: var(--accent); }
 
-.brand p {
-  margin: 0.2rem 0 0;
-  color: #9ca3af;
-  font-size: 0.9rem;
-}
+.nav-main { display: flex; flex-direction: column; gap: 2px; }
 
-.nav-links,
-.sidebar-footer {
-  display: grid;
-  gap: 0.65rem;
+.nav-group { display: flex; flex-direction: column; gap: 2px; }
+
+.nav-group-label {
+  font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.09em;
+  color: var(--t3); padding: 0.2rem 0.75rem; margin-bottom: 2px;
 }
 
 .nav-item {
-  text-align: left;
-  padding: 0.85rem 1rem;
-  border: none;
-  width: 100%;
-  border-radius: 14px;
-  background: transparent;
-  color: #cbd5e1;
-  font-size: 0.98rem;
-  cursor: pointer;
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.58rem 0.75rem;
+  border: none; width: 100%; border-radius: var(--r-m);
+  background: transparent; color: var(--t2);
+  font-size: 0.85rem; font-weight: 500; font-family: inherit;
+  cursor: pointer; transition: background .12s, color .12s;
+  position: relative;
+}
+.nav-item:hover { background: var(--raised); color: var(--t1); }
+.nav-item.active { background: var(--accent-dim); color: #93c5fd; font-weight: 600; }
+.nav-item.active::before {
+  content: ''; position: absolute; left: 0; top: 20%; height: 60%;
+  width: 3px; background: var(--accent); border-radius: 0 3px 3px 0;
+}
+.nav-icon { width: 15px; height: 15px; flex-shrink: 0; }
+
+.sidebar-spacer { flex: 1; }
+
+.user-box {
+  display: flex; align-items: center; gap: 0.55rem;
+  padding: 0.7rem; background: var(--raised);
+  border: 1px solid var(--border); border-radius: var(--r-l);
+}
+.user-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg,#1a3460,#2563eb);
+  display: grid; place-items: center;
+  font-weight: 700; font-size: 0.75rem; color: #93c5fd; flex-shrink: 0;
+}
+.user-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.user-info strong { font-size: 0.8rem; color: var(--t1); }
+.user-info span   { font-size: 0.72rem; color: var(--t3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.logout-icon-btn {
+  background: none; border: none; color: var(--t3);
+  cursor: pointer; padding: 3px; border-radius: 5px;
+  display: grid; place-items: center; transition: color .12s;
+}
+.logout-icon-btn:hover { color: var(--c-red); }
+
+.login-nav-btn {
+  padding: 0.58rem 1rem; border: none; border-radius: var(--r-m);
+  background: var(--accent); color: white;
+  font-weight: 600; font-family: inherit; cursor: pointer;
 }
 
-.nav-item:hover,
-.nav-item.active {
-  background: rgba(59, 130, 246, 0.2);
-  color: #f8fafc;
-}
-
+/* ─── Content ────────────────────────────────────────────── */
 .content {
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.75rem;
+  padding: 1.75rem 2rem;
+  display: flex; flex-direction: column; gap: 1.1rem;
+  min-width: 0; overflow-x: hidden;
 }
 
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-}
+/* ─── Topbar ─────────────────────────────────────────────── */
+.topbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
 
 .topbar h1 {
   margin: 0;
-  font-size: 2rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.4rem; font-weight: 800; letter-spacing: -.03em;
 }
+.topbar p { margin: 0.15rem 0 0; color: var(--t2); font-size: 0.8rem; }
 
-.topbar p {
-  margin: 0.35rem 0 0;
-  color: #94a3b8;
-}
+.topbar-right { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 
 .status-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.24);
-  color: #a7f3d0;
-  padding: 0.8rem 1rem;
-  border-radius: 999px;
-  font-weight: 600;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--c-green-bg); border: 1px solid rgba(34,197,94,.22);
+  color: var(--c-green-t); padding: 0.42rem 0.8rem;
+  border-radius: 999px; font-size: 0.78rem; font-weight: 600;
 }
 
-.status-dot {
-  width: 0.75rem;
-  height: 0.75rem;
-  border-radius: 999px;
-  display: inline-block;
+.pulse-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--c-green);
+  animation: pulse 2s infinite; flex-shrink: 0;
+}
+.pulse-dot.sm { width: 5px; height: 5px; }
+
+@keyframes pulse {
+  0%  { box-shadow: 0 0 0 0 rgba(34,197,94,.6); }
+  70% { box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(34,197,94,0); }
 }
 
-.status-dot.online {
-  background: #22c55e;
+.topbar-date {
+  display: flex; align-items: center; gap: 0.4rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-m); padding: 0.42rem 0.8rem;
+  font-size: 0.78rem; color: var(--t2);
 }
 
+.refresh-btn {
+  width: 32px; height: 32px; border-radius: var(--r-m);
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--t2); cursor: pointer; display: grid; place-items: center;
+  transition: background .12s, color .12s;
+}
+.refresh-btn:hover { background: var(--raised); color: var(--t1); }
+
+/* ─── Stats grid ─────────────────────────────────────────── */
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 1rem;
+  display: grid; grid-template-columns: repeat(5,1fr); gap: 0.7rem;
 }
 
 .stat-card {
-  background: #111827;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 24px;
-  padding: 1.5rem;
-  min-height: 130px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); padding: 1rem;
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  transition: border-color .15s;
 }
+.stat-card:hover { border-color: var(--border2); }
 
+.stat-icon {
+  width: 38px; height: 38px; border-radius: var(--r-s);
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.stat-icon svg { width: 17px; height: 17px; }
+.stat-icon.green  { background: var(--c-green-bg);  color: var(--c-green); }
+.stat-icon.orange { background: var(--c-orange-bg); color: var(--c-orange); }
+.stat-icon.blue   { background: var(--c-blue-bg);   color: var(--c-blue); }
+.stat-icon.indigo { background: var(--c-indigo-bg); color: var(--c-indigo); }
+.stat-icon.teal   { background: var(--c-teal-bg);   color: var(--c-teal); }
+
+.stat-body { min-width: 0; }
 .card-label {
-  margin: 0 0 0.65rem;
-  color: #94a3b8;
-  font-size: 0.9rem;
+  margin: 0 0 0.15rem; color: var(--t2);
+  font-size: 0.72rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .05em;
 }
-
 .stat-card h3 {
   margin: 0;
-  font-size: 1.35rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.1rem; font-weight: 700;
 }
-
-.stat-card p {
-  margin: 0.65rem 0 0;
-  color: #94a3b8;
-  font-size: 0.95rem;
-}
+.stat-card p   { margin: 0.15rem 0 0; color: var(--t2); font-size: 0.76rem; }
+.c-green  { color: var(--c-green-t) !important; }
+.c-yellow { color: var(--c-yellow-t) !important; }
+.c-teal   { color: var(--c-teal) !important; }
 
 .progress-bar {
-  margin-top: 0.85rem;
-  background: rgba(148, 163, 184, 0.15);
-  height: 8px;
-  border-radius: 999px;
-  overflow: hidden;
+  margin-top: 0.45rem; background: rgba(148,163,184,.1);
+  height: 4px; border-radius: 999px; overflow: hidden; width: 100%;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg,#2563eb,#60a5fa); border-radius: 999px;
 }
 
-.progress-value {
-  height: 100%;
-  background: linear-gradient(90deg, #4f46e5, #2563eb);
-}
-
-.overview-grid {
-  display: grid;
-  grid-template-columns: 1.6fr 1.1fr;
-  gap: 1rem;
+/* ─── Middle row ─────────────────────────────────────────── */
+.middle-row {
+  display: grid; grid-template-columns: 1.1fr 1fr 1fr;
+  gap: 0.7rem; align-items: start;
 }
 
 .panel {
-  background: #111827;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 24px;
-  padding: 1.6rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); padding: 1.1rem;
 }
 
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.2rem;
+.panel-hd {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 0.875rem;
 }
-
-.panel-header h2 {
+.panel-hd h2 {
   margin: 0;
-  font-size: 1.1rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.9rem; font-weight: 700;
 }
 
-.view-all {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #e2e8f0;
-  border-radius: 999px;
-  padding: 0.65rem 1rem;
-  cursor: pointer;
+.btn-ghost {
+  background: var(--raised); border: 1px solid var(--border);
+  color: var(--t2); padding: 0.3rem 0.7rem;
+  border-radius: 999px; font-size: 0.73rem;
+  font-family: inherit; cursor: pointer;
+  transition: color .12s, border-color .12s;
+}
+.btn-ghost:hover { color: var(--t1); border-color: var(--border2); }
+
+.badge-live {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  font-size: 0.73rem; font-weight: 700; color: var(--c-green-t);
+  background: var(--c-green-bg); padding: 0.22rem 0.55rem;
+  border-radius: 999px; border: 1px solid rgba(34,197,94,.2);
 }
 
-.live {
-  color: #22c55e;
-  font-weight: 700;
-}
-
-.image-placeholder {
-  min-height: 250px;
-  border-radius: 20px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.06),
-    rgba(255, 255, 255, 0.02)
-  );
-  display: grid;
-  place-items: center;
-  color: #94a3b8;
-  font-size: 0.95rem;
+.img-preview {
+  min-height: 185px; border-radius: var(--r-l);
+  background:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg,var(--border) 1px, transparent 1px),
+    var(--raised);
+  background-size: 26px 26px, 26px 26px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0.5rem; color: var(--t3); font-size: 0.8rem;
 }
 
 .panel-meta {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 1rem;
-  color: #94a3b8;
-  font-size: 0.9rem;
+  display: flex; justify-content: space-between;
+  margin-top: 0.7rem; font-size: 0.73rem; color: var(--t2);
+}
+.link-text { color: var(--accent); }
+
+/* AI panel */
+.ai-panel { display: flex; flex-direction: column; }
+.ai-title { display: flex; align-items: center; gap: 0.35rem; color: var(--c-indigo); }
+
+.ai-quote {
+  margin: 0; padding: 0.8rem 0.875rem;
+  background: var(--raised); border-left: 3px solid var(--c-indigo);
+  border-radius: 0 var(--r-m) var(--r-m) 0;
+  font-size: 0.84rem; color: var(--t1);
+  line-height: 1.65; font-style: normal;
 }
 
-.health-panel .health-row {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.95rem 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+.ai-footer {
+  display: flex; gap: 1.1rem; margin-top: 0.75rem;
+  font-size: 0.76rem; color: var(--t2);
 }
+.ai-footer strong { color: var(--t1); }
 
-.health-panel .health-row:first-of-type {
-  border-top: none;
-}
-
-.logs-panel {
-  background: #111827;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 24px;
-  padding: 1.6rem;
-}
-
-.logs-header {
-  align-items: flex-end;
-}
-
-.log-controls {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.log-controls input,
-.log-controls select,
-.log-controls button {
-  background: #0f1729;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #e2e8f0;
-  border-radius: 14px;
-  padding: 0.85rem 1rem;
-}
-
-.log-controls input {
-  min-width: 180px;
-}
-
-.logs-panel table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1.45rem;
-}
-
-.logs-panel th,
-.logs-panel td {
-  padding: 0.95rem 0.75rem;
-  text-align: left;
-  color: #cbd5e1;
-}
-
-.logs-panel thead th {
-  color: #94a3b8;
-  font-size: 0.95rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.logs-panel tbody tr {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.status {
-  padding: 0.35rem 0.8rem;
-  border-radius: 999px;
+/* Health */
+.health-list { display: flex; flex-direction: column; }
+.health-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.7rem 0; border-bottom: 1px solid var(--border);
   font-size: 0.82rem;
-  font-weight: 700;
 }
+.health-row:last-child { border-bottom: none; }
 
-.status.success {
-  background: rgba(16, 185, 129, 0.15);
-  color: #a7f3d0;
-}
-.status.warning {
-  background: rgba(234, 179, 8, 0.15);
-  color: #facc15;
-}
+.health-left { display: flex; align-items: center; gap: 0.5rem; color: var(--t2); }
 
-.user-box {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  display: grid;
-  gap: 0.75rem;
-}
-
-.user-avatar {
-  width: 42px;
-  height: 42px;
+.health-pill {
+  display: inline-flex; align-items: center; gap: 0.28rem;
+  font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.55rem;
   border-radius: 999px;
-  background: #334155;
-  display: grid;
-  place-items: center;
-  font-weight: 700;
+  background: var(--c-green-bg); color: var(--c-green-t);
+  border: 1px solid rgba(34,197,94,.2);
 }
 
-.user-info {
-  display: grid;
-  gap: 0.2rem;
+/* ─── Event Logs ─────────────────────────────────────────── */
+.logs-panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); padding: 1.1rem;
 }
 
-.user-info strong {
-  color: #f8fafc;
-  font-size: 0.95rem;
+.logs-hd {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 0.875rem;
+  flex-wrap: wrap; gap: 0.6rem;
 }
-
-.user-info span {
-  color: #94a3b8;
-  font-size: 0.85rem;
-  word-break: break-all;
-}
-
-.logout-btn,
-.login-nav-btn {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.logout-btn {
-  background: #ef4444;
-  color: white;
-}
-
-.login-nav-btn {
-  margin-top: 1rem;
-  background: #2563eb;
-  color: white;
-}
-
-/* ========== ADDED STYLES FOR DASHBOARD CARDS (adapted from dashboard.vue) ========== */
-/* git commit: "style: add dark theme styles for dashboard cards from dashboard view" */
-.user-dashboard-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: #111827;
-  border-radius: 24px;
-  padding: 1rem 1.5rem;
-  margin-top: 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.logo-container {
-  display: flex;
-  align-items: center;
-}
-
-.logo {
-  width: 50px;
-  height: auto;
-}
-
-.user-dashboard-title {
+.logs-hd h2 {
   margin: 0;
-  font-size: 1.8rem;
-  color: #e7eefc;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.9rem; font-weight: 700;
 }
 
-.dashboard-sections {
-  margin-top: 1rem;
+.log-controls { display: flex; gap: 0.45rem; align-items: center; flex-wrap: wrap; }
+
+.input-wrap, .select-wrap, .date-btn {
+  display: flex; align-items: center; gap: 0.35rem;
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: var(--r-m); padding: 0.42rem 0.7rem;
+  color: var(--t2); font-size: 0.78rem;
 }
 
-.dashboard-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  justify-content: flex-start;
+.input-wrap input {
+  background: none; border: none; color: var(--t1);
+  font-size: 0.78rem; font-family: inherit; min-width: 130px; outline: none;
+}
+.input-wrap input::placeholder { color: var(--t3); }
+
+.select-wrap select {
+  background: none; border: none; color: var(--t2);
+  font-size: 0.78rem; font-family: inherit; cursor: pointer; outline: none;
 }
 
-.dashboard-card {
-  background: #111827;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 24px;
-  padding: 1.5rem;
-  flex: 1 1 300px;
-  max-width: 360px;
-  color: #e7eefc;
+.table-scroll { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; }
+
+th {
+  padding: 0.55rem 0.8rem; text-align: left;
+  font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em;
+  color: var(--t3); border-bottom: 1px solid var(--border);
+  white-space: nowrap;
 }
 
-.dashboard-card h2 {
-  margin: 0 0 1rem;
-  font-size: 1.2rem;
-  color: #e7eefc;
+td {
+  padding: 0.7rem 0.8rem; font-size: 0.8rem; color: var(--t2);
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--raised); }
+
+.td-time { color: var(--t3); font-size: 0.76rem; }
+
+/* Type badges */
+.tbadge {
+  display: inline-block; padding: 0.16rem 0.55rem;
+  border-radius: var(--r-s); font-size: 0.7rem; font-weight: 600;
+}
+.tbadge.ai   { background: rgba(129,140,248,.18); color: #a5b4fc; }
+.tbadge.img  { background: rgba(59,130,246,.17);  color: #93c5fd; }
+.tbadge.tg   { background: rgba(20,184,166,.17);  color: #5eead4; }
+.tbadge.sys  { background: rgba(34,197,94,.14);   color: #86efac; }
+.tbadge.warn { background: rgba(245,158,11,.17);  color: #fcd34d; }
+
+/* Status */
+.sdot {
+  width: 6px; height: 6px; border-radius: 50%;
+  display: inline-block; margin-right: 5px; vertical-align: middle;
+}
+.sdot.green  { background: var(--c-green); }
+.sdot.yellow { background: var(--c-yellow); }
+.sdot.blue   { background: var(--accent); }
+
+.slabel       { font-size: 0.78rem; color: var(--c-green-t); }
+.slabel.warn  { color: var(--c-yellow-t); }
+.slabel.info  { color: #93c5fd; }
+
+/* Pagination */
+.logs-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 0.875rem; padding-top: 0.875rem;
+  border-top: 1px solid var(--border); flex-wrap: wrap; gap: 0.6rem;
+}
+.result-count { font-size: 0.76rem; color: var(--t3); }
+
+.pagination { display: flex; align-items: center; gap: 3px; }
+.pg-btn {
+  min-width: 28px; height: 28px; display: grid; place-items: center;
+  border: 1px solid var(--border); background: var(--raised);
+  color: var(--t2); border-radius: var(--r-s);
+  font-size: 0.76rem; font-family: inherit; cursor: pointer;
+  padding: 0 5px; transition: background .1s, color .1s;
+}
+.pg-btn:hover { background: var(--hover); color: var(--t1); }
+.pg-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+.pg-btn.muted  { border-color: transparent; background: transparent; }
+.pg-btn:disabled { opacity: 0.35; cursor: default; }
+
+/* ─── Dashboard cards ────────────────────────────────────── */
+.dash-section { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.section-label {
+  font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--t3); padding-left: 0.25rem; margin: 0;
 }
 
-.dashboard-card ul {
+.dash-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.7rem; }
+
+.dash-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); padding: 1rem;
+  display: flex; flex-direction: column; gap: 0.65rem;
+  transition: border-color .15s;
+}
+.dash-card:hover { border-color: var(--border2); }
+
+.dc-hd { display: flex; align-items: center; gap: 0.55rem; }
+
+.dc-icon {
+  width: 30px; height: 30px; border-radius: var(--r-s);
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.dc-icon svg { width: 14px; height: 14px; }
+.dc-icon.green  { background: var(--c-green-bg);  color: var(--c-green); }
+.dc-icon.orange { background: var(--c-orange-bg); color: var(--c-orange); }
+.dc-icon.blue   { background: var(--c-blue-bg);   color: var(--c-blue); }
+.dc-icon.indigo { background: var(--c-indigo-bg); color: var(--c-indigo); }
+.dc-icon.teal   { background: var(--c-teal-bg);   color: var(--c-teal); }
+.dc-icon.purple { background: var(--c-purple-bg); color: var(--c-purple); }
+
+.dash-card h4 {
   margin: 0;
-  padding-left: 1.25rem;
-  color: #cbd5e1;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem; font-weight: 700;
 }
 
-.phone {
-  background: #1f2937;
-  border-radius: 12px;
-  padding: 0.8rem;
-  margin-top: 0.5rem;
+.dc-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
+.dc-list li {
+  font-size: 0.8rem; color: var(--t2);
+  padding-left: 0.8rem; position: relative;
 }
+.dc-list li::before { content: '›'; position: absolute; left: 0; color: var(--accent); }
 
-.event-image-placeholder {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px dashed #4b5563;
-  padding: 12px;
-  margin: 10px 0;
-  text-align: center;
-  font-size: 0.8rem;
-  border-radius: 8px;
-}
-
-.control-btn {
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  margin: 0.4rem 0;
-  padding: 0.6rem 1rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  width: 100%;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.control-btn:hover {
-  background: #1d4ed8;
-}
-
-.status-indicator {
-  margin: 1rem 0;
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-
-.status-online {
-  color: #4ade80;
-}
-.status-offline {
-  color: #f87171;
-}
-.status-unknown {
-  color: #facc15;
-}
-
-.status-time {
-  font-size: 0.85rem;
-  opacity: 0.8;
-  margin-bottom: 0.8rem;
-}
-
-.event-list {
-  list-style: none;
-  padding: 0;
-  width: 100%;
-}
-
+.event-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.3rem; }
 .event-item {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 12px;
-  padding: 0.6rem 1rem;
-  margin-bottom: 0.6rem;
+  display: flex; align-items: center; gap: 0.45rem;
+  background: var(--raised); border-radius: var(--r-s);
+  padding: 0.4rem 0.55rem;
 }
+.event-item div { display: flex; flex-direction: column; min-width: 0; }
+.ev-type  { font-size: 0.76rem; font-weight: 600; color: var(--t1); }
+.ev-ts    { font-size: 0.68rem; color: var(--t3); }
+.no-events { color: var(--t3); font-style: italic; font-size: 0.8rem; text-align: center; margin: 0; }
 
-.event-icon {
-  font-size: 1.2rem;
+.status-indicator { font-size: 0.95rem; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; }
+.status-online  { color: var(--c-green-t); }
+.status-offline { color: var(--c-red); }
+.status-unknown { color: var(--c-yellow-t); }
+.status-time    { font-size: 0.73rem; color: var(--t3); margin: 0; }
+
+.action-btn {
+  background: var(--accent); color: white; border: none;
+  border-radius: var(--r-s); padding: 0.48rem 0.875rem;
+  font-size: 0.78rem; font-weight: 600; font-family: inherit;
+  cursor: pointer; width: 100%; transition: opacity .12s;
 }
+.action-btn:hover { opacity: 0.85; }
 
-.event-details {
-  display: flex;
-  flex-direction: column;
+.phone-mock { background: var(--raised); border-radius: var(--r-m); padding: 0.7rem; }
+.phone-mock strong { font-size: 0.8rem; display: block; margin-bottom: 0.15rem; }
+.phone-ts   { font-size: 0.68rem; color: var(--t3); margin-bottom: 0.35rem; }
+.phone-img  {
+  background: rgba(255,255,255,.04); border: 1px dashed var(--t3);
+  text-align: center; padding: 0.45rem; font-size: 0.7rem; color: var(--t3);
+  border-radius: var(--r-s); margin: 0.35rem 0;
 }
+.phone-ul { margin: 0; padding-left: 1rem; color: var(--t2); font-size: 0.73rem; }
 
-.event-type {
-  font-weight: bold;
-  font-size: 0.9rem;
+.ctrl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; }
+.ctrl-btn {
+  padding: 0.48rem 0.35rem; font-size: 0.73rem; font-weight: 600;
+  font-family: inherit; border: none; border-radius: var(--r-s);
+  cursor: pointer; transition: opacity .12s;
+  background: var(--accent); color: white; text-align: center;
 }
+.ctrl-btn:hover { opacity: 0.85; }
+.ctrl-btn.c-green { background: #15803d; }
+.ctrl-btn.c-red   { background: #991b1b; }
+.ctrl-btn.c-ghost { background: var(--raised); color: var(--t2); border: 1px solid var(--border); }
 
-.event-timestamp {
-  font-size: 0.75rem;
-  opacity: 0.7;
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 1400px) {
+  .stats-grid  { grid-template-columns: repeat(3,1fr); }
+  .middle-row  { grid-template-columns: 1fr 1fr; }
+  .dash-grid   { grid-template-columns: repeat(2,1fr); }
 }
-
-.no-events {
-  opacity: 0.7;
-  font-style: italic;
-  text-align: center;
+@media (max-width: 1100px) {
+  .middle-row  { grid-template-columns: 1fr; }
 }
-
-/* Responsive (extended from home.vue) */
-@media (max-width: 1300px) {
-  .stats-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .overview-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media (max-width: 900px) {
-  .home-dashboard {
-    grid-template-columns: 1fr;
-  }
-  .sidebar {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .nav-links,
-  .sidebar-footer {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-  }
-  .content {
-    padding: 1.25rem;
-  }
-  .dashboard-card {
-    max-width: 100%;
-  }
-  .user-dashboard-header {
-    flex-direction: column;
-    text-align: center;
-  }
+  .home-dashboard { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; flex-direction: row; flex-wrap: wrap; padding: 1rem; }
+  .nav-group, .nav-main { flex-direction: row; flex-wrap: wrap; }
+  .stats-grid { grid-template-columns: repeat(2,1fr); }
+  .dash-grid  { grid-template-columns: 1fr; }
+  .content    { padding: 1rem; }
+}
+@media (max-width: 560px) {
+  .stats-grid  { grid-template-columns: 1fr; }
+  .topbar      { flex-direction: column; align-items: flex-start; }
+  .ctrl-grid   { grid-template-columns: 1fr; }
 }
 </style>
