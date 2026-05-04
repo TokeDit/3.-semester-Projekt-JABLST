@@ -17,3 +17,5 @@ dist/
 
 # Claude
 CLAUDE.md
+
+appsettings.Development.json
