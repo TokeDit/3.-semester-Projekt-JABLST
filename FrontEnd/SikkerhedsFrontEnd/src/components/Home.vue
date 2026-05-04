@@ -145,12 +145,16 @@
 </template>
 
 <script>
-import { EventLogTable } from './Event-log-Table.vue'
+import EventLogTable from './Event-log-Table.vue'
 import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 
 export default {
   name: "Home",
+
+  components: {
+    EventLogTable,
+  },
 
   data() {
     return {
