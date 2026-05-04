@@ -122,6 +122,9 @@ namespace Rest_SikkerApi.Services
                 case "/time":
                     await _telegramService.SendMessageAsync(chatId, $"Server tid: {DateTime.UtcNow:O}", ct);
                     break;
+                    case "/ping":
+                        await PingAsync(chatId, ct);
+                        break;
 
                 // --- GREETINGS ---
                 case "hi":
@@ -213,5 +216,18 @@ namespace Rest_SikkerApi.Services
                     "Fejl: En uventet fejl opstod.", ct);
             }
         }
+            private async Task PingAsync(long chatId, CancellationToken ct)
+            {
+                var start = DateTime.UtcNow;
+                var response = await _httpClient.GetAsync($"{_backendBaseUrl}/Sikker/ping", ct);
+                var ms = (DateTime.UtcNow - start).TotalMilliseconds;
+
+            if (response.IsSuccessStatusCode)
+                await _telegramService.SendMessageAsync(chatId,
+                    $"Pong! Response time: {ms:F0}ms", ct);
+            else
+                await _telegramService.SendMessageAsync(chatId,
+                    "Ping failed — backend not responding.", ct);
+            }
     }
 }
