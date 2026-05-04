@@ -139,7 +139,7 @@
           </div>
         </article>
 
-        <article class="stat-card">
+       <article class="stat-card">
   <div class="stat-icon teal">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
       <line x1="22" y1="2" x2="11" y2="13"/>
@@ -148,14 +148,17 @@
   </div>
   <div class="stat-body">
     <p class="card-label">Telegram Bot</p>
-    <!-- Shows Connected/Disconnected based on real data -->
     <h3 :class="telegramStatus.connected ? 'c-teal' : 'c-red'">
       {{ telegramStatus.connected ? 'Connected' : 'Disconnected' }}
     </h3>
-    <!-- Shows real last message time -->
     <p>Last message: {{ telegramStatus.lastMessageTime ?? 'Never' }}</p>
-    <!-- Bonus: show what the last command was -->
     <p style="font-size: 0.8rem; opacity: 0.7;">{{ telegramStatus.lastMessage }}</p>
+
+    <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+      <button @click="pingBot" class="btn-secondary">Ping Bot</button>
+      <!-- Inline so result appears next to button, not below the card -->
+      <span v-if="pingResult" style="font-size: 0.8rem; opacity: 0.8;">{{ pingResult }}</span>
+    </div>
   </div>
 </article>
 
@@ -494,6 +497,7 @@ export default {
         lastMessage: "",
         lastMessageTime: null,
         connected: false,
+        pingResult: "",
       },
       user: null,
       unsubscribeAuth: null,
@@ -534,6 +538,16 @@ export default {
 
     goToLogin() {
       this.$router.push("/login");
+    },
+   async pingBot() {
+    const start = Date.now();
+    try {
+      const res = await fetch("http://localhost:5180/Sikker/ping");
+      const ms = Date.now() - start;
+      this.pingResult = `Pong! ${ms}ms`;
+    } catch {
+      this.pingResult = "Bot unreachable";
+    }
     },
 
     async checkStatus() {
