@@ -380,6 +380,7 @@
             </button>
           </div>
         </div>
+        <EventLogTable />
       </section>
 
       <!-- DASHBOARD CARDS — all logic unchanged -->
@@ -476,11 +477,16 @@
 </template>
 
 <script>
+import EventLogTable from './Event-log-Table.vue'
 import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 
 export default {
   name: "HomeDashboard",
+
+  components: {
+    EventLogTable,
+  },
 
   data() {
     return {
