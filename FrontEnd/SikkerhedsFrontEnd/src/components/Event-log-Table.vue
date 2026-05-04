@@ -1,4 +1,10 @@
 <template>
+  <div class="table-header">
+    <button class="refresh-btn" @click="asyncGetItems" :disabled="loading">
+      <svg :class="{ spinning: loading }" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      {{ loading ? 'Refreshing…' : 'Refresh' }}
+    </button>
+  </div>
   <div class="table-scroll">
     <table>
       <thead>
@@ -193,6 +199,45 @@ async function asyncGetItems() { // Fetch items from the API
 </script>
 
 <style scoped>
+.table-header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 0 0.75rem 0;
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 6px;
+  color: #93c5fd;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinning {
+  animation: spin 0.8s linear infinite;
+}
+
 .table-scroll {
   overflow-x: auto;
 }

@@ -271,9 +271,10 @@
           </div>
         </div>
 
-      </section>
 
-      <!-- EVENT LOGS — single table, duplicate removed -->
+  </section>
+
+  <!-- EVENT LOGS — single table, duplicate removed -->
       <!-- git commit -m "refactor: remove duplicate event logs section" -->
       <!-- git commit -m "style: logs - colored type badges, dot+label status, pagination footer" -->
       <section class="logs-panel">
