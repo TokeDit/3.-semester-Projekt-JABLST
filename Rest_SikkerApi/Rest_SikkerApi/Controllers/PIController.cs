@@ -8,7 +8,8 @@ using Rest_SikkerApi.models;
 public class PIController : ControllerBase
 {
     private readonly SikkerRepo m_repo;
-
+    private static DateTime? _lastHeartBeat;
+    
     public PIController(SikkerRepo repo)
     {
         m_repo = repo;
@@ -57,4 +58,27 @@ public class PIController : ControllerBase
             });
         }
     }
+    [HttpPost("heartbeat")]
+    public IActionResult HeartBeat([FromBody] HeartBeatDto body)
+    {
+        _lastHeartBeat = DateTime.UtcNow;
+        return Ok();
+    }
+
+    [HttpGet("status")]
+    public IActionResult GetStatus()
+    {
+        var threshold = TimeSpan.FromMinutes(2);
+        var isAlive = _lastHeartBeat.HasValue && (DateTime.UtcNow - _lastHeartBeat.Value) < threshold;
+
+        return Ok(new
+        {
+            lastSeen = _lastHeartBeat,
+            isAlive = isAlive
+        });
+
+    }
+
+
+
 }

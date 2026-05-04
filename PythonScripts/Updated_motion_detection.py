@@ -4,12 +4,14 @@ import time
 import numpy as np
 import base64
 import json
+import threading
 from picamera2 import Picamera2
 import requests
 from ai_edge_litert.interpreter import Interpreter
 
 # ─── Configuration ────────────────────────────────────────────────────────────
-
+HEARTBEAT_ENDPOINT = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/PI/heartbeat"
+HEARTBEAT_INTERVAL = 30 
 API_ENDPOINT = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/PI"
 COOLDOWN_SECONDS = 30
 JPEG_QUALITY = 75
@@ -125,6 +127,23 @@ def send_to_api(frame, timestamp, confidence):
     except requests.exceptions.RequestException as e:
         print(f"[ERROR] Unexpected request error: {e}")
         return False
+
+def send_heartbeat():
+    try:
+        r = requests.post(
+            HEARTBEAT_ENDPOINT,
+            json={"timestamp": datetime.datetime.utcnow().isoformat()},
+            timeout=5
+        )
+        r.raise_for_status()
+    except Exception as e:
+        print(f"[WARN] Heartbeat failed: {e}")
+
+def heartbeat_loop():
+    while True:
+        send_heartbeat()
+        time.sleep(HEARTBEAT_INTERVAL)
+threading.Thread(target=heartbeat_loop, daemon=True).start()
 
 # ─── Frame Capture ────────────────────────────────────────────────────────────
 
