@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Rest_SikkerApi.interfaces;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Rest_SikkerApi.data;
+using Rest_SikkerApi.interfaces;
+using Rest_SikkerApi.models;
+using System.Text.Json;
 
 [ApiController]
 [Route("telegram")]
@@ -22,14 +24,18 @@ public class TelegramController : ControllerBase
     private readonly ILogger<TelegramController> _logger;
 
     //  Add ITelegramCommandHandler to constructor
+    private readonly AppDbContext _db;
+
     public TelegramController(
         ITelegramService telegramService,
         ITelegramCommandHandler commandHandler,
-        ILogger<TelegramController> logger)
+        ILogger<TelegramController> logger,
+        AppDbContext db)
     {
         _telegramService = telegramService;
         _commandHandler = commandHandler;
         _logger = logger;
+        _db = db;
     }
 
     [HttpPost("update")]
@@ -73,12 +79,14 @@ public class TelegramController : ControllerBase
             : "";
 
         //  Log incoming message
-        _logger.LogInformation("Received Telegram message from chat {ChatId}: {Text}", chatId, text);
-
-        //  Save in-memory state (not thread-safe — replace with scoped service later)
-        _lastChatId = chatId;
-        _lastMessage = text;
-        _lastMessageTime = DateTime.UtcNow;
+        // REPLACE static field assignments with DB write
+        _db.TelegramMessages.Add(new TelegramMessage
+        {
+            ChatId = chatId,
+            Message = text,
+            ReceivedAt = DateTime.UtcNow
+        });
+        await _db.SaveChangesAsync(ct);
 
         try
         {
