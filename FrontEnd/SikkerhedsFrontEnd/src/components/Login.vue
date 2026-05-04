@@ -9,26 +9,29 @@
         <div class="input-group">
           <label>Email</label>
           <input
+            id="email-input"
             type="email"
             v-model="email"
             placeholder="Enter email"
           />
         </div>
-
+  
         <div class="input-group">
           <label>Password</label>
           <input
+            id="password-input"
             type="password"
             v-model="password"
             placeholder="Enter password"
           />
         </div>
 
-        <button class="login-btn" type="submit">
+        <button id="login-button" class="login-btn" type="submit">
           Login
         </button>
 
         <button
+          id="register-button"
           class="register-btn"
           type="button"
           @click="handleRegister"
@@ -37,8 +40,8 @@
         </button>
       </form>
 
-      <p v-if="error" class="error-msg">{{ error }}</p>
-      <p v-if="message" class="success-msg">{{ message }}</p>
+      <p id="error-message" v-if="error" class="error-msg">{{ error }}</p>
+      <p id="success-message" v-if="message" class="success-msg">{{ message }}</p>
     </div>
   </div>
 </template>

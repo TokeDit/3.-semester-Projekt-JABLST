@@ -32,7 +32,7 @@ public class PIController : ControllerBase
             // Create Image entity, set OwnerUid and save
             var imageEntity = new Image
             {
-                TimeStamp = DateTime.UtcNow.ToString("o"),
+                TimeStamp = image.TimeStamp,
                 ImageType = image.ImageType,
                 ImageData = image.ImageData,
                 Description = image.Description,
