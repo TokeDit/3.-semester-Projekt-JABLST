@@ -183,35 +183,21 @@
         <!-- Recent Image -->
         <div class="panel">
           <div class="panel-hd">
-            <h2>Recent Image</h2>
+            <h2>Recent Images</h2>
             <span class="badge-live"><span class="pulse-dot sm"></span>Live</span>
           </div>
           <div class="img-preview">
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            <span>Camera snapshot preview</span>
+            <div v-if="images.length === 0">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span>Camera snapshot preview</span>
+            </div>
+            <div v-for="image in images">
+              <img :src="`data:image/jpeg;base64,${image.imageData}`" alt="Captured Image" class="captured-image" />
+            </div>
           </div>
           <div class="panel-meta">
-            <span>Captured: 29 Apr 2025, 14:32:10</span>
-            <span class="link-text">Device: RASPI-01</span>
-          </div>
-        </div>
-
-        <!-- AI Summary -->
-        <!-- git commit -m "style: AI summary panel with star icon, blockquote, confidence footer" -->
-        <div class="panel ai-panel">
-          <div class="panel-hd">
-            <div class="ai-title">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--c-indigo)"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              <h2>AI Summary</h2>
-            </div>
-            <button class="btn-ghost">View All</button>
-          </div>
-          <blockquote class="ai-quote">
-            "A person is walking on a driveway at night near a parked car. The area is illuminated by outdoor lights."
-          </blockquote>
-          <div class="ai-footer">
-            <span>Confidence: <strong class="c-green">92%</strong></span>
-            <span>Processed: <strong>14:32:12</strong></span>
+            <span>newest photo captured: 29 Apr 2025, 14:32:10</span>
+             <button v-on:click="getResentImages()">View all images</button>
           </div>
         </div>
 
@@ -506,6 +492,7 @@ export default {
       statusText: "Checking...",
       statusClass: "status-unknown",
       events: [],
+      images: [],
     };
   },
 
@@ -612,6 +599,18 @@ export default {
         { id: 3, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date(Date.now() - 7200000)) },
       ];
     },
+
+    async getResentImages()
+    {
+      try {
+        const res = await fetch("https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/image");
+        const data = await res.json();
+        console.log("Fetched images:", data);
+        this.images = data || [];
+      } catch {
+        this.images = [];
+      }
+    }
   },
 };
 </script>
@@ -751,6 +750,17 @@ export default {
   font-weight: 600; font-family: inherit; cursor: pointer;
 }
 
+/* ─── Button ────────────────────────────────────────────── */
+button {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.42rem 0.8rem; border-radius: var(--r-s);
+  border: none; cursor: pointer;
+  font-size: 0.78rem; font-weight: 600;
+  transition: background .12s, color .12s;
+  color: white;
+  background-color: var(--border);
+}
+
 /* ─── Content ────────────────────────────────────────────── */
 .content {
   padding: 1.75rem 2rem;
@@ -854,7 +864,7 @@ export default {
 
 /* ─── Middle row ─────────────────────────────────────────── */
 .middle-row {
-  display: grid; grid-template-columns: 1.1fr 1fr 1fr;
+  display: grid; grid-template-columns: 1.1fr 1fr;
   gap: 0.7rem; align-items: start;
 }
 
