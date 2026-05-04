@@ -475,7 +475,7 @@ async pingBot() {
     const res = await fetch(`${this.apiBase}/Sikker/ping`);
     const ms = Date.now() - start;
     this.pingResult = `Pong! ${ms}ms`;
-    this.pingSuccess = true;  // ADD THIS
+    this.pingSuccess = true;  // ADDED THIS
     this.telegramStatus.connected = true;
   } catch {
     this.pingResult = "Bot unreachable";
@@ -500,7 +500,7 @@ async checkStatus() {
   }
 },
 
-  async fetchTelegramStatus() {
+ async fetchTelegramStatus() {
   try {
     const res = await fetch(`${this.apiBase}/telegram/status`);
     const data = await res.json();
@@ -508,12 +508,13 @@ async checkStatus() {
     this.telegramStatus.lastMessageTime = data.lastMessageTime
       ? new Date(data.lastMessageTime).toLocaleTimeString("da-DK")
       : "Never";
-    // FIX: only update connected from poll if ping hasn't already confirmed it
-    if (!this.telegramStatus.connected) {
-      this.telegramStatus.connected = !!data.lastMessageTime;
-    }
+    // FIX: pingSuccess wins — poll can only set connected if ping never succeeded
+    this.telegramStatus.connected = this.pingSuccess || !!data.lastMessageTime;
   } catch {
-    this.telegramStatus.connected = false;
+    // Only disconnect if ping also failed
+    if (!this.pingSuccess) {
+      this.telegramStatus.connected = false;
+    }
     this.telegramStatus.lastMessage = "Could not reach bot";
   }
 },
