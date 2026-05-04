@@ -11,6 +11,7 @@ namespace Rest_SikkerApi.models
         public string ImageType { get; set; } = string.Empty;
 
         // Store as bytes in database
+        [JsonIgnore]
         public byte[] ImageData { get; set; } = Array.Empty<byte>();
 
         public string Description { get; set; } = string.Empty;
