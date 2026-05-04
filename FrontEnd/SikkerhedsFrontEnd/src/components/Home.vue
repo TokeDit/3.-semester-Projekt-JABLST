@@ -466,38 +466,41 @@ export default {
     },
 
     goToLogin() {
-      this.$router.push("/login");
-    },
-   async pingBot() {
-    const start = Date.now();
-    try {
-      const res = await fetch("http://localhost:5180/Sikker/ping");
-      const ms = Date.now() - start;
-      this.pingResult = `Pong! ${ms}ms`;
-    } catch {
-      this.pingResult = "Bot unreachable";
-    }
-    },
+  this.$router.push("/login");
+},
 
-    async checkStatus() {
-      this.statusText = "Checking...";
-      this.statusClass = "status-unknown";
-      try {
-        const res = await fetch("https://localhost:7018/Sikker/status");
-        const data = await res.json();
-        this.status = data.status;
-        this.statusText = this.status === "online" ? "🟢 Online" : "🔴 Offline";
-        this.statusClass = this.status === "online" ? "status-online" : "status-offline";
-        this.lastChecked = new Date().toLocaleTimeString();
-      } catch {
-        this.statusText = "⚠️ Could not reach system";
-        this.statusClass = "status-unknown";
-      }
-    },
+async pingBot() {
+  const start = Date.now();
+  try {
+    const res = await fetch("https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/Sikker/ping");
+    const ms = Date.now() - start;
+    this.pingResult = `Pong! ${ms}ms`;
+    this.telegramStatus.connected = true;
+  } catch {
+    this.pingResult = "Bot unreachable";
+    this.telegramStatus.connected = false;
+  }
+},
+
+async checkStatus() {
+  this.statusText = "Checking...";
+  this.statusClass = "status-unknown";
+  try {
+    const res = await fetch("https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/Sikker/status");
+    const data = await res.json();
+    this.status = data.status;
+    this.statusText = this.status === "online" ? "🟢 Online" : "🔴 Offline";
+    this.statusClass = this.status === "online" ? "status-online" : "status-offline";
+    this.lastChecked = new Date().toLocaleTimeString();
+  } catch {
+    this.statusText = "⚠️ Could not reach system";
+    this.statusClass = "status-unknown";
+  }
+},
 
     async fetchTelegramStatus() {
       try {
-        const res = await fetch("http://localhost:5180/telegram/status");
+        const res = await fetch("https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/telegram/status");
         const data = await res.json();
         this.telegramStatus.lastMessage = data.lastMessage || "No messages yet";
         this.telegramStatus.lastMessageTime = data.lastMessageTime
