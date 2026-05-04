@@ -1,5 +1,5 @@
 <template>
-  <section class="historik-log">
+  <section class="Event-log-Table">
     <h2>{{ title }}</h2>
 
     <div>
@@ -13,6 +13,7 @@
                     
                     <th>Timestamp</th>
                     <th>Event Type</th>
+                    <th>Confidence</th>
                 </tr>
             </thead>
             <tbody v-if="items.length > 0">
@@ -20,6 +21,7 @@
                     
                     <td>{{ item.timestamp }}</td>
                     <td>{{ item.eventType }}</td>
+                    <td>{{ item.confidence }}</td>
                 </tr>
             </tbody>
             <p v-else class="no-data">Ingen data endnu.</p>
@@ -39,16 +41,7 @@ onMounted(() => { // køre når komponenten er monteret
 const title = 'Historik Log'
 const url = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/"  // Replace with your actual API endpoint
 var items = ref([
-    {
-        id: 1,
-        timestamp: '2024-06-01T12:00:00Z',
-        eventType: 'Motion Detected'
-    },
-    {
-        id: 2,
-        timestamp: '2024-06-01T12:05:00Z',
-        eventType: 'System Armed'
-    }
+    
 ])  
 var error = ref()
 var loading = ref(false)

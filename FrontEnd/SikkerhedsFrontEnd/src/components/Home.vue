@@ -138,67 +138,14 @@
             <button>29 Apr 2025</button>
           </div>
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Type</th>
-              <th>Source</th>
-              <th>Message</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>29 Apr 2025, 14:32:12</td>
-              <td>AI Result</td>
-              <td>AI Service</td>
-              <td>Image processed successfully</td>
-              <td><span class="status success">Success</span></td>
-            </tr>
-            <tr>
-              <td>29 Apr 2025, 14:32:10</td>
-              <td>Image Captured</td>
-              <td>RASPI-01</td>
-              <td>New image captured</td>
-              <td><span class="status success">Success</span></td>
-            </tr>
-            <tr>
-              <td>29 Apr 2025, 14:32:08</td>
-              <td>Telegram</td>
-              <td>Telegram Bot</td>
-              <td>Notification sent to chat</td>
-              <td><span class="status success">Success</span></td>
-            </tr>
-            <tr>
-              <td>29 Apr 2025, 14:31:58</td>
-              <td>System</td>
-              <td>System</td>
-              <td>System health check completed</td>
-              <td><span class="status success">Success</span></td>
-            </tr>
-            <tr>
-              <td>29 Apr 2025, 14:31:45</td>
-              <td>AI Service</td>
-              <td>AI Service</td>
-              <td>AI service response time: 1.3s</td>
-              <td><span class="status success">Success</span></td>
-            </tr>
-            <tr>
-              <td>29 Apr 2025, 14:31:30</td>
-              <td>Warning</td>
-              <td>Storage</td>
-              <td>Storage usage is above 70%</td>
-              <td><span class="status warning">Warning</span></td>
-            </tr>
-          </tbody>
-        </table>
+        <EventLogTable />
       </section>
     </main>
   </div>
 </template>
 
 <script>
+import { EventLogTable } from './Event-log-Table.vue'
 import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 
