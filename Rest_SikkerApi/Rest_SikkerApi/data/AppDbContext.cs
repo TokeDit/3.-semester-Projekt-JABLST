@@ -53,11 +53,29 @@ namespace Rest_SikkerApi.data
 
                 entity.Property(i => i.Description)
                     .HasMaxLength(500);
-                    
+
+                // Confidence: single-precision float -> SQL Server "real"
+                entity.Property(i => i.Confidence)
+                      .HasColumnType("real")
+                      .IsRequired(false)
+                      .HasDefaultValue(0f);
+
+                // DetectedObject: textual description of detected object
+                entity.Property(i => i.DetectedObject)
+                      .HasMaxLength(200)
+                      .IsRequired(false);
+
+                // OwnerUid (Firebase UID) - tie image to a user
+                // Allow null for legacy images; change IsRequired() if you want it mandatory
                 entity.Property(i => i.OwnerUid)
-                    .IsRequired()
-                    .HasMaxLength(128);
-                
+                    .HasMaxLength(128)
+                    .IsRequired(false);
+
+                // Optional: create an index to query images by owner efficiently
+                entity.HasIndex(i => i.OwnerUid);
+                // Optional: create an index on TimeStamp for efficient querying by date
+                entity.HasIndex(i => i.TimeStamp);
+
             });
 
             // Configure User entity

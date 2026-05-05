@@ -25,29 +25,28 @@ namespace Rest_SikkerApi.repos
             return await _context.Images.ToListAsync();
         }
 
-        public async Task<Image?> GetImageByIdAsync(string id)
+        public IEnumerable<Image> GetAmountImage(int amount = 20)
         {
-            return await _context.Images.FindAsync(id);
+            return _context.Images.OrderBy(i => i.Id).Take(amount);
         }
 
-        public virtual async Task<User?> GetUserByFirebaseIdAsync(string ownerUid)
+        public IEnumerable<Image> GetAfterIDImage(int id, int amount = 20)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.OwnerUid == ownerUid);
+            return _context.Images.Where(i => i.Id > id).OrderBy(i => i.Id).Take(amount);
+        }
+    
+            // System state - stored in memory for now
+        private static bool _systemOnline = false;
+
+        public bool GetSystemState()
+        {
+            return _systemOnline;
         }
 
-        public virtual async Task UpdateUserChatIdAsync(string ownerUid, string telegramChatId)
+        public bool SetSystemState(bool state)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.OwnerUid == ownerUid);
-            if (user != null)
-            {
-                user.TelegramChatId = telegramChatId;
-                await _context.SaveChangesAsync();
-            }
-        }
-
-        public virtual async Task<User?> GetUserByChatIdAsync(string telegramChatId)
-        {
-            return await _context.Users.FirstOrDefaultAsync(u => u.TelegramChatId == telegramChatId);
+            _systemOnline = state;
+            return _systemOnline;
         }
     }
 }

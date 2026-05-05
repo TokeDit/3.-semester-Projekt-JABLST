@@ -1,4 +1,4 @@
-﻿using Rest_SikkerApi.Models;
+﻿using Rest_SikkerApi.models;
 
 namespace Rest_SikkerApi.Services;
 

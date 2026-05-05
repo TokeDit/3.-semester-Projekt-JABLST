@@ -1,29 +1,55 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <img src="/logo.png" alt="Logo" class="login-logo" />
+
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </div>
+        <span class="brand-name"><span class="brand-accent">Vision</span> Monitor</span>
+      </div>
+
       <h2>System Login</h2>
+      <p class="login-sub">Sign in to access the dashboard</p>
 
       <form @submit.prevent="handleLogin">
         <div class="input-group">
           <label>Email</label>
-          <input type="email" v-model="email" placeholder="Enter email" required />
+          <input
+            id="email-input"
+            type="email"
+            v-model="email"
+            placeholder="Enter email"
+          />
         </div>
 
         <div class="input-group">
           <label>Password</label>
-          <input type="password" v-model="password" placeholder="Enter password" required />
+          <input
+            id="password-input"
+            type="password"
+            v-model="password"
+            placeholder="Enter password"
+          />
         </div>
 
-        <button type="submit" class="login-btn">Login</button>
+        <button id="login-button" class="login-btn" type="submit">Login</button>
 
-        <button type="button" class="register-btn" @click="handleRegister">
-          Opret bruger
+        <button
+          id="register-button"
+          class="register-btn"
+          type="button"
+          @click="handleRegister"
+        >
+          Create account
         </button>
       </form>
 
-      <p v-if="message" class="success-msg">{{ message }}</p>
-      <p v-if="error" class="error-msg">{{ error }}</p>
+      <p id="error-message" v-if="error" class="error-msg">{{ error }}</p>
+      <p id="success-message" v-if="message" class="success-msg">{{ message }}</p>
     </div>
   </div>
 </template>
@@ -44,19 +70,72 @@ const password = ref('');
 const error = ref('');
 const message = ref('');
 
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function validateLoginForm() {
+  if (!email.value.trim()) {
+    error.value = 'Email må ikke være tom.';
+    return false;
+  }
+
+  if (!isValidEmail(email.value)) {
+    error.value = 'Indtast en gyldig email adresse.';
+    return false;
+  }
+
+  if (!password.value) {
+    error.value = 'Password må ikke være tomt.';
+    return false;
+  }
+
+  return true;
+}
+
+function validateRegisterForm() {
+  if (!validateLoginForm()) {
+    return false;
+  }
+
+  if (password.value.length < 6) {
+    error.value = 'Password skal være mindst 6 tegn.';
+    return false;
+  }
+
+  return true;
+}
+
+function mapFirebaseError(code) {
+  switch (code) {
+    case 'auth/invalid-email':
+      return 'Ugyldig email adresse.';
+    case 'auth/email-already-in-use':
+      return 'Email er allerede i brug.';
+    case 'auth/weak-password':
+      return 'Password skal være mindst 6 tegn.';
+    case 'auth/invalid-credential':
+      return 'Forkert email eller password.';
+    case 'auth/missing-password':
+      return 'Password mangler.';
+    default:
+      return 'Noget gik galt. Prøv igen.';
+  }
+}
+
 async function handleLogin() {
   error.value = '';
   message.value = '';
 
+  if (!validateLoginForm()) {
+    return;
+  }
+
   try {
     await signInWithEmailAndPassword(auth, email.value, password.value);
-    router.push('/dashboard');
+    router.push('/home');
   } catch (err) {
-    if (err.code === 'auth/invalid-credential') {
-      error.value = 'Invalid email or password.';
-    } else {
-      error.value = 'Error: ' + err.message;
-    }
+    error.value = mapFirebaseError(err.code);
   }
 }
 
@@ -64,18 +143,16 @@ async function handleRegister() {
   error.value = '';
   message.value = '';
 
+  if (!validateRegisterForm()) {
+    return;
+  }
+
   try {
     await createUserWithEmailAndPassword(auth, email.value, password.value);
     message.value = 'Bruger oprettet. Du bliver sendt til dashboard.';
-    router.push('/dashboard');
+    router.push('/home');
   } catch (err) {
-    if (err.code === 'auth/email-already-in-use') {
-      error.value = 'Email is already in use.';
-    } else if (err.code === 'auth/weak-password') {
-      error.value = 'Password must be at least 6 characters.';
-    } else {
-      error.value = 'Error: ' + err.message;
-    }
+    error.value = mapFirebaseError(err.code);
   }
 }
 </script>
@@ -85,72 +162,139 @@ async function handleRegister() {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background: #eff2f7;
+  min-height: 100vh;
+  background: #0b1120;
+  font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  font-size: 14px;
+  color: #f1f5f9;
 }
 
 .login-card {
-  background: #246BCE;
-  padding: 2.5rem;
-  border-radius: 16px;
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
   width: 100%;
-  max-width: 350px;
-  text-align: center;
-  color: white;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.login-logo {
-  width: 70px;
+/* Brand — matches sidebar brand in Home.vue */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   margin-bottom: 1rem;
 }
 
+.brand-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #1a3460, #2563eb);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #93c5fd;
+  flex-shrink: 0;
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.3);
+}
+.brand-icon svg { width: 15px; height: 15px; }
+
+.brand-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+.brand-accent { color: #3b82f6; }
+
+h2 {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.login-sub {
+  margin: 0 0 1rem;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
 .input-group {
-  text-align: left;
-  margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.875rem;
 }
 
 .input-group label {
-  display: block;
-  margin-bottom: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
 }
 
 input {
   width: 100%;
-  padding: 0.8rem;
-  border-radius: 8px;
-  border: none;
-  color: #333;
+  padding: 0.65rem 0.8rem;
+  background: #182032;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  color: #f1f5f9;
+  font-size: 0.85rem;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.12s;
 }
+input::placeholder { color: #4b5e77; }
+input:focus { border-color: rgba(59, 130, 246, 0.5); }
 
 .login-btn,
 .register-btn {
   width: 100%;
-  padding: 0.8rem;
-  color: white;
+  padding: 0.65rem 1rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
-  font-weight: bold;
+  transition: opacity 0.12s;
+  color: white;
 }
+.login-btn:hover,
+.register-btn:hover { opacity: 0.85; }
 
 .login-btn {
-  background: #1976d2;
+  background: #3b82f6;
+  margin-top: 0.25rem;
 }
 
 .register-btn {
-  margin-top: 0.75rem;
-  background: #16a34a;
+  margin-top: 0.5rem;
+  background: #182032;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: #94a3b8;
 }
+.register-btn:hover { color: #f1f5f9; border-color: rgba(255, 255, 255, 0.13); }
 
 .error-msg {
-  color: #ff8a8a;
-  margin-top: 1rem;
-  font-weight: bold;
+  margin: 0.5rem 0 0;
+  color: #f87171;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .success-msg {
-  color: #bbf7d0;
-  margin-top: 1rem;
-  font-weight: bold;
+  margin: 0.5rem 0 0;
+  color: #4ade80;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 </style>

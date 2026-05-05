@@ -149,7 +149,7 @@ namespace TestAPI
         {
             // Arrange
             var image = new Image();
-            var testId = "test-id-123";
+            var testId = 123;
             var testTimestamp = "2026-04-29T10:30:00";
             var testImageType = "image/png";
             var testDescription = "Test image description";
