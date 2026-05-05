@@ -38,7 +38,11 @@
 - [Visual Studio Code](https://code.visualstudio.com)
 
 ---
+## Systemarkitektur
 
+![Systemarkitektur](docs/system-flow.svg)
+
+---
 ## Getting Started
 
 ### Prerequisites
