@@ -145,17 +145,30 @@ namespace Rest_SikkerApi.Services
                 default:
                     if(command.Trim().Length > 20 && !command.Trim().StartsWith("/"))
                     {
-                        await _repo.UpdateUserChatIdAsync(command.Trim(), chatId.ToString());
-                        _logger.LogInformation("Linked Telegram chat {ChatId} to Firebase UID '{FirebaseId}'", chatId, command.Trim());
-                        await _telegramService.SendMessageAsync(chatId,
-                            "Din Telegram chat er nu knyttet til din konto. Du vil modtage notifikationer her.", ct);
+                        try
+                        {
+                            await _repo.UpdateUserChatIdAsync(command.Trim(), chatId.ToString(), ct);
+                            _logger.LogInformation("Linked Telegram chat {ChatId} to Firebase UID '{FirebaseId}'", chatId, command.Trim());
+                            await _telegramService.SendMessageAsync(chatId,
+                                "Din Telegram chat er nu knyttet til din konto. Du vil modtage notifikationer her.", ct);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            throw;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to link Firebase UID for chat {ChatId}", chatId);
+                            await _telegramService.SendMessageAsync(chatId,
+                                "Fejl: Kunne ikke knytte din konto. Tjek at Firebase ID er korrekt og prøv igen.", ct);
+                        }
                     }
                     else
                     {
                         _logger.LogWarning("Unknown command '{Command}' received from chat {ChatId}", normalizedCommand, chatId);
-                    await _telegramService.SendMessageAsync(chatId,
-                        "Ukendt kommando. Skriv /hjælp for at se muligheder.", ct);
-                    }   
+                        await _telegramService.SendMessageAsync(chatId,
+                            "Ukendt kommando. Skriv /hjælp for at se muligheder.", ct);
+                    }
                     break;
                     
             }

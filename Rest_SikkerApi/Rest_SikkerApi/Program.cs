@@ -28,9 +28,9 @@ services.AddDbContext<AppDbContext>(options =>
                 // Enable automatic retries for transient failures
                 // Default: 6 retries with exponential backoff
                 sqlServerOptions.EnableRetryOnFailure(
-                    maxRetryCount: 3,                          // Max number of retry attempts
-                    maxRetryDelay: TimeSpan.FromSeconds(30),   // Cap the delay between retries
-                    errorNumbersToAdd: null                    // null = use default transient error list
+                    maxRetryCount: 3,
+                    maxRetryDelay: TimeSpan.FromSeconds(5),
+                    errorNumbersToAdd: null
                 );
             })); // looks in appSettings.json or environment variables for a connection string named "DefaultConnection"
 

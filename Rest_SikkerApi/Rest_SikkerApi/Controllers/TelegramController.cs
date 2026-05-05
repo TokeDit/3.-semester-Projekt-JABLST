@@ -92,6 +92,7 @@ public class TelegramController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Could not save message to DB — continuing without persistence.");
+            _db.ChangeTracker.Clear();
         }
 
         try
