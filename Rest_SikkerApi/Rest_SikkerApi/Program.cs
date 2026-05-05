@@ -45,9 +45,45 @@ builder.Services.AddHttpClient<TelegramCommandHandler>();
 builder.Services.AddScoped<ITelegramCommandHandler, TelegramCommandHandler>();
 
 //services.AddScoped<RepoMusicRecords>();
+// Register repository for database operations
 builder.Services.AddScoped<SikkerRepo>();
+builder.Services.AddScoped<ISikkerRepo, SikkerRepo>();
+
+// ==========================================================================================
+// Telegram Bot Configuration
+// ==========================================================================================
+// The TelegramService is configured here with credentials:
+// - Bot Token: The unique token for your Telegram bot (create via @BotFather)
+// - Chat ID: The Telegram chat where messages will be sent
+//
+// Configuration sources (in order of precedence):
+// 1. Environment variables: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+// 2. appsettings.json: "Telegram" section with "BotToken" and "ChatId"
+// 3. Hardcoded default token in TelegramService class
+//
+// Example appsettings.json configuration:
+// {
+//   "Telegram": {
+//     "BotToken": "your-bot-token-here",
+//     "ChatId": "your-chat-id-here"
+//   }
+// }
+// ==========================================================================================
+
+var telegramSection = builder.Configuration.GetSection("Telegram");
+var telegramBotToken = telegramSection["BotToken"] ?? Environment.GetEnvironmentVariable("TELEGRAM_BOT_TOKEN");
+var telegramChatId = telegramSection["ChatId"] ?? Environment.GetEnvironmentVariable("TELEGRAM_CHAT_ID");
+
+// Register TelegramService and a chat registration store as singletons.
+builder.Services.AddSingleton(new TelegramBotService(telegramBotToken ?? string.Empty, telegramChatId ?? string.Empty));
+
+builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
 // builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
 // Jwt Authentication -----------------------------------------------------------------------------
+// ==========================================================================================
+// JWT Authentication Configuration
+// ==========================================================================================
+// Configure JWT token validation for API endpoints
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
 
@@ -127,10 +163,19 @@ if (FirebaseApp.DefaultInstance is null)
 
     if (string.IsNullOrWhiteSpace(firebaseCredentialsJson))
     {
-        FirebaseApp.Create(new AppOptions
+        // For testing: skip Firebase initialization if file doesn't exist
+        try
         {
-            Credential = GoogleCredential.FromFile("firebase-service-account.json")
-        });
+            FirebaseApp.Create(new AppOptions
+            {
+                Credential = GoogleCredential.FromFile("firebase-service-account.json")
+            });
+        }
+        catch (System.IO.FileNotFoundException)
+        {
+            // Skip Firebase setup for testing
+            Console.WriteLine("Firebase service account file not found. Skipping Firebase initialization for testing.");
+        }
     }
     else
     {

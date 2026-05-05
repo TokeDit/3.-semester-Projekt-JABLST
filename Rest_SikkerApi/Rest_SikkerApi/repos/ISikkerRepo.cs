@@ -1,0 +1,14 @@
+using Rest_SikkerApi.models;
+
+namespace Rest_SikkerApi.repos
+{
+    public interface ISikkerRepo
+    {
+        Task<Image> SaveImageAsync(Image imageEntity);
+        Task<List<Image>> GetAllImagesAsync();
+        Task<Image?> GetImageByIdAsync(int id);
+        Task<User?> GetUserByFirebaseIdAsync(string ownerUid);
+        Task UpdateUserChatIdAsync(string ownerUid, string telegramChatId);
+        Task<User?> GetUserByChatIdAsync(string telegramChatId);
+    }
+}

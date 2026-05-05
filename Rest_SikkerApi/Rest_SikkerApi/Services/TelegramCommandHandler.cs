@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using Rest_SikkerApi.repos;
 
 namespace Rest_SikkerApi.Services
 {
@@ -20,16 +21,20 @@ namespace Rest_SikkerApi.Services
         //  Extract backend base URL from hardcoded localhost to configuration
         private readonly string _backendBaseUrl;
 
+        private readonly ISikkerRepo _repo;
+
 
         public TelegramCommandHandler(
             ITelegramService telegramService,
             HttpClient httpClient,
             ILogger<TelegramCommandHandler> logger,
-            IConfiguration config)
+            IConfiguration config,
+            ISikkerRepo repo)
         {
             _telegramService = telegramService;
             _httpClient = httpClient;
             _logger = logger;
+            _repo = repo;
 
            
             // Add to appsettings.json: "Backend": { "BaseUrl": "http://localhost:5000" }
@@ -138,11 +143,32 @@ namespace Rest_SikkerApi.Services
 
                 // --- UNKNOWN ---
                 default:
-                    _logger.LogWarning("Unknown command '{Command}' received from chat {ChatId}", normalizedCommand, chatId);
+                    if(command.Trim().Length > 20 && !command.Trim().StartsWith("/"))
+                    {
+                        var user = await _repo.GetUserByFirebaseIdAsync(command.Trim());
+                        if (user != null)
+                        {
+                            await _repo.UpdateUserChatIdAsync(user.OwnerUid, chatId.ToString());
+                            await _telegramService.SendMessageAsync(chatId,
+                                "Din Telegram chat er nu knyttet til din konto. Du vil modtage notifikationer her.", ct);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("No user found with Firebase ID '{FirebaseId}' for chat {ChatId}", command.Trim(), chatId);
+                            await _telegramService.SendMessageAsync(chatId,
+                                "Ingen bruger fundet med den angivne ID. Sørg for at du har indtastet din Firebase UID korrekt.", ct);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Unknown command '{Command}' received from chat {ChatId}", normalizedCommand, chatId);
                     await _telegramService.SendMessageAsync(chatId,
                         "Ukendt kommando. Skriv /hjælp for at se muligheder.", ct);
+                    }   
                     break;
+                    
             }
+            
         }
 
 

@@ -302,7 +302,9 @@ namespace TestAPI
                 Id = 78,
                 TimeStamp = "2026-04-29T19:00:00",
                 ImageType = "image/jpeg",
-                ImageData = new byte[] { 1, 2, 3 }
+                ImageData = new byte[] { 1, 2, 3 },
+                DetectedObject = "",
+                OwnerUid = ""
                 // Using default values for Description, Confidence, DetectedObject, OwnerUid
             };
 

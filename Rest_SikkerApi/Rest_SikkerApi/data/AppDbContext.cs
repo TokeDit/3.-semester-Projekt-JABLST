@@ -21,6 +21,8 @@ namespace Rest_SikkerApi.data
         //Added DbSet for TelegramMessage entity
         public DbSet<TelegramMessage> TelegramMessages { get; set; }
 
+        public DbSet<User> Users { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -75,6 +77,18 @@ namespace Rest_SikkerApi.data
                 entity.HasIndex(i => i.OwnerUid);
                 // Optional: create an index on TimeStamp for efficient querying by date
                 entity.HasIndex(i => i.TimeStamp);
+
+            });
+
+            // Configure User entity
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(u => u.OwnerUid);
+                entity.Property(u => u.OwnerUid)
+                    .IsRequired()
+                    .HasMaxLength(128);
+                entity.Property(u => u.TelegramChatId)
+                    .HasMaxLength(128);
             });
         }
     }
