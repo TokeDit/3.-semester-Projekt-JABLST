@@ -78,14 +78,7 @@ public class TelegramController : ControllerBase
 
         //  Log incoming message
         // REPLACE static field assignments with DB write
-        _db.TelegramMessages.Add(new TelegramMessage
-        {
-            ChatId = chatId,
-            Message = text,
-            ReceivedAt = DateTime.UtcNow
-        });
-        await _db.SaveChangesAsync(ct);
-
+        // COMMIT: Wrap DB write in try/catch so missing connection string doesn't crash locally
         try
         {
             _db.TelegramMessages.Add(new TelegramMessage
@@ -98,7 +91,6 @@ public class TelegramController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Log but don't crash — DB might not be available locally
             _logger.LogWarning(ex, "Could not save message to DB — continuing without persistence.");
         }
 
@@ -114,8 +106,6 @@ public class TelegramController : ControllerBase
 
         return Ok();
     }
-    
-
     [HttpGet("status")]
     public async Task<IActionResult> GetStatus()
     {
