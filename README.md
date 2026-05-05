@@ -21,6 +21,10 @@
 
 <!-- A more detailed explanation of the project. What problem does it solve? What is the context? -->
 
+## Architecture
+
+![System Architecture](https://github.com/user-attachments/assets/e6dfbb61-5015-40b4-8615-e976ead7d868)
+
 ---
 
 ## Built With
