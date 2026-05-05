@@ -65,27 +65,27 @@ namespace Rest_SikkerApi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OwnerUid");
+
+                    b.HasIndex("TimeStamp");
+
                     b.ToTable("Images");
                 });
 
             modelBuilder.Entity("Rest_SikkerApi.models.User", b =>
                 {
                     b.Property<string>("OwnerUid")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("TelegramChatId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.HasKey("OwnerUid");
 
                     b.ToTable("Users");
-                    b.HasIndex("OwnerUid");
-
-                    b.HasIndex("TimeStamp");
-
-                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("Rest_SikkerApi.models.TelegramMessage", b =>
