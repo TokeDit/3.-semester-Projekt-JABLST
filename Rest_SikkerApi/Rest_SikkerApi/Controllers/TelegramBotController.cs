@@ -39,7 +39,7 @@ namespace Rest_SikkerApi.Controllers
                 return BadRequest("Invalid Telegram webhook payload.");
             }
 
-            var chatId = request.Message.Chat.Id.ToString();
+            var telegramChatId = request.Message.Chat.Id.ToString();
             var messageText = request.Message.Text.Trim();
 
             // Check if message text is a Firebase ID (assume it's a valid Firebase ID format, e.g., length > 20 or contains specific chars)
@@ -49,7 +49,7 @@ namespace Rest_SikkerApi.Controllers
                 var user = await _repo.GetUserByFirebaseIdAsync(messageText);
                 if (user != null)
                 {
-                    await _repo.UpdateUserChatIdAsync(user.Id, chatId);
+                    await _repo.UpdateUserChatIdAsync(user.OwnerUid, telegramChatId);
                     return Ok(new { message = "Chat ID registered successfully." });
                 }
                 else
@@ -60,7 +60,7 @@ namespace Rest_SikkerApi.Controllers
             else
             {
                 // For other messages, check if chat ID is registered
-                var user = await _repo.GetUserByChatIdAsync(chatId);
+                var user = await _repo.GetUserByChatIdAsync(telegramChatId);
                 if (user != null)
                 {
                     // User is registered, process the message (e.g., acknowledge)

@@ -30,24 +30,24 @@ namespace Rest_SikkerApi.repos
             return await _context.Images.FindAsync(id);
         }
 
-        public virtual async Task<User?> GetUserByFirebaseIdAsync(string firebaseId)
+        public virtual async Task<User?> GetUserByFirebaseIdAsync(string ownerUid)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.FirebaseId == firebaseId);
+            return await _context.Users.FirstOrDefaultAsync(u => u.OwnerUid == ownerUid);
         }
 
-        public virtual async Task UpdateUserChatIdAsync(int userId, string chatId)
+        public virtual async Task UpdateUserChatIdAsync(string ownerUid, string telegramChatId)
         {
-            var user = await _context.Users.FindAsync(userId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.OwnerUid == ownerUid);
             if (user != null)
             {
-                user.ChatId = chatId;
+                user.TelegramChatId = telegramChatId;
                 await _context.SaveChangesAsync();
             }
         }
 
-        public virtual async Task<User?> GetUserByChatIdAsync(string chatId)
+        public virtual async Task<User?> GetUserByChatIdAsync(string telegramChatId)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.ChatId == chatId);
+            return await _context.Users.FirstOrDefaultAsync(u => u.TelegramChatId == telegramChatId);
         }
     }
 }
