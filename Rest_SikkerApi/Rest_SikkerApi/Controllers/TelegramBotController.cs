@@ -46,17 +46,8 @@ namespace Rest_SikkerApi.Controllers
             // Check if message text is a Firebase ID (assume it's a valid Firebase ID format, e.g., length > 20 or contains specific chars)
             if (!string.IsNullOrWhiteSpace(messageText) && messageText.Length > 20) // Adjust threshold as needed
             {
-                // Try to register: find user by Firebase ID and save chat ID
-                var user = await _repo.GetUserByFirebaseIdAsync(messageText);
-                if (user != null)
-                {
-                    await _repo.UpdateUserChatIdAsync(user.OwnerUid, telegramChatId);
-                    return Ok(new { message = "Chat ID registered successfully." });
-                }
-                else
-                {
-                    return BadRequest("Firebase ID not found.");
-                }
+                await _repo.UpdateUserChatIdAsync(messageText, telegramChatId);
+                return Ok(new { message = "Chat ID registered successfully." });
             }
             else
             {

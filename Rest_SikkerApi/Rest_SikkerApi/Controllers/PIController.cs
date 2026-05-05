@@ -35,7 +35,10 @@ public class PIController : ControllerBase
             }
 
             // tilgiver FirebaseUid i både HttpContext og User.Claims for at sikre kompatibilitet med forskellige autentificeringsmetoder
-            var firebaseUid = HttpContext.Items["FirebaseUid"] as string ?? User.FindFirst("firebase_uid")?.Value ?? string.Empty;
+            var firebaseUid = HttpContext.Items["FirebaseUid"] as string
+                ?? User.FindFirst("firebase_uid")?.Value
+                ?? image.OwnerUid
+                ?? string.Empty;
 
 
 
