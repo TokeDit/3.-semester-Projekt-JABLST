@@ -22,7 +22,7 @@ namespace Rest_SikkerApi.models
         public string DetectedObject { get; set; } = string.Empty;
         
         // Add owner UID (Firebase UID) to tie image to a user
-        public string OwnerUid { get; set; }
+        public string? OwnerUid { get; set; }
 
         // For API - accept/return Base64 string
 

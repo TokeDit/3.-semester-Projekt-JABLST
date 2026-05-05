@@ -99,6 +99,7 @@ def send_to_api(frame, timestamp, confidence):
         "DetectedObject": "person",
         "Confidence": round(confidence, 4),
         "TimeStamp": timestamp.isoformat(timespec = 'minutes'),
+        "OwnerUid": "x4cIZZqygmYXvsTBu7xImgfVT6z1"
     }
 
     try:

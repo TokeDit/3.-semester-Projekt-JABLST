@@ -132,7 +132,6 @@ namespace Rest_SikkerApi.Controllers
         }
         //To Test and Call GET /Secure/ping and measure round-trip time
         [HttpGet("ping")]
-
         public IActionResult Ping() {
             return Ok(new
             {

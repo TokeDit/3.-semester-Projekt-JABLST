@@ -2,17 +2,22 @@
 using Rest_SikkerApi.repos;
 namespace Rest_SikkerApi;
 using Rest_SikkerApi.models;
+using Rest_SikkerApi.Services;
 
 [ApiController]
 [Route("api/[controller]")]
 public class PIController : ControllerBase
 {
-    private readonly SikkerRepo m_repo;
+    private readonly ISikkerRepo _repo;
     private static DateTime? _lastHeartBeat;
+    private readonly TelegramBotService _telegramService;
+
+
     
-    public PIController(SikkerRepo repo)
+    public PIController(ISikkerRepo repo, TelegramBotService telegramService)
     {
-        m_repo = repo;
+        _repo = repo;
+        _telegramService = telegramService;
     }
 
     [HttpPost]
@@ -45,8 +50,16 @@ public class PIController : ControllerBase
                 Confidence = image.Confidence
             };
 
-            await m_repo.SaveImageAsync(imageEntity);
-
+            await _repo.SaveImageAsync(imageEntity);
+            if(!string.IsNullOrWhiteSpace(firebaseUid))
+            {
+                var user = await _repo.GetUserByFirebaseIdAsync(firebaseUid);
+                if(user != null && !string.IsNullOrWhiteSpace(user.TelegramChatId))
+                {
+                    var dashboardUrl = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/dashboard";
+                    await _telegramService.SendImageLinkAsync(dashboardUrl, image.Description, user.TelegramChatId);
+                }
+            }
             return Ok(imageEntity);
         }
         catch (Exception ex)
