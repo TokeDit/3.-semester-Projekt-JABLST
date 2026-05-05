@@ -1,7 +1,6 @@
 # 3.Semester Projekt - Sikkerhedssystem
 
-> Short description of what the project does and who it's for.
-
+Dette er et simplet sikkerhedssystem, som registre bevægelse og sender billedet til brugern.
 ---
 
 ## Table of Contents
@@ -20,6 +19,81 @@
 ## About
 
 <!-- A more detailed explanation of the project. What problem does it solve? What is the context? -->
+Projektet har til formål at udvikle et simpelt, men effektivt, smart sikkerhedssystem ved hjælp af en Raspberry Pi. Systemet registrerer bevægelse, tager et billede og sender det øjeblikkeligt til brugeren. Den langsigtede vision er at understøtte ansigtsgenkendelse for at kunne skelne mellem husstandsmedlemmer og ukendte personer samt at gemme de optagne billeder sikkert i skyen.
+Målet er et pålideligt system med lav vedligeholdelse, der øger hjemme sikkerheden uden behov for konstant overvågning.
+
+---
+
+## System Architecture
+
+```mermaid
+graph TB
+    subgraph Client["Client Layer"]
+        Browser["Browser\nVue 3 SPA"]
+    end
+
+    subgraph Firebase["Firebase (Google Cloud)"]
+        FirebaseAuth["Firebase Auth\nsecurity-system-login"]
+    end
+
+    subgraph Pi["Raspberry Pi"]
+        PiCam["PiCamera2\n1280×720"]
+        TFLite["TFLite Model\nCOCO person detection"]
+        PyScript["Python Script\nMotion Detection"]
+        PiCam --> TFLite --> PyScript
+    end
+
+    subgraph Telegram["Telegram"]
+        TelegramBot["Telegram Bot\n@webhook"]
+        TelegramUser["User\n(mobile app)"]
+        TelegramUser <--> TelegramBot
+    end
+
+    subgraph Gemini["Google Gemini API"]
+        GeminiModel["gemini-2.5-flash\nImage Analysis"]
+    end
+
+    subgraph API["ASP.NET Core REST API (Azure)"]
+        AuthCtrl["AuthController\nGET /api/auth/me"]
+        PICtrl["PIController\nPOST /api/PI\nPOST /api/PI/heartbeat\nGET /api/PI/status"]
+        SikkerCtrl["SikkerController\nGET|POST /Sikker/*"]
+        ImageCtrl["ImageController\nGET /api/image"]
+        TelegramCtrl["TelegramController\nPOST /telegram/update\nGET /telegram/status"]
+
+        TelegramSvc["TelegramService\nsendMessage → Bot API"]
+        TelegramCmdHandler["TelegramCommandHandler\n/on /off /status /ping /help"]
+        GeminiSvc["GeminiImageAnalysisService\nanalyze image → JSON"]
+
+        SikkerRepo["SikkerRepo\nSaveImage / GetImages"]
+        AppDbContext["AppDbContext\nEF Core"]
+    end
+
+    subgraph DB["SQL Server (Azure)"]
+        ImagesTable["Images table\n(Id, ImageData, OwnerUid,\nDescription, Confidence…)"]
+    end
+
+    Browser -->|"signIn/register"| FirebaseAuth
+    FirebaseAuth -->|"ID Token"| Browser
+    Browser -->|"Bearer token\nGET /api/auth/me"| AuthCtrl
+    Browser -->|"GET /api/image"| ImageCtrl
+    Browser -->|"GET /Sikker/status"| SikkerCtrl
+
+    PyScript -->|"POST /api/PI (image + metadata)"| PICtrl
+    PyScript -->|"POST /api/PI/heartbeat"| PICtrl
+    PICtrl --> GeminiSvc
+    GeminiSvc -->|"Base64 image + prompt"| GeminiModel
+    GeminiModel -->|"{ hasPerson, description }"| GeminiSvc
+    GeminiSvc --> SikkerRepo
+
+    TelegramBot -->|"POST /telegram/update"| TelegramCtrl
+    TelegramCtrl --> TelegramCmdHandler
+    TelegramCmdHandler -->|"/on /off /status"| SikkerCtrl
+    TelegramCmdHandler --> TelegramSvc
+    TelegramSvc -->|"sendMessage"| TelegramBot
+
+    SikkerRepo --> AppDbContext --> ImagesTable
+    ImageCtrl --> SikkerRepo
+```
 
 ---
 
