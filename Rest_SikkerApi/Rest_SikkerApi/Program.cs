@@ -240,9 +240,6 @@ app.Use(async (context, next) =>
             }
             else
             {
-
-            }
-            {
                 var newId = new ClaimsIdentity(new[] { new Claim("firebase_uid", uid) });
                 context.User = new ClaimsPrincipal(newId);
             }
