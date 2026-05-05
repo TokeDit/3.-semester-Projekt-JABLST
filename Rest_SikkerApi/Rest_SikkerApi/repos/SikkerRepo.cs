@@ -35,9 +35,9 @@ namespace Rest_SikkerApi.repos
             return await _context.Users.FindAsync(ownerUid);
         }
 
-        public async Task UpdateUserChatIdAsync(string ownerUid, string telegramChatId)
+        public async Task UpdateUserChatIdAsync(string ownerUid, string telegramChatId, CancellationToken ct = default)
         {
-            var user = await _context.Users.FindAsync(ownerUid);
+            var user = await _context.Users.FindAsync(new object?[] { ownerUid }, ct);
             if (user == null)
             {
                 _context.Users.Add(new User { OwnerUid = ownerUid, TelegramChatId = telegramChatId });
@@ -46,7 +46,7 @@ namespace Rest_SikkerApi.repos
             {
                 user.TelegramChatId = telegramChatId;
             }
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(ct);
         }
 
         public async Task<User?> GetUserByChatIdAsync(string telegramChatId)
