@@ -6,7 +6,7 @@ namespace Rest_SikkerApi.repos
     {
         Task<Image> SaveImageAsync(Image imageEntity);
         Task<List<Image>> GetAllImagesAsync();
-        Task<Image?> GetImageByIdAsync(string id);
+        Task<Image?> GetImageByIdAsync(int id);
         Task<User?> GetUserByFirebaseIdAsync(string ownerUid);
         Task UpdateUserChatIdAsync(string ownerUid, string telegramChatId);
         Task<User?> GetUserByChatIdAsync(string telegramChatId);

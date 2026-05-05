@@ -15,7 +15,7 @@ namespace TestAPI
         [Fact]
         public async Task SendMotionAlertMessage_ReturnsBadRequest_WhenDescriptionIsEmpty()
         {
-            var serviceMock = new Mock<TelegramService>("bot-token", "123", new HttpClient())
+            var serviceMock = new Mock<TelegramBotService>("bot-token", "123", new HttpClient())
             {
                 CallBase = false
             };
@@ -31,7 +31,7 @@ namespace TestAPI
         [Fact]
         public async Task SendMotionAlertMessage_CallsSendMessageAsync_WhenDescriptionIsValid()
         {
-            var serviceMock = new Mock<TelegramService>("bot-token", "123", new HttpClient())
+            var serviceMock = new Mock<TelegramBotService>("bot-token", "123", new HttpClient())
             {
                 CallBase = false
             };
@@ -50,7 +50,7 @@ namespace TestAPI
         [Fact]
         public async Task SendMotionAlertLink_ReturnsBadRequest_WhenRequestIsNull()
         {
-            var serviceMock = new Mock<TelegramService>("bot-token", "123", new HttpClient())
+            var serviceMock = new Mock<TelegramBotService>("bot-token", "123", new HttpClient())
             {
                 CallBase = false
             };
@@ -67,7 +67,7 @@ namespace TestAPI
         [Fact]
         public async Task SendMotionAlertLink_ReturnsBadRequest_WhenImageUrlIsEmpty()
         {
-            var serviceMock = new Mock<TelegramService>("bot-token", "123", new HttpClient())
+            var serviceMock = new Mock<TelegramBotService>("bot-token", "123", new HttpClient())
             {
                 CallBase = false
             };
@@ -84,7 +84,7 @@ namespace TestAPI
         [Fact]
         public async Task SendMotionAlertLink_CallsSendImageLinkAsync_WhenRequestIsValid()
         {
-            var serviceMock = new Mock<TelegramService>("bot-token", "123", new HttpClient())
+            var serviceMock = new Mock<TelegramBotService>("bot-token", "123", new HttpClient())
             {
                 CallBase = false
             };
@@ -109,7 +109,7 @@ namespace TestAPI
         [Fact]
         public async Task HandleWebhook_ReturnsBadRequest_WhenRequestIsInvalid()
         {
-            var serviceMock = new Mock<TelegramService>("bot-token", "123", new HttpClient())
+            var serviceMock = new Mock<TelegramBotService>("bot-token", "123", new HttpClient())
             {
                 CallBase = false
             };
@@ -124,7 +124,7 @@ namespace TestAPI
         [Fact]
         public async Task HandleWebhook_RegistersChatId_WhenFirebaseIdIsValid()
         {
-            var serviceMock = new Mock<TelegramService>("bot-token", "123", new HttpClient())
+            var serviceMock = new Mock<TelegramBotService>("bot-token", "123", new HttpClient())
             {
                 CallBase = false
             };
@@ -156,7 +156,7 @@ namespace TestAPI
         [Fact]
         public async Task HandleWebhook_ReturnsBadRequest_WhenFirebaseIdNotFound()
         {
-            var serviceMock = new Mock<TelegramService>("bot-token", "123", new HttpClient())
+            var serviceMock = new Mock<TelegramBotService>("bot-token", "123", new HttpClient())
             {
                 CallBase = false
             };
@@ -182,7 +182,7 @@ namespace TestAPI
         [Fact]
         public async Task HandleWebhook_ReturnsOk_WhenChatIdIsRegistered()
         {
-            var serviceMock = new Mock<TelegramService>("bot-token", "123", new HttpClient())
+            var serviceMock = new Mock<TelegramBotService>("bot-token", "123", new HttpClient())
             {
                 CallBase = false
             };
@@ -208,7 +208,7 @@ namespace TestAPI
         [Fact]
         public async Task HandleWebhook_ReturnsBadRequest_WhenChatIdNotRegistered()
         {
-            var serviceMock = new Mock<TelegramService>("bot-token", "123", new HttpClient())
+            var serviceMock = new Mock<TelegramBotService>("bot-token", "123", new HttpClient())
             {
                 CallBase = false
             };

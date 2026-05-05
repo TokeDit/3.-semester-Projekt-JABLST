@@ -21,7 +21,7 @@ namespace TestAPI
         [Fact]
         public void Constructor_ThrowsWhenChatIdIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new TelegramService("bot-token", null!, new HttpClient()));
+            Assert.Throws<ArgumentNullException>(() => new TelegramBotService("bot-token", null!, new HttpClient()));
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace TestAPI
                 .Verifiable();
 
             var httpClient = CreateHttpClient(handlerMock);
-            var service = new TelegramService("bot-token", "123", httpClient);
+            var service = new TelegramBotService("bot-token", "123", httpClient);
 
             await service.SendMessageAsync("Hello world");
 
@@ -76,7 +76,7 @@ namespace TestAPI
                 .Verifiable();
 
             var httpClient = CreateHttpClient(handlerMock);
-            var service = new TelegramService("bot-token", "123", httpClient);
+            var service = new TelegramBotService("bot-token", "123", httpClient);
 
             await service.SendImageLinkAsync("https://dashboard.example", string.Empty);
 
@@ -101,7 +101,7 @@ namespace TestAPI
                 .Verifiable();
 
             var httpClient = CreateHttpClient(handlerMock);
-            var service = new TelegramService("bot-token", "123", httpClient);
+            var service = new TelegramBotService("bot-token", "123", httpClient);
 
             await service.SendImageLinkAsync("https://dashboard.example", "Front door alert");
 
@@ -114,7 +114,7 @@ namespace TestAPI
         public async Task SendImageLinkAsync_ThrowsWhenImageUrlIsEmpty()
         {
             var httpClient = new HttpClient();
-            var service = new TelegramService("bot-token", "123", httpClient);
+            var service = new TelegramBotService("bot-token", "123", httpClient);
 
             await Assert.ThrowsAsync<ArgumentException>(async () => await service.SendImageLinkAsync(string.Empty, "Description"));
         }

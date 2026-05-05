@@ -9,7 +9,7 @@ namespace Rest_SikkerApi.Services
     /// TelegramService handles all communication with the Telegram Bot API.
     /// It sends text messages and photos to a configured Telegram chat.
     /// </summary>
-    public class TelegramService
+    public class TelegramBotService
     {
         /// <summary>Default Telegram bot token. Override via dependency injection if needed.</summary>
         private readonly string _botToken = "8768336190:AAEcRuOPUmVPIfsKCAXTkSXfzjPHzsKe3vE";
@@ -27,7 +27,7 @@ namespace Rest_SikkerApi.Services
         /// <param name="telegramChatId">Target Telegram chat ID. Cannot be null.</param>
         /// <param name="httpClient">Optional HTTP client for unit testing and custom configuration.</param>
         /// <exception cref="ArgumentNullException">Thrown if telegramChatId is null or empty.</exception>
-        public TelegramService(string botToken, string telegramChatId, HttpClient? httpClient = null)
+        public TelegramBotService(string botToken, string telegramChatId, HttpClient? httpClient = null)
         {
             if (!string.IsNullOrWhiteSpace(botToken))
             {

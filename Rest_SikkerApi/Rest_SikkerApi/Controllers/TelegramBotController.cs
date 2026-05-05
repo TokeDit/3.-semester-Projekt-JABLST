@@ -19,10 +19,10 @@ namespace Rest_SikkerApi.Controllers
     [Route("api/[controller]")]
     public sealed class TelegramBotController : ControllerBase
     {
-        private readonly TelegramService _telegramService;
+        private readonly TelegramBotService _telegramService;
         private readonly ISikkerRepo _repo;
 
-        public TelegramBotController(TelegramService telegramService, ISikkerRepo repo)
+        public TelegramBotController(TelegramBotService telegramService, ISikkerRepo repo)
         {
             _telegramService = telegramService;
             _repo = repo;

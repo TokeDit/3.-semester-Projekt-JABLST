@@ -25,6 +25,35 @@ namespace Rest_SikkerApi.repos
             return await _context.Images.ToListAsync();
         }
 
+        public async Task<Image?> GetImageByIdAsync(int id)
+        {
+            return await _context.Images.FindAsync(id);
+        }
+
+        public async Task<User?> GetUserByFirebaseIdAsync(string ownerUid)
+        {
+            return await _context.Users.FindAsync(ownerUid);
+        }
+
+        public async Task UpdateUserChatIdAsync(string ownerUid, string telegramChatId)
+        {
+            var user = await _context.Users.FindAsync(ownerUid);
+            if (user == null)
+            {
+                _context.Users.Add(new User { OwnerUid = ownerUid, TelegramChatId = telegramChatId });
+            }
+            else
+            {
+                user.TelegramChatId = telegramChatId;
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<User?> GetUserByChatIdAsync(string telegramChatId)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.TelegramChatId == telegramChatId);
+        }
+
         public IEnumerable<Image> GetAmountImage(int amount = 20)
         {
             return _context.Images.OrderBy(i => i.Id).Take(amount);

@@ -17,10 +17,10 @@ namespace Rest_SikkerApi.Controllers
 
         private readonly SikkerRepo _repo;
         private readonly ILogger<SikkerController> _logger;
-        private readonly TelegramService _telegramService;
+        private readonly TelegramBotService _telegramService;
         private readonly string _dashboardUrl;
 
-        public SikkerController(ILogger<SikkerController> logger, SikkerRepo repo, TelegramService telegramService, IConfiguration configuration)
+        public SikkerController(ILogger<SikkerController> logger, SikkerRepo repo, TelegramBotService telegramService, IConfiguration configuration)
         {
             _logger = logger;
             _repo = repo;
@@ -34,11 +34,6 @@ namespace Rest_SikkerApi.Controllers
         {
             if (image == null || image.ImageData == null || image.ImageData.Length == 0)
                 return BadRequest("Image object is null or Imagedata is missing");
-
-            if (string.IsNullOrWhiteSpace(image.Id))
-            {
-                image.Id = Guid.NewGuid().ToString();
-            }
 
             if (string.IsNullOrWhiteSpace(image.TimeStamp))
             {
@@ -92,7 +87,7 @@ namespace Rest_SikkerApi.Controllers
 
         // GET: /Sikker/Image/{id}
         [HttpGet("Image/{id}", Name = "GetImageById")]
-        public async Task<IActionResult> GetImageById(string id)
+        public async Task<IActionResult> GetImageById(int id)
         {
             var image = await _repo.GetImageByIdAsync(id);
             if (image == null)
