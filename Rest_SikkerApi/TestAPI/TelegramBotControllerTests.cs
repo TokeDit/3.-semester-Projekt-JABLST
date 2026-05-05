@@ -133,7 +133,7 @@ namespace TestAPI
 
             repoMock.Setup(r => r.GetUserByFirebaseIdAsync("valid-firebase-id-very-long"))
                     .ReturnsAsync(new User { OwnerUid = "valid-firebase-id-very-long" });
-            repoMock.Setup(r => r.UpdateUserChatIdAsync("valid-firebase-id-very-long", "123456789"))
+            repoMock.Setup(r => r.UpdateUserChatIdAsync("valid-firebase-id-very-long", "123456789", default(CancellationToken)))
                     .Returns(Task.CompletedTask).Verifiable();
 
 
