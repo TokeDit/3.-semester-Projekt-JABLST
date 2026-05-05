@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Rest_SikkerApi.data;
 using Rest_SikkerApi.interfaces;
 using Rest_SikkerApi.models;
+using System.Net.NetworkInformation;
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("telegram")]
@@ -87,18 +88,33 @@ public class TelegramController : ControllerBase
 
         try
         {
-            //  Route to command handler instead of echoing back
+            _db.TelegramMessages.Add(new TelegramMessage
+            {
+                ChatId = chatId,
+                Message = text,
+                ReceivedAt = DateTime.UtcNow
+            });
+            await _db.SaveChangesAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            // Log but don't crash — DB might not be available locally
+            _logger.LogWarning(ex, "Could not save message to DB — continuing without persistence.");
+        }
+
+        try
+        {
             await _commandHandler.HandleCommandAsync(chatId, text, ct);
         }
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Failed to handle command for chat {ChatId}", chatId);
-            // Still return 200 so Telegram does not retry
             return Ok();
         }
 
         return Ok();
     }
+    
 
     [HttpGet("status")]
     public async Task<IActionResult> GetStatus()
