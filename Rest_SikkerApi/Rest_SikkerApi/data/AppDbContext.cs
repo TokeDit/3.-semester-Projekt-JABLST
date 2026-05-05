@@ -18,6 +18,8 @@ namespace Rest_SikkerApi.data
 
         // Ties the Image model to a database table named "Images"
         public DbSet<Image> Images { get; set; }
+        //Added DbSet for TelegramMessage entity
+        public DbSet<TelegramMessage> TelegramMessages { get; set; }
 
         public DbSet<User> Users { get; set; }
 

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rest_SikkerApi.data;
 
@@ -11,9 +12,11 @@ using Rest_SikkerApi.data;
 namespace Rest_SikkerApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260504220509_AddTelegramMessages")]
+    partial class AddTelegramMessages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -65,22 +68,6 @@ namespace Rest_SikkerApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Images");
-                });
-
-            modelBuilder.Entity("Rest_SikkerApi.models.User", b =>
-                {
-                    b.Property<string>("OwnerUid")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("TelegramChatId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("OwnerUid");
-
-                    b.ToTable("Users");
                     b.HasIndex("OwnerUid");
 
                     b.HasIndex("TimeStamp");

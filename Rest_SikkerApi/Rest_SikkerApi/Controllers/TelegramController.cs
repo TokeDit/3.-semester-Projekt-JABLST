@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Rest_SikkerApi.interfaces;
-using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Rest_SikkerApi.data;
+using Rest_SikkerApi.interfaces;
+using Rest_SikkerApi.models;
+using System.Net.NetworkInformation;
+using System.Text.Json;
 
 [ApiController]
 [Route("telegram")]
@@ -13,23 +17,23 @@ public class TelegramController : ControllerBase
     //  Inject ITelegramCommandHandler to route commands properly
     private readonly ITelegramCommandHandler _commandHandler;
 
-     // race conditions and make state testable and replaceable (e.g. with a DB later)
-    private static long _lastChatId;
-    private static string _lastMessage = "";
-    private static DateTime _lastMessageTime;
-
+ 
     //  Inject ILogger for structured logging in controller actions
     private readonly ILogger<TelegramController> _logger;
 
     //  Add ITelegramCommandHandler to constructor
+    private readonly AppDbContext _db;
+
     public TelegramController(
         ITelegramService telegramService,
         ITelegramCommandHandler commandHandler,
-        ILogger<TelegramController> logger)
+        ILogger<TelegramController> logger,
+        AppDbContext db)
     {
         _telegramService = telegramService;
         _commandHandler = commandHandler;
         _logger = logger;
+        _db = db;
     }
 
     [HttpPost("update")]
@@ -73,39 +77,47 @@ public class TelegramController : ControllerBase
             : "";
 
         //  Log incoming message
-        _logger.LogInformation("Received Telegram message from chat {ChatId}: {Text}", chatId, text);
-
-        //  Save in-memory state (not thread-safe — replace with scoped service later)
-        _lastChatId = chatId;
-        _lastMessage = text;
-        _lastMessageTime = DateTime.UtcNow;
+        // REPLACE static field assignments with DB write
+        // COMMIT: Wrap DB write in try/catch so missing connection string doesn't crash locally
+        try
+        {
+            _db.TelegramMessages.Add(new TelegramMessage
+            {
+                ChatId = chatId,
+                Message = text,
+                ReceivedAt = DateTime.UtcNow
+            });
+            await _db.SaveChangesAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not save message to DB — continuing without persistence.");
+        }
 
         try
         {
-            //  Route to command handler instead of echoing back
             await _commandHandler.HandleCommandAsync(chatId, text, ct);
         }
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Failed to handle command for chat {ChatId}", chatId);
-            // Still return 200 so Telegram does not retry
             return Ok();
         }
 
         return Ok();
     }
-
     [HttpGet("status")]
-    public IActionResult GetStatus()
+    public async Task<IActionResult> GetStatus()
     {
+        var last = await _db.TelegramMessages
+            .OrderByDescending(m => m.ReceivedAt)
+            .FirstOrDefaultAsync();
+
         return Ok(new
         {
-            lastChatId = _lastChatId,
-            lastMessage = _lastMessage,
-            // Return ISO 8601 UTC timestamp string
-            lastMessageTime = _lastMessageTime == default
-                ? null
-                : (string?)_lastMessageTime.ToString("o")
+            lastChatId = last?.ChatId ?? 0,
+            lastMessage = last?.Message ?? "",
+            lastMessageTime = last?.ReceivedAt.ToString("o")
         });
     }
 }

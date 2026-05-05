@@ -95,16 +95,15 @@ namespace Rest_SikkerApi.Services
                 //Start Menu for Telegram Bot
                 case "/start":
                     await _telegramService.SendMessageAsync(chatId,
-                        "\"Welcome to Vision Monitor Bot 👋\\n\\n\"" +
-                        " +\r\n       " +
-                        " \"I can help you control and monitor your system.\\n\\n\"" +
-                        " +\r\n        \"Available commands:\\n\" +\r\n      " +
-                        "  \"/on – Turn the system on\\n\" +\r\n     " +
-                        "   \"/off – Turn the system off\\n\" +\r\n       " +
-                        " \"/status – System status\\n\" +\r\n     " +
-                        "   \"/time – Server time\\n\" +\r\n       " +
-                        " \"/help – Show all commands\\n\\n\" +\r\n       " +
-                        " \"Type a command to get started.", ct);
+                        "Welcome to Vision Monitor Bot 👋\n\n" +
+                        "I can help you control and monitor your system.\n\n" +
+                        "Available commands:\n" +
+                        "/on – Turn the system on\n" +
+                        "/off – Turn the system off\n" +
+                        "/status – System status\n" +
+                        "/time – Server time\n" +
+                        "/help – Show all commands\n\n" +
+                        "Type a command to get started.", ct);
                     break;
                 // --- HELP ---
                 case "/hjælp":
@@ -242,18 +241,32 @@ namespace Rest_SikkerApi.Services
                     "Fejl: En uventet fejl opstod.", ct);
             }
         }
-            private async Task PingAsync(long chatId, CancellationToken ct)
+        private async Task PingAsync(long chatId, CancellationToken ct)
+        {
+            var start = DateTime.UtcNow;
+            try
             {
-                var start = DateTime.UtcNow;
                 var response = await _httpClient.GetAsync($"{_backendBaseUrl}/Sikker/ping", ct);
                 var ms = (DateTime.UtcNow - start).TotalMilliseconds;
 
-            if (response.IsSuccessStatusCode)
-                await _telegramService.SendMessageAsync(chatId,
-                    $"Pong! Response time: {ms:F0}ms", ct);
-            else
+                if (response.IsSuccessStatusCode)
+                    await _telegramService.SendMessageAsync(chatId,
+                        $"Pong! Response time: {ms:F0}ms", ct);
+                else
+                    await _telegramService.SendMessageAsync(chatId,
+                        "Ping failed — backend not responding.", ct);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Ping request was cancelled for chat {ChatId}", chatId);
+                throw;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Ping failed for chat {ChatId}", chatId);
                 await _telegramService.SendMessageAsync(chatId,
                     "Ping failed — backend not responding.", ct);
             }
+        }
     }
 }
