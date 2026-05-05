@@ -54,7 +54,22 @@ namespace Rest_SikkerApi.Controllers
                 await _repo.SaveImageAsync(image);
                 var dashboardUrl = _dashboardUrl;
 
-                await _telegramService.SendImageLinkAsync(dashboardUrl, image.Description);
+                if (!string.IsNullOrWhiteSpace(image.OwnerUid))
+                {
+                    var user = await _repo.GetUserByFirebaseIdAsync(image.OwnerUid);
+                    if (user != null && !string.IsNullOrWhiteSpace(user.TelegramChatId))
+                    {
+                        await _telegramService.SendImageLinkAsync(dashboardUrl, image.Description, user.TelegramChatId);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("No Telegram chat found for user with Firebase ID: {OwnerUid}", image.OwnerUid);
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation("Image with ID: {ImageId} has no associated OwnerUid, skipping Telegram notification.", image.Id);
+                }
 
                 return Ok(new { message = "Image received successfully", size = imageBytes.Length, dashboardUrl });
             }

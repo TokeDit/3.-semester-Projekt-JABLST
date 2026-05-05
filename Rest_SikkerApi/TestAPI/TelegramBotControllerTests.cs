@@ -129,11 +129,13 @@ namespace TestAPI
                 CallBase = false
             };
             var repoMock = new Mock<ISikkerRepo>();
+
             repoMock.Setup(r => r.GetUserByFirebaseIdAsync("valid-firebase-id-very-long"))
-                    .ReturnsAsync(new User { Id = 1, FirebaseId = "valid-firebase-id-very-long" });
-            repoMock.Setup(r => r.UpdateUserChatIdAsync(1, "123456789"))
-                    .Returns(Task.CompletedTask)
-                    .Verifiable();
+                    .ReturnsAsync(new User { OwnerUid = "valid-firebase-id-very-long" });
+            repoMock.Setup(r => r.UpdateUserChatIdAsync("valid-firebase-id-very-long", "123456789"))
+                    .Returns(Task.CompletedTask).Verifiable();
+
+
 
             var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
             var request = new TelegramWebhookRequest
@@ -186,7 +188,7 @@ namespace TestAPI
             };
             var repoMock = new Mock<ISikkerRepo>();
             repoMock.Setup(r => r.GetUserByChatIdAsync("123456789"))
-                    .ReturnsAsync(new User { Id = 1, ChatId = "123456789" });
+                    .ReturnsAsync(new User { OwnerUid = "some-Uid", TelegramChatId = "123456789" });
 
             var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
             var request = new TelegramWebhookRequest
