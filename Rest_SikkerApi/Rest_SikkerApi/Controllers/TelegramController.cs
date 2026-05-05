@@ -16,11 +16,7 @@ public class TelegramController : ControllerBase
     //  Inject ITelegramCommandHandler to route commands properly
     private readonly ITelegramCommandHandler _commandHandler;
 
-     // race conditions and make state testable and replaceable (e.g. with a DB later)
-    private static long _lastChatId;
-    private static string _lastMessage = "";
-    private static DateTime _lastMessageTime;
-
+ 
     //  Inject ILogger for structured logging in controller actions
     private readonly ILogger<TelegramController> _logger;
 
