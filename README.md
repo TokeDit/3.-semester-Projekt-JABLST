@@ -23,6 +23,12 @@
 
 ---
 
+## Systemarkitektur
+
+![Systemarkitektur](docs/system-flow.png)
+
+---
+
 ## Built With
 
 - [Vue.js](https://vuejs.org)
