@@ -46,7 +46,7 @@ public class PIController : ControllerBase
                 ImageType = image.ImageType,
                 ImageData = image.ImageData,
                 Description = image.Description,
-                OwnerUid = firebaseUid,
+                OwnerUid = image.firebaseUid,
                 Confidence = image.Confidence
             };
 
