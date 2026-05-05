@@ -415,6 +415,7 @@ export default {
 
   data() {
     return {
+      apiBase: "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net",
       telegramStatus: {
         lastMessage: "",
         lastMessageTime: null,
