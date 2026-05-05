@@ -1,7 +1,6 @@
 # 3.Semester Projekt - Sikkerhedssystem
 
-> Short description of what the project does and who it's for.
-
+Dette er et simplet sikkerhedssystem, som registre bevægelse og sender billedet til brugern.
 ---
 
 ## Table of Contents
@@ -20,6 +19,8 @@
 ## About
 
 <!-- A more detailed explanation of the project. What problem does it solve? What is the context? -->
+Projektet har til formål at udvikle et simpelt, men effektivt, smart sikkerhedssystem ved hjælp af en Raspberry Pi. Systemet registrerer bevægelse, tager et billede og sender det øjeblikkeligt til brugeren. Den langsigtede vision er at understøtte ansigtsgenkendelse for at kunne skelne mellem husstandsmedlemmer og ukendte personer samt at gemme de optagne billeder sikkert i skyen.
+Målet er et pålideligt system med lav vedligeholdelse, der øger hjemme sikkerheden uden behov for konstant overvågning.
 
 ---
 
