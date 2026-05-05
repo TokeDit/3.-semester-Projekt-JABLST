@@ -24,11 +24,14 @@ namespace TestAPI
 
             var imageEntity = new Image
             {
-                Id = "test-image-1",
+                Id = 1,
                 TimeStamp = "2026-04-29T10:00:00",
                 ImageType = "image/jpeg",
                 ImageData = new byte[] { 1, 2, 3, 4, 5 },
-                Description = "Test image"
+                Description = "Test image",
+                Confidence = 0.95f,
+                DetectedObject = "person",
+                OwnerUid = "user123"
             };
 
             // Act
@@ -36,16 +39,19 @@ namespace TestAPI
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("test-image-1", result.Id);
+            Assert.Equal(1, result.Id);
             Assert.Equal("2026-04-29T10:00:00", result.TimeStamp);
             Assert.Equal("image/jpeg", result.ImageType);
             Assert.Equal(new byte[] { 1, 2, 3, 4, 5 }, result.ImageData);
             Assert.Equal("Test image", result.Description);
+            Assert.Equal(0.95f, result.Confidence);
+            Assert.Equal("person", result.DetectedObject);
+            Assert.Equal("user123", result.OwnerUid);
 
             // Verify it's actually in the database
-            var savedImage = await context.Images.FindAsync("test-image-1");
+            var savedImage = await context.Images.FindAsync(1);
             Assert.NotNull(savedImage);
-            Assert.Equal("test-image-1", savedImage.Id);
+            Assert.Equal(1, savedImage.Id);
         }
 
         [Fact]
@@ -58,11 +64,14 @@ namespace TestAPI
 
             var imageEntity = new Image
             {
-                Id = "test-image-2",
+                Id = 2,
                 TimeStamp = "2026-04-29T11:30:00",
                 ImageType = "image/png",
                 ImageData = new byte[] { 10, 20, 30 },
-                Description = "Another test image"
+                Description = "Another test image",
+                Confidence = 0.85f,
+                DetectedObject = "car",
+                OwnerUid = "user456"
             };
 
             // Act
@@ -98,11 +107,14 @@ namespace TestAPI
 
             var imageEntity = new Image
             {
-                Id = "single-image",
+                Id = 69,
                 TimeStamp = "2026-04-29T12:00:00",
                 ImageType = "image/gif",
                 ImageData = new byte[] { 5, 10, 15 },
-                Description = "Single image"
+                Description = "Single image",
+                Confidence = 0.78f,
+                DetectedObject = "dog",
+                OwnerUid = "user789"
             };
             await repo.SaveImageAsync(imageEntity);
 
@@ -112,8 +124,11 @@ namespace TestAPI
             // Assert
             Assert.NotNull(result);
             Assert.Single(result);
-            Assert.Equal("single-image", result[0].Id);
+            Assert.Equal(69, result[0].Id);
             Assert.Equal("2026-04-29T12:00:00", result[0].TimeStamp);
+            Assert.Equal(0.78f, result[0].Confidence);
+            Assert.Equal("dog", result[0].DetectedObject);
+            Assert.Equal("user789", result[0].OwnerUid);
         }
 
         [Fact]
@@ -126,29 +141,38 @@ namespace TestAPI
 
             var image1 = new Image
             {
-                Id = "image-1",
+                Id = 1,
                 TimeStamp = "2026-04-29T13:00:00",
                 ImageType = "image/jpeg",
                 ImageData = new byte[] { 1, 2, 3 },
-                Description = "First image"
+                Description = "First image",
+                Confidence = 0.92f,
+                DetectedObject = "cat",
+                OwnerUid = "user001"
             };
 
             var image2 = new Image
             {
-                Id = "image-2",
+                Id = 2,
                 TimeStamp = "2026-04-29T14:00:00",
                 ImageType = "image/png",
                 ImageData = new byte[] { 4, 5, 6 },
-                Description = "Second image"
+                Description = "Second image",
+                Confidence = 0.88f,
+                DetectedObject = "bird",
+                OwnerUid = "user002"
             };
 
             var image3 = new Image
             {
-                Id = "image-3",
+                Id = 3,
                 TimeStamp = "2026-04-29T15:00:00",
                 ImageType = "image/webp",
                 ImageData = new byte[] { 7, 8, 9 },
-                Description = "Third image"
+                Description = "Third image",
+                Confidence = 0.75f,
+                DetectedObject = "bicycle",
+                OwnerUid = "user003"
             };
 
             await repo.SaveImageAsync(image1);
@@ -161,9 +185,9 @@ namespace TestAPI
             // Assert
             Assert.NotNull(result);
             Assert.Equal(3, result.Count);
-            Assert.Contains(result, i => i.Id == "image-1");
-            Assert.Contains(result, i => i.Id == "image-2");
-            Assert.Contains(result, i => i.Id == "image-3");
+            Assert.Contains(result, i => i.Id == 1);
+            Assert.Contains(result, i => i.Id == 2);
+            Assert.Contains(result, i => i.Id == 3);
         }
 
         [Fact]
@@ -177,11 +201,14 @@ namespace TestAPI
             var expectedImageData = new byte[] { 100, 101, 102, 103 };
             var imageEntity = new Image
             {
-                Id = "data-test",
+                Id = 1,
                 TimeStamp = "2026-04-29T16:00:00",
                 ImageType = "image/bmp",
                 ImageData = expectedImageData,
-                Description = "Data validation test"
+                Description = "Data validation test",
+                Confidence = 0.99f,
+                DetectedObject = "truck",
+                OwnerUid = "user999"
             };
             await repo.SaveImageAsync(imageEntity);
 
@@ -192,6 +219,9 @@ namespace TestAPI
             var retrievedImage = result.First();
             Assert.Equal(expectedImageData, retrievedImage.ImageData);
             Assert.Equal("Data validation test", retrievedImage.Description);
+            Assert.Equal(0.99f, retrievedImage.Confidence);
+            Assert.Equal("truck", retrievedImage.DetectedObject);
+            Assert.Equal("user999", retrievedImage.OwnerUid);
         }
 
         [Fact]
@@ -204,11 +234,14 @@ namespace TestAPI
 
             var imageEntity = new Image
             {
-                Id = "empty-data-image",
+                Id = 0,
                 TimeStamp = "2026-04-29T17:00:00",
                 ImageType = "image/jpeg",
                 ImageData = Array.Empty<byte>(),
-                Description = "Empty data image"
+                Description = "Empty data image",
+                Confidence = 0f,
+                DetectedObject = string.Empty,
+                OwnerUid = "user111"
             };
 
             // Act
@@ -217,6 +250,7 @@ namespace TestAPI
             // Assert
             Assert.NotNull(result);
             Assert.Empty(result.ImageData);
+            Assert.Equal(0f, result.Confidence);
         }
 
         [Fact]
@@ -235,11 +269,14 @@ namespace TestAPI
 
             var imageEntity = new Image
             {
-                Id = "large-image",
+                Id = 999,
                 TimeStamp = "2026-04-29T18:00:00",
                 ImageType = "image/jpeg",
                 ImageData = largeImageData,
-                Description = "Large image test"
+                Description = "Large image test",
+                Confidence = 0.87f,
+                DetectedObject = "building",
+                OwnerUid = "user222"
             };
 
             // Act
@@ -248,6 +285,123 @@ namespace TestAPI
             // Assert
             Assert.NotNull(result);
             Assert.Equal(1024 * 100, result.ImageData.Length);
+            Assert.Equal(0.87f, result.Confidence);
+            Assert.Equal("building", result.DetectedObject);
+        }
+
+        [Fact]
+        public async Task SaveImageAsync_ShouldHandleDefaultPropertyValues()
+        {
+            // Arrange
+            var options = CreateInMemoryDatabaseOptions();
+            using var context = new AppDbContext(options);
+            var repo = new SikkerRepo(context);
+
+            var imageEntity = new Image
+            {
+                Id = 78,
+                TimeStamp = "2026-04-29T19:00:00",
+                ImageType = "image/jpeg",
+                ImageData = new byte[] { 1, 2, 3 }
+                // Using default values for Description, Confidence, DetectedObject, OwnerUid
+            };
+
+            // Act
+            var result = await repo.SaveImageAsync(imageEntity);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(string.Empty, result.Description);
+            Assert.Equal(0f, result.Confidence);
+            Assert.Equal(string.Empty, result.DetectedObject);
+            Assert.Equal(string.Empty, result.OwnerUid);
+        }
+
+        [Fact]
+        public async Task GetAllImagesAsync_ShouldFilterByOwnerUid()
+        {
+            // Arrange
+            var options = CreateInMemoryDatabaseOptions();
+            using var context = new AppDbContext(options);
+            var repo = new SikkerRepo(context);
+
+            var image1 = new Image
+            {
+                Id = 1,
+                TimeStamp = "2026-04-29T20:00:00",
+                ImageType = "image/jpeg",
+                ImageData = new byte[] { 1 },
+                OwnerUid = "owner1"
+            };
+
+            var image2 = new Image
+            {
+                Id = 2,
+                TimeStamp = "2026-04-29T20:10:00",
+                ImageType = "image/jpeg",
+                ImageData = new byte[] { 2 },
+                OwnerUid = "owner2"
+            };
+
+            await repo.SaveImageAsync(image1);
+            await repo.SaveImageAsync(image2);
+
+            // Act
+            var allImages = await repo.GetAllImagesAsync();
+            var owner1Images = allImages.Where(i => i.OwnerUid == "owner1").ToList();
+
+            // Assert
+            Assert.Single(owner1Images);
+            Assert.Equal(1, owner1Images[0].Id);
+        }
+
+        [Fact]
+        public void GetSystemState_ShouldReturnFalseByDefault()
+        {
+            // Arrange
+            var options = CreateInMemoryDatabaseOptions();
+            using var context = new AppDbContext(options);
+            var repo = new SikkerRepo(context);
+
+            // Act
+            var result = repo.GetSystemState();
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void SetSystemState_ShouldUpdateState()
+        {
+            // Arrange
+            var options = CreateInMemoryDatabaseOptions();
+            using var context = new AppDbContext(options);
+            var repo = new SikkerRepo(context);
+
+            // Act
+            var resultTrue = repo.SetSystemState(true);
+            var stateAfterTrue = repo.GetSystemState();
+            var resultFalse = repo.SetSystemState(false);
+            var stateAfterFalse = repo.GetSystemState();
+
+            // Assert
+            Assert.True(resultTrue);
+            Assert.True(stateAfterTrue);
+            Assert.False(resultFalse);
+            Assert.False(stateAfterFalse);
+        }
+
+        [Fact]
+        public void SetSystemState_ShouldReturnUpdatedState()
+        {
+            // Arrange
+            var options = CreateInMemoryDatabaseOptions();
+            using var context = new AppDbContext(options);
+            var repo = new SikkerRepo(context);
+
+            // Act & Assert
+            Assert.True(repo.SetSystemState(true));
+            Assert.False(repo.SetSystemState(false));
         }
     }
 }

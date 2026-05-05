@@ -1,13 +1,16 @@
+using FirebaseAdmin;
+using FirebaseAdmin.Auth;
+using Google.Apis.Auth.OAuth2;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Rest_SikkerApi.data;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using Rest_SikkerApi.interfaces;
 using Rest_SikkerApi.repos;
-using FirebaseAdmin;
-using Google.Apis.Auth.OAuth2;
 using Rest_SikkerApi.Services;
+using System.Security.Claims;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 // uddyber error msg på startup fejl, så man kan se hvad der gik galt, i stedet for en generisk "Application failed to start" besked. Det er især nyttigt under udvikling.
@@ -19,10 +22,31 @@ var services = builder.Services; // unecessary assignment, Did it to try to fix 
 // Add services to the container.
 
 services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))); // looks in appSettings.json or environment variables for a connection string named "DefaultConnection"
+            options.UseSqlServer(configuration.GetConnectionString("DbConnection"), 
+            sqlServerOptions =>
+            {
+                // Enable automatic retries for transient failures
+                // Default: 6 retries with exponential backoff
+                sqlServerOptions.EnableRetryOnFailure(
+                    maxRetryCount: 3,                          // Max number of retry attempts
+                    maxRetryDelay: TimeSpan.FromSeconds(30),   // Cap the delay between retries
+                    errorNumbersToAdd: null                    // null = use default transient error list
+                );
+            })); // looks in appSettings.json or environment variables for a connection string named "DefaultConnection"
+
+// COMMIT 1: Register HttpClient via AddHttpClient to use IHttpClientFactory under the hood
+// COMMIT 10: Register ITelegramService -> TelegramService for DI and testability
+builder.Services.AddHttpClient<TelegramService>();
+builder.Services.AddScoped<ITelegramService, TelegramService>();
+
+//  Register HttpClient for TelegramCommandHandler via IHttpClientFactory
+// Register ITelegramCommandHandler -> TelegramCommandHandler for DI and testability
+builder.Services.AddHttpClient<TelegramCommandHandler>();
+builder.Services.AddScoped<ITelegramCommandHandler, TelegramCommandHandler>();
+
 //services.AddScoped<RepoMusicRecords>();
 builder.Services.AddScoped<SikkerRepo>();
-builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
+// builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
 // Jwt Authentication -----------------------------------------------------------------------------
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
@@ -48,7 +72,6 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
-
 
 // CORS - Cross-Origin Resource Sharing ---------------------------------------------
 builder.Services.AddCors(options =>
@@ -144,6 +167,50 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseAuthentication(); // Checks "Who are you?"
+
+// Middleware: verify Firebase ID token (if present) and store UID in HttpContext
+app.Use(async (context, next) =>
+{
+    var authHeader = context.Request.Headers["Authorization"].ToString();
+    if (!string.IsNullOrWhiteSpace(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+    {
+        var token = authHeader.Substring("Bearer ".Length).Trim();
+        try
+        {
+            var decoded = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(token);
+            var uid = decoded.Uid;
+
+            // make available to controllers/repos
+            context.Items["FirebaseUid"] = uid;
+
+            // attach as claim so existing auth/authorization can see it
+            var identity = context.User.Identity as ClaimsIdentity;
+            if (identity != null)
+            {
+                // avoid duplicate claim
+                if (!context.User.HasClaim(c => c.Type == "firebase_uid"))
+                {
+                    identity.AddClaim(new Claim("firebase_uid", uid));
+                }
+            }
+            else
+            {
+
+            }
+            {
+                var newId = new ClaimsIdentity(new[] { new Claim("firebase_uid", uid) });
+                context.User = new ClaimsPrincipal(newId);
+            }
+        }
+        catch (Exception)
+        {
+            // Token invalid/expired => ignore or log. Do not throw here (leave to controllers/auth pipeline).
+        }
+    }
+
+    await next();
+});
+
 app.UseAuthorization();
 app.MapControllers();
 
@@ -152,3 +219,5 @@ app.MapControllers();
 app.MapFallbackToFile("index.html");
 
 app.Run();
+
+
