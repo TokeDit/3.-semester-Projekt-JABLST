@@ -98,7 +98,7 @@ public class TelegramController : ControllerBase
         {
             await _commandHandler.HandleCommandAsync(chatId, text, ct);
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to handle command for chat {ChatId}", chatId);
             return Ok();

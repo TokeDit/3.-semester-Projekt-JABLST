@@ -145,19 +145,10 @@ namespace Rest_SikkerApi.Services
                 default:
                     if(command.Trim().Length > 20 && !command.Trim().StartsWith("/"))
                     {
-                        var user = await _repo.GetUserByFirebaseIdAsync(command.Trim());
-                        if (user != null)
-                        {
-                            await _repo.UpdateUserChatIdAsync(user.OwnerUid, chatId.ToString());
-                            await _telegramService.SendMessageAsync(chatId,
-                                "Din Telegram chat er nu knyttet til din konto. Du vil modtage notifikationer her.", ct);
-                        }
-                        else
-                        {
-                            _logger.LogWarning("No user found with Firebase ID '{FirebaseId}' for chat {ChatId}", command.Trim(), chatId);
-                            await _telegramService.SendMessageAsync(chatId,
-                                "Ingen bruger fundet med den angivne ID. Sørg for at du har indtastet din Firebase UID korrekt.", ct);
-                        }
+                        await _repo.UpdateUserChatIdAsync(command.Trim(), chatId.ToString());
+                        _logger.LogInformation("Linked Telegram chat {ChatId} to Firebase UID '{FirebaseId}'", chatId, command.Trim());
+                        await _telegramService.SendMessageAsync(chatId,
+                            "Din Telegram chat er nu knyttet til din konto. Du vil modtage notifikationer her.", ct);
                     }
                     else
                     {
