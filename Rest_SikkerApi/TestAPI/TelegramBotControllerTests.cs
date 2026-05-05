@@ -7,6 +7,7 @@ using Rest_SikkerApi.Services;
 using Rest_SikkerApi.repos;
 using Rest_SikkerApi.models;
 using Xunit;
+using TelegramMessage = Rest_SikkerApi.models.TelegramMessage;
 
 namespace TestAPI
 {
@@ -138,13 +139,11 @@ namespace TestAPI
 
 
             var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
-            var request = new TelegramWebhookRequest
+            var request = new TelegramMessage
             {
-                Message = new TelegramMessage
-                {
-                    Chat = new TelegramChat { Id = 123456789 },
-                    Text = "valid-firebase-id-very-long"
-                }
+                ChatId = 123456789,
+                Message = "valid-firebase-id-very-long"
+                
             };
 
             var result = await controller.HandleWebhook(request);
@@ -165,13 +164,10 @@ namespace TestAPI
                     .ReturnsAsync((User?)null);
 
             var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
-            var request = new TelegramWebhookRequest
+            var request = new TelegramMessage
             {
-                Message = new TelegramMessage
-                {
-                    Chat = new TelegramChat { Id = 123456789 },
-                    Text = "invalid-firebase-id-very-long"
-                }
+                ChatId = 123456789,
+                Message = "invalid-firebase-id-very-long"
             };
 
             var result = await controller.HandleWebhook(request);
@@ -191,13 +187,10 @@ namespace TestAPI
                     .ReturnsAsync(new User { OwnerUid = "some-Uid", TelegramChatId = "123456789" });
 
             var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
-            var request = new TelegramWebhookRequest
+            var request = new TelegramMessage
             {
-                Message = new TelegramMessage
-                {
-                    Chat = new TelegramChat { Id = 123456789 },
-                    Text = "some message"
-                }
+                ChatId = 123456789,
+                Message = "some message"
             };
 
             var result = await controller.HandleWebhook(request);
@@ -217,13 +210,10 @@ namespace TestAPI
                     .ReturnsAsync((User?)null);
 
             var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
-            var request = new TelegramWebhookRequest
+            var request = new TelegramMessage
             {
-                Message = new TelegramMessage
-                {
-                    Chat = new TelegramChat { Id = 123456789 },
-                    Text = "some message"
-                }
+                ChatId = 123456789,
+                Message = "some message"
             };
 
             var result = await controller.HandleWebhook(request);

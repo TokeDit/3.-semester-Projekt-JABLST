@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Rest_SikkerApi.Services;
 using Rest_SikkerApi.repos;
+using Rest_SikkerApi.models;
 
 namespace Rest_SikkerApi.Controllers
 {
@@ -32,15 +33,15 @@ namespace Rest_SikkerApi.Controllers
         /// Handle Telegram webhook updates: register chat ID if message contains Firebase ID, or check registration for other messages.
         /// </summary>
         [HttpPost("webhook")]
-        public async Task<IActionResult> HandleWebhook([FromBody] TelegramWebhookRequest request)
+        public async Task<IActionResult> HandleWebhook([FromBody] TelegramMessage request)
         {
-            if (request?.Message?.Chat == null || string.IsNullOrWhiteSpace(request.Message.Text))
+            if (request?.ChatId == null || string.IsNullOrWhiteSpace(request.Message))
             {
                 return BadRequest("Invalid Telegram webhook payload.");
             }
 
-            var telegramChatId = request.Message.Chat.Id.ToString();
-            var messageText = request.Message.Text.Trim();
+            var telegramChatId = request.ChatId.ToString();
+            var messageText = request.Message.Trim();
 
             // Check if message text is a Firebase ID (assume it's a valid Firebase ID format, e.g., length > 20 or contains specific chars)
             if (!string.IsNullOrWhiteSpace(messageText) && messageText.Length > 20) // Adjust threshold as needed
@@ -123,20 +124,20 @@ namespace Rest_SikkerApi.Controllers
         public string Description { get; set; } = string.Empty;
     }
 
-    public sealed class TelegramWebhookRequest
-    {
-        public TelegramMessage? Message { get; set; }
-    }
+    // public sealed class TelegramWebhookRequest
+    // {
+    //     public TelegramMessage? Message { get; set; }
+    // }
 
-    public sealed class TelegramMessage
-    {
-        public TelegramChat? Chat { get; set; }
-        public string? Text { get; set; }
-    }
+    // public sealed class TelegramMessage
+    // {
+    //     public TelegramChat? Chat { get; set; }
+    //     public string? Text { get; set; }
+    // }
 
-    public sealed class TelegramChat
-    {
-        public long Id { get; set; }
-    }
+    // public sealed class TelegramChat
+    // {
+    //     public long Id { get; set; }
+    // }
 }
 
