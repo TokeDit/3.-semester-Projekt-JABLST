@@ -116,8 +116,8 @@ namespace Rest_SikkerApi.Controllers
 
     public sealed class TelegramMessageRequest
     {
-        public string Description { get; set; } = string.Empty
-        public string OwnerUid { get; set; } = string.Empty 
+        public string Description { get; set; } = string.Empty;
+        public string OwnerUid { get; set; } = string.Empty; 
     }
 
     /// <summary>Request model for sending links via Telegram.</summary>
