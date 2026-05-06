@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Rest_SikkerApi.Repositories; // adjust namespace to match your ISikkerRepo location
+using Rest_SikkerApi.repos; // adjust namespace to match your ISikkerRepo location
 
 namespace Rest_SikkerApi.Services
 {
