@@ -39,7 +39,8 @@ public class PIController : ControllerBase
                 ?? User.FindFirst("firebase_uid")?.Value
                 ?? image.OwnerUid
                 ?? string.Empty;
-
+            
+            _logger.LogInformation("Resolved firebaseUid: '{FirebaseUid}', image.OwnerUid: '{OwnerUid}'", firebaseUid, image.OwnerUid);
 
 
             // Create Image entity, set OwnerUid and save
@@ -56,7 +57,7 @@ public class PIController : ControllerBase
             await _repo.SaveImageAsync(imageEntity);
             if(!string.IsNullOrWhiteSpace(firebaseUid))
             {
-                    var dashboardUrl = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/dashboard";
+                    var dashboardUrl = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/home";
 
                     await _telegramService.SendImageLinkAsync(dashboardUrl, image.Description, firebaseUid);
             }
