@@ -444,15 +444,19 @@ export default {
     },
   },
 
-  mounted() {
-    this.unsubscribeAuth = onAuthStateChanged(auth, (user) => { this.user = user; });
-    this.checkStatus();
-    this.loadEvents();
-    this.fetchTelegramStatus();
-    this.fetchPiStatus();
-    this.telegramPollInterval = setInterval(this.fetchTelegramStatus, 5000);
-    this.piPollInterval = setInterval(this.fetchPiStatus, 30000);
-  },
+ mounted() {
+  this.unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+    this.user = user;
+    if (user) {
+      this.loadEvents(); // MOVE HERE — only load after user is known
+    }
+  });
+  this.checkStatus();
+  this.fetchTelegramStatus();
+  this.fetchPiStatus();
+  this.telegramPollInterval = setInterval(this.fetchTelegramStatus, 5000);
+  this.piPollInterval = setInterval(this.fetchPiStatus, 30000);
+},
 
   beforeUnmount() {
     if (this.unsubscribeAuth) this.unsubscribeAuth();
