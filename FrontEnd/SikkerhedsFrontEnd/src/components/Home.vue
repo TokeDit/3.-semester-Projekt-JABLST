@@ -449,6 +449,8 @@ export default {
     this.user = user;
     if (user) {
       this.loadEvents(); // MOVE HERE — only load after user is known
+      console.log("UID:", this.user.uid);
+
     }
   });
   this.checkStatus();
@@ -567,7 +569,8 @@ async fetchTelegramStatus() {
     if (!this.user) return;
 
     const uid = this.user.uid;
-    const res = await fetch(`${this.apiBase}/api/Image/user/${uid}`);
+    const res = await fetch(`https://localhost:7018/api/Image/user/${uid}`);
+
 
     if (res.status === 204) {
       this.events = [];
