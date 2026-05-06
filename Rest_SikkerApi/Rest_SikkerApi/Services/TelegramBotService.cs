@@ -14,8 +14,7 @@ namespace Rest_SikkerApi.Services
         /// <summary>Default Telegram bot token. Override via dependency injection if needed.</summary>
         private readonly string _botToken = "8768336190:AAEcRuOPUmVPIfsKCAXTkSXfzjPHzsKe3vE";
 
-        /// <summary>The Telegram chat ID where all messages are sent.</summary>
-        private readonly string _telegramChatId;
+        pirvate readonly ISikkerRepo _repo;
 
         /// <summary>HTTP client for making requests to Telegram's API.</summary>
         private readonly HttpClient _httpClient;
@@ -34,7 +33,7 @@ namespace Rest_SikkerApi.Services
                 _botToken = botToken;
             }
 
-            _telegramChatId = telegramChatId ?? throw new ArgumentNullException(nameof(telegramChatId));
+            _repo = repo ?? throw new ArgumentNullException(nameof(repo));
             _httpClient = httpClient ?? new HttpClient();
         }
 
@@ -84,10 +83,15 @@ namespace Rest_SikkerApi.Services
             await SendImageLinkAsync(imageUrl, description, _telegramChatId);
         }
 
-        public virtual async Task SendImageLinkAsync(string imageUrl, string description, string telegramChatId)
+        public virtual async Task SendImageLinkAsync(string imageUrl, string description, string ownerUid)
         {
             if (string.IsNullOrWhiteSpace(imageUrl))
                 throw new ArgumentException("Image URL must be provided.", nameof(imageUrl));
+
+
+            var user = await _repo.GetUserByFirebaseIdAsync(string ownerUid);
+            if (user == null || string.IsNullOrWhiteSpace(user.TelegramChatId))
+                throw new InvalidOperationExecption("No Telegram chat ID registered for this user.")
 
             var message = string.IsNullOrWhiteSpace(description)
                 ? $"Nyt billede modtaget. Se det her: {imageUrl}"

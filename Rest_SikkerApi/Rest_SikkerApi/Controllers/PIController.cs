@@ -60,7 +60,7 @@ public class PIController : ControllerBase
                 if(user != null && !string.IsNullOrWhiteSpace(user.TelegramChatId))
                 {
                     var dashboardUrl = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/dashboard";
-                    await _telegramService.SendImageLinkAsync(dashboardUrl, image.Description, user.TelegramChatId);
+                    await _telegramService.SendImageLinkAsync(dashboardUrl, image.Description, user.OwnerUid);
                 }
             }
             return Ok(imageEntity);
