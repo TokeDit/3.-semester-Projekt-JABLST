@@ -40,12 +40,12 @@ namespace Rest_SikkerApi.repos
 
         public IEnumerable<Image> GetAmountImage(int amount = 20)
         {
-            return _context.Images.OrderBy(i => i.Id).Take(amount);
+            return _context.Images.OrderByDescending(i => i.Id).Take(amount);
         }
 
         public IEnumerable<Image> GetAfterIDImage(int id, int amount = 20)
         {
-            return _context.Images.Where(i => i.Id > id).OrderBy(i => i.Id).Take(amount);
+            return _context.Images.Where(i => i.Id > id).OrderByDescending(i => i.Id).Take(amount);
         }
     
             // System state - stored in memory for now

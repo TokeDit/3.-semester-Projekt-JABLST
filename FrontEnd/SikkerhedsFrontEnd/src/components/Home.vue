@@ -187,17 +187,24 @@
             <span class="badge-live"><span class="pulse-dot sm"></span>Live</span>
           </div>
           <div class="img-preview">
-            <div v-if="images.length === 0">
+            <div v-if="imagesLoading">
+              <svg class="loading-spinner" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              </svg>
+              <span>Loading images...</span>
+            </div>
+            <div v-else-if="images.length === 0">
               <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               <span>Camera snapshot preview</span>
             </div>
-            <div v-for="image in images">
-              <img :src="`data:image/jpeg;base64,${image.imageData}`" alt="Captured Image" class="captured-image" />
+            <div v-else v-for="image in images">
+              <img :src="`data:image/jpeg;base64,${image.imageDataBase64}`" alt="Captured Image" class="captured-image" />
             </div>
           </div>
           <div class="panel-meta">
-            <span>newest photo captured: 29 Apr 2025, 14:32:10</span>
-             <button v-on:click="getResentImages()">View all images</button>
+            <span v-if="!imagesLoading && images.length > 0">newest photo captured: {{ formatImageTimestamp(images[0].timeStamp) }}</span>
+            <span v-else>yyyy-mm-dd:hh:mm:ss</span>
+            <button v-on:click="getResentImages()">View all images</button>
           </div>
         </div>
 
@@ -493,6 +500,7 @@ export default {
       statusClass: "status-unknown",
       events: [],
       images: [],
+      imagesLoading: false,
     };
   },
 
@@ -502,6 +510,10 @@ export default {
       if (!this.userEmail) return "?";
       return this.userEmail.substring(0, 2).toUpperCase();
     },
+  },
+
+  async created() {
+    this.getResentImages();
   },
 
   mounted() {
@@ -592,6 +604,14 @@ export default {
       }).format(date);
     },
 
+    formatImageTimestamp(timestamp) {
+      if (!timestamp) return "";
+      const date = new Date(timestamp);
+      if (Number.isNaN(date.getTime())) return timestamp;
+      const pad = (value) => String(value).padStart(2, "0");
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}:${pad(date.getHours())}h:${pad(date.getMinutes())}m:${pad(date.getSeconds())}s`;
+    },
+
     loadEvents() {
       this.events = [
         { id: 1, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date()) },
@@ -602,6 +622,7 @@ export default {
 
     async getResentImages()
     {
+      this.imagesLoading = true;
       try {
         const res = await fetch("https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/image");
         const data = await res.json();
@@ -609,6 +630,9 @@ export default {
         this.images = data || [];
       } catch {
         this.images = [];
+      }
+      finally {
+        this.imagesLoading = false;
       }
     }
   },
