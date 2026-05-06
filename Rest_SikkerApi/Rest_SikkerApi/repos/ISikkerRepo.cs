@@ -10,5 +10,6 @@ namespace Rest_SikkerApi.repos
         Task<User?> GetUserByFirebaseIdAsync(string ownerUid);
         Task<bool> UpdateUserChatIdAsync(string ownerUid, string telegramChatId, CancellationToken ct = default);
         Task<User?> GetUserByChatIdAsync(string telegramChatId);
+        Task<List<Image>> GetImagesByOwnerUidAsync(string ownerUid);
     }
 }

@@ -444,15 +444,21 @@ export default {
     },
   },
 
-  mounted() {
-    this.unsubscribeAuth = onAuthStateChanged(auth, (user) => { this.user = user; });
-    this.checkStatus();
-    this.loadEvents();
-    this.fetchTelegramStatus();
-    this.fetchPiStatus();
-    this.telegramPollInterval = setInterval(this.fetchTelegramStatus, 5000);
-    this.piPollInterval = setInterval(this.fetchPiStatus, 30000);
-  },
+ mounted() {
+  this.unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+    this.user = user;
+    if (user) {
+      this.loadEvents(); // MOVE HERE — only load after user is known
+      console.log("UID:", this.user.uid);
+
+    }
+  });
+  this.checkStatus();
+  this.fetchTelegramStatus();
+  this.fetchPiStatus();
+  this.telegramPollInterval = setInterval(this.fetchTelegramStatus, 5000);
+  this.piPollInterval = setInterval(this.fetchPiStatus, 30000);
+},
 
   beforeUnmount() {
     if (this.unsubscribeAuth) this.unsubscribeAuth();
@@ -557,13 +563,35 @@ async fetchTelegramStatus() {
       }).format(date);
     },
 
-    loadEvents() {
-      this.events = [
-        { id: 1, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date()) },
-        { id: 2, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date(Date.now() - 3600000)) },
-        { id: 3, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date(Date.now() - 7200000)) },
-      ];
-    },
+   async loadEvents() {
+  try {
+    // Wait for Firebase auth to resolve
+    if (!this.user) return;
+
+    const uid = this.user.uid;
+    const res = await fetch(`https://localhost:7018/api/Image/user/${uid}`);
+
+
+    if (res.status === 204) {
+      this.events = [];
+      return;
+    }
+
+    const data = await res.json();
+    this.events = data.map(img => ({
+      id: img.id,
+      type: img.description || "Bevægelse registreret",
+      timestamp: img.timeStamp
+        ? new Intl.DateTimeFormat("da-DK", {
+            dateStyle: "short",
+            timeStyle: "medium"
+          }).format(new Date(img.timeStamp))
+        : "Unknown"
+    }));
+  } catch {
+    this.events = [];
+  }
+},
   },
 };
 </script>

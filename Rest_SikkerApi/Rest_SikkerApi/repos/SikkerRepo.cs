@@ -77,6 +77,13 @@ namespace Rest_SikkerApi.repos
             _systemOnline = state;
             return _systemOnline;
         }
+        public async Task<List<Image>> GetImagesByOwnerUidAsync(string ownerUid)
+        {
+            return await _context.Images
+                .Where(i => i.OwnerUid == ownerUid)
+                .OrderByDescending(i => i.Id)
+                .ToListAsync();
+        }
     }
 }
 
