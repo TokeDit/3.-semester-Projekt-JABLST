@@ -56,12 +56,9 @@ public class PIController : ControllerBase
             await _repo.SaveImageAsync(imageEntity);
             if(!string.IsNullOrWhiteSpace(firebaseUid))
             {
-                var user = await _repo.GetUserByFirebaseIdAsync(firebaseUid);
-                if(user != null && !string.IsNullOrWhiteSpace(user.TelegramChatId))
-                {
                     var dashboardUrl = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/dashboard";
-                    await _telegramService.SendImageLinkAsync(dashboardUrl, image.Description, user.OwnerUid);
-                }
+
+                    await _telegramService.SendImageLinkAsync(dashboardUrl, image.Description, firebaseUid);
             }
             return Ok(imageEntity);
         }
