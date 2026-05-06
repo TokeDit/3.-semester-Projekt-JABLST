@@ -40,7 +40,6 @@ public class PIController : ControllerBase
                 ?? image.OwnerUid
                 ?? string.Empty;
             
-            _logger.LogInformation("Resolved firebaseUid: '{FirebaseUid}', image.OwnerUid: '{OwnerUid}'", firebaseUid, image.OwnerUid);
 
 
             // Create Image entity, set OwnerUid and save
