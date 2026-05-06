@@ -160,7 +160,7 @@ namespace TestAPI
                 CallBase = false
             };
             var repoMock = new Mock<ISikkerRepo>();
-            repoMock.Setup(r => r.GetUserByFirebaseIdAsync("invalid-firebase-id-very-long"))
+            repoMock.Setup(r => r.GetUserByFirebaseIdAsync("invalid-firebase-id-very-long", It.IsAny<string>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
 
             var controller = new TelegramBotController(serviceMock.Object, repoMock.Object);
