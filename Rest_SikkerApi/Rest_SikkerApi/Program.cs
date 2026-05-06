@@ -75,7 +75,12 @@ var telegramBotToken = telegramSection["BotToken"] ?? Environment.GetEnvironment
 var telegramChatId = telegramSection["ChatId"] ?? Environment.GetEnvironmentVariable("TELEGRAM_CHAT_ID");
 
 // Register TelegramService and a chat registration store as singletons.
-builder.Services.AddSingleton(new TelegramBotService(telegramBotToken ?? string.Empty, telegramChatId ?? string.Empty));
+builder.Services.AddSingleton(provider => 
+    new TelegramBotService(
+        telegramBotToken ?? string.Empty, 
+        provider.GetRequiredService<ISikkerRepo>()
+    )
+);
 
 builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
 // builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();

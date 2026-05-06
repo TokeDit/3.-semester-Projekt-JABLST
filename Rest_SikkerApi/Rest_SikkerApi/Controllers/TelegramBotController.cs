@@ -78,18 +78,20 @@ namespace Rest_SikkerApi.Controllers
         /// Returns: 200 OK if message sent successfully.
         /// </summary>
         [HttpPost("message")]
-        public async Task<IActionResult> SendMotionAlertMessage([FromBody] string description)
+        public async Task<IActionResult> SendMotionAlertMessage([FromBody] TelegramMessageRequest request)
         {
-            if (string.IsNullOrWhiteSpace(description))
-            {
+            if (string.IsNullOrWhiteSpace(request?.Description))
                 return BadRequest("Description is required.");
-            }
 
-            string message = $"Motion detected! {description}";
-            await _telegramService.SendMessageAsync(message);
+            // Look up the user's registered chat ID before sending
+            var user = await _repo.GetUserByFirebaseIdAsync(request.OwnerUid);
+            if (user == null || string.IsNullOrWhiteSpace(user.TelegramChatId))
+                return BadRequest("No Telegram chat ID registered for this user.");
+
+            var message = $"Motion detected! {request.Description}";
+            await _telegramService.SendMessageAsync(message, user.TelegramChatId);
             return Ok(new { message = "Motion alert message sent to Telegram." });
         }
-
         /// <summary>
         /// Send a message with a clickable link to Telegram.
         /// 
@@ -105,13 +107,17 @@ namespace Rest_SikkerApi.Controllers
         public async Task<IActionResult> SendMotionAlertLink([FromBody] TelegramLinkRequest request)
         {
             if (request == null || string.IsNullOrWhiteSpace(request.ImageUrl))
-            {
                 return BadRequest("ImageUrl is required.");
-            }
 
-            await _telegramService.SendImageLinkAsync(request.ImageUrl, request.Description);
+            // Pass ownerUid so the service can look up the correct chat ID
+            await _telegramService.SendImageLinkAsync(request.ImageUrl, request.Description, request.OwnerUid);
             return Ok(new { message = "Motion alert link sent to Telegram." });
         }
+
+    public sealed class TelegramMessageRequest
+    {
+        public string Description { get; set; } = string.Empty
+        public string OwnerUid { get; set; } = string.Empty 
     }
 
     /// <summary>Request model for sending links via Telegram.</summary>
@@ -119,6 +125,7 @@ namespace Rest_SikkerApi.Controllers
     {
         public string ImageUrl { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string OwnerUid {get; set; } = string.Empty;
     }
 
     // public sealed class TelegramWebhookRequest
