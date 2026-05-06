@@ -557,13 +557,34 @@ async fetchTelegramStatus() {
       }).format(date);
     },
 
-    loadEvents() {
-      this.events = [
-        { id: 1, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date()) },
-        { id: 2, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date(Date.now() - 3600000)) },
-        { id: 3, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date(Date.now() - 7200000)) },
-      ];
-    },
+   async loadEvents() {
+  try {
+    // Wait for Firebase auth to resolve
+    if (!this.user) return;
+
+    const uid = this.user.uid;
+    const res = await fetch(`${this.apiBase}/api/Image/user/${uid}`);
+
+    if (res.status === 204) {
+      this.events = [];
+      return;
+    }
+
+    const data = await res.json();
+    this.events = data.map(img => ({
+      id: img.id,
+      type: img.description || "Bevægelse registreret",
+      timestamp: img.timeStamp
+        ? new Intl.DateTimeFormat("da-DK", {
+            dateStyle: "short",
+            timeStyle: "medium"
+          }).format(new Date(img.timeStamp))
+        : "Unknown"
+    }));
+  } catch {
+    this.events = [];
+  }
+},
   },
 };
 </script>
