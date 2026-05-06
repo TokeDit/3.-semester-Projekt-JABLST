@@ -113,6 +113,7 @@ namespace Rest_SikkerApi.Controllers
             await _telegramService.SendImageLinkAsync(request.ImageUrl, request.Description, request.OwnerUid);
             return Ok(new { message = "Motion alert link sent to Telegram." });
         }
+    }
 
     public sealed class TelegramMessageRequest
     {
