@@ -7,21 +7,54 @@ using System.Threading.Tasks;
 using Moq;
 using Moq.Protected;
 using Rest_SikkerApi.Services;
+using Rest_SikkerApi.repos;
+using Rest_SikkerApi.models;
 using Xunit;
 
 namespace TestAPI
 {
     public class TelegramServiceTests
     {
+        // Creates an HttpClient backed by a mock handler that captures outgoing requests
         private static HttpClient CreateHttpClient(Mock<HttpMessageHandler> handlerMock)
         {
             return new HttpClient(handlerMock.Object);
         }
 
-        [Fact]
-        public void Constructor_ThrowsWhenChatIdIsNull()
+        // Sets up a strict mock handler that returns 200 OK and captures the request
+        private static Mock<HttpMessageHandler> CreateHandlerMock(out HttpRequestMessage? captured)
         {
-            Assert.Throws<ArgumentNullException>(() => new TelegramBotService("bot-token", null!, new HttpClient()));
+            HttpRequestMessage? cap = null;
+            var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>())
+                .Callback<HttpRequestMessage, CancellationToken>((req, _) => cap = req)
+                .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK))
+                .Verifiable();
+            captured = cap;
+            return handlerMock;
+        }
+
+        // Creates a TelegramBotService with a repo mock that returns a user with the given chat ID
+        private static TelegramBotService CreateService(string chatId, HttpClient httpClient, out Mock<ISikkerRepo> repoMock)
+        {
+            var mock = new Mock<ISikkerRepo>();
+            // Return a user with the specified chat ID for any Firebase ID lookup
+            mock.Setup(r => r.GetUserByFirebaseIdAsync(It.IsAny<string>()))
+                .ReturnsAsync(new User { OwnerUid = "test-uid", TelegramChatId = chatId });
+            repoMock = mock;
+            return new TelegramBotService("bot-token", mock.Object, httpClient);
+        }
+
+        [Fact]
+        public void Constructor_ThrowsWhenRepoIsNull()
+        {
+            // Repo is now required — passing null should throw
+            Assert.Throws<ArgumentNullException>(() => new TelegramBotService("bot-token", (ISikkerRepo)null!, new HttpClient()));
         }
 
         [Fact]
@@ -35,14 +68,14 @@ namespace TestAPI
                     "SendAsync",
                     ItExpr.IsAny<HttpRequestMessage>(),
                     ItExpr.IsAny<CancellationToken>())
-                .Callback<HttpRequestMessage, CancellationToken>((request, cancellationToken) => capturedRequest = request)
+                .Callback<HttpRequestMessage, CancellationToken>((request, _) => capturedRequest = request)
                 .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK))
                 .Verifiable();
 
-            var httpClient = CreateHttpClient(handlerMock);
-            var service = new TelegramBotService("bot-token", "123", httpClient);
+            var service = CreateService("123", CreateHttpClient(handlerMock), out _);
 
-            await service.SendMessageAsync("Hello world");
+            // SendMessageAsync now requires an explicit chat ID
+            await service.SendMessageAsync("Hello world", "123");
 
             handlerMock.Protected().Verify(
                 "SendAsync",
@@ -71,14 +104,14 @@ namespace TestAPI
                     "SendAsync",
                     ItExpr.IsAny<HttpRequestMessage>(),
                     ItExpr.IsAny<CancellationToken>())
-                .Callback<HttpRequestMessage, CancellationToken>((request, cancellationToken) => capturedRequest = request)
+                .Callback<HttpRequestMessage, CancellationToken>((request, _) => capturedRequest = request)
                 .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK))
                 .Verifiable();
 
-            var httpClient = CreateHttpClient(handlerMock);
-            var service = new TelegramBotService("bot-token", "123", httpClient);
+            var service = CreateService("123", CreateHttpClient(handlerMock), out _);
 
-            await service.SendImageLinkAsync("https://dashboard.example", string.Empty);
+            // Pass ownerUid — the service will look up the chat ID from the repo mock
+            await service.SendImageLinkAsync("https://dashboard.example", string.Empty, "test-uid");
 
             Assert.NotNull(capturedRequest);
             var decodedBody = WebUtility.UrlDecode(await capturedRequest!.Content!.ReadAsStringAsync());
@@ -96,14 +129,14 @@ namespace TestAPI
                     "SendAsync",
                     ItExpr.IsAny<HttpRequestMessage>(),
                     ItExpr.IsAny<CancellationToken>())
-                .Callback<HttpRequestMessage, CancellationToken>((request, cancellationToken) => capturedRequest = request)
+                .Callback<HttpRequestMessage, CancellationToken>((request, _) => capturedRequest = request)
                 .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK))
                 .Verifiable();
 
-            var httpClient = CreateHttpClient(handlerMock);
-            var service = new TelegramBotService("bot-token", "123", httpClient);
+            var service = CreateService("123", CreateHttpClient(handlerMock), out _);
 
-            await service.SendImageLinkAsync("https://dashboard.example", "Front door alert");
+            // Pass ownerUid — the service will look up the chat ID from the repo mock
+            await service.SendImageLinkAsync("https://dashboard.example", "Front door alert", "test-uid");
 
             Assert.NotNull(capturedRequest);
             var decodedBody = WebUtility.UrlDecode(await capturedRequest!.Content!.ReadAsStringAsync());
@@ -113,11 +146,12 @@ namespace TestAPI
         [Fact]
         public async Task SendImageLinkAsync_ThrowsWhenImageUrlIsEmpty()
         {
-            var httpClient = new HttpClient();
-            var service = new TelegramBotService("bot-token", "123", httpClient);
+            var repoMock = new Mock<ISikkerRepo>();
+            var service = new TelegramBotService("bot-token", repoMock.Object, new HttpClient());
 
-            await Assert.ThrowsAsync<ArgumentException>(async () => await service.SendImageLinkAsync(string.Empty, "Description"));
+            // Empty image URL should throw regardless of ownerUid
+            await Assert.ThrowsAsync<ArgumentException>(async () =>
+                await service.SendImageLinkAsync(string.Empty, "Description", "test-uid"));
         }
-
     }
 }
