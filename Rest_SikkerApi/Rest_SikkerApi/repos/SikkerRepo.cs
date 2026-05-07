@@ -20,6 +20,13 @@ namespace Rest_SikkerApi.repos
             return imageEntity;
         }
 
+        public async Task<User> SaveUserAsync(User user)
+        {
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
         public async Task<List<Image>> GetAllImagesAsync()
         {
             return await _context.Images.ToListAsync();
