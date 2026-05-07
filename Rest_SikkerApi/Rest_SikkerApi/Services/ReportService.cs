@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Rest_SikkerApi.Services
 {
-    // COMMIT: Background service that sends scheduled reports via Telegram
+    //  Background service that sends scheduled reports via Telegram
     public class ReportService : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
