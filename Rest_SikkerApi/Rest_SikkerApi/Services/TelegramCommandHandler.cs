@@ -45,8 +45,7 @@ namespace Rest_SikkerApi.Services
             // Add to appsettings.json: "Backend": { "BaseUrl": "http://localhost:5000" }
             _backendBaseUrl = config["Backend:BaseUrl"]
                 ?? throw new InvalidOperationException("Backend BaseUrl not found in configuration.");
-           // COMMIT: 
-    var raw = config["Telegram:AuthorizedChatIds"] ?? "";
+               var raw = config["Telegram:AuthorizedChatIds"] ?? "";
             _authorizedChatIds = raw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(id => long.Parse(id.Trim()))
@@ -97,6 +96,14 @@ namespace Rest_SikkerApi.Services
 
         public async Task HandleCommandAsync(long chatId, string command, CancellationToken ct = default)
         {
+            // COMMIT: 
+            if (_authorizedChatIds.Count > 0 && !_authorizedChatIds.Contains(chatId))
+            {
+                _logger.LogWarning("Unauthorized access attempt from chat {ChatId}", chatId);
+                await _telegramService.SendMessageAsync(chatId,
+                    "Unauthorized. You are not allowed to use this bot.", ct);
+                return;
+            }
             var normalizedCommand = command.Trim().ToLower();
 
             _logger.LogInformation("Handling command '{Command}' for chat {ChatId}", normalizedCommand, chatId);
