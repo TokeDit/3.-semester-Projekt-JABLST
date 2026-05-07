@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../components/Login.vue'
 
 import Home from '../components/Home.vue'
+import Profile from '../components/Profile.vue'
 import { auth } from '../firebase'
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -33,10 +34,19 @@ const routes = [
   },
 
   {
+<<<<<<< HEAD
     path: '/images',
     component: Images,
     meta: { requiresAuth: true }
   },
+=======
+    path: '/profile',
+    component: Profile,
+    meta: { requiresAuth: true }
+  },
+
+  
+>>>>>>> main
 ]
 
 const router = createRouter({

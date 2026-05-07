@@ -52,4 +52,14 @@ public class ImageController : ControllerBase
         }
         return Ok(images);
     }
+    [HttpGet("user/{ownerUid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> GetByUser(string ownerUid)
+    {
+        var images = await m_repo.GetImagesByOwnerUidAsync(ownerUid);
+        if (!images.Any())
+            return NoContent();
+        return Ok(images);
+    }
 }

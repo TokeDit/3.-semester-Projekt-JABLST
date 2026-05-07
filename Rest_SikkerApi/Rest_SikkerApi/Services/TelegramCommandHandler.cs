@@ -1,7 +1,11 @@
-﻿using Rest_SikkerApi.interfaces;
-using System.Net.Http.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Rest_SikkerApi.interfaces;
+using Rest_SikkerApi.repos;
+using System.Net.Http.Json;
+using Telegram.Bot.Types;
+using static Azure.Core.HttpHeader;
 
 namespace Rest_SikkerApi.Services
 {
@@ -20,21 +24,32 @@ namespace Rest_SikkerApi.Services
         //  Extract backend base URL from hardcoded localhost to configuration
         private readonly string _backendBaseUrl;
 
+        private readonly ISikkerRepo _repo;
+
+        private readonly HashSet<long> _authorizedChatIds;
+
 
         public TelegramCommandHandler(
             ITelegramService telegramService,
             HttpClient httpClient,
             ILogger<TelegramCommandHandler> logger,
-            IConfiguration config)
+            IConfiguration config,
+            ISikkerRepo repo)
         {
             _telegramService = telegramService;
             _httpClient = httpClient;
             _logger = logger;
+            _repo = repo;
 
            
             // Add to appsettings.json: "Backend": { "BaseUrl": "http://localhost:5000" }
             _backendBaseUrl = config["Backend:BaseUrl"]
                 ?? throw new InvalidOperationException("Backend BaseUrl not found in configuration.");
+               var raw = config["Telegram:AuthorizedChatIds"] ?? "";
+            _authorizedChatIds = raw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(id => long.Parse(id.Trim()))
+                .ToHashSet();
         }
         private async Task CallBackendGetAsync(long chatId, string url, CancellationToken ct)
         {
@@ -81,6 +96,14 @@ namespace Rest_SikkerApi.Services
 
         public async Task HandleCommandAsync(long chatId, string command, CancellationToken ct = default)
         {
+           
+            if (_authorizedChatIds.Count > 0 && !_authorizedChatIds.Contains(chatId))
+            {
+                _logger.LogWarning("Unauthorized access attempt from chat {ChatId}", chatId);
+                await _telegramService.SendMessageAsync(chatId,
+                    "Unauthorized. You are not allowed to use this bot.", ct);
+                return;
+            }
             var normalizedCommand = command.Trim().ToLower();
 
             _logger.LogInformation("Handling command '{Command}' for chat {ChatId}", normalizedCommand, chatId);
@@ -90,16 +113,15 @@ namespace Rest_SikkerApi.Services
                 //Start Menu for Telegram Bot
                 case "/start":
                     await _telegramService.SendMessageAsync(chatId,
-                        "\"Welcome to Vision Monitor Bot 👋\\n\\n\"" +
-                        " +\r\n       " +
-                        " \"I can help you control and monitor your system.\\n\\n\"" +
-                        " +\r\n        \"Available commands:\\n\" +\r\n      " +
-                        "  \"/on – Turn the system on\\n\" +\r\n     " +
-                        "   \"/off – Turn the system off\\n\" +\r\n       " +
-                        " \"/status – System status\\n\" +\r\n     " +
-                        "   \"/time – Server time\\n\" +\r\n       " +
-                        " \"/help – Show all commands\\n\\n\" +\r\n       " +
-                        " \"Type a command to get started.", ct);
+                        "Welcome to Vision Monitor Bot 👋\n\n" +
+                        "I can help you control and monitor your system.\n\n" +
+                        "Available commands:\n" +
+                        "/on – Turn the system on\n" +
+                        "/off – Turn the system off\n" +
+                        "/status – System status\n" +
+                        "/time – Server time\n" +
+                        "/help – Show all commands\n\n" +
+                        "Type a command to get started.", ct);
                     break;
                 // --- HELP ---
                 case "/hjælp":
@@ -139,11 +161,36 @@ namespace Rest_SikkerApi.Services
 
                 // --- UNKNOWN ---
                 default:
-                    _logger.LogWarning("Unknown command '{Command}' received from chat {ChatId}", normalizedCommand, chatId);
-                    await _telegramService.SendMessageAsync(chatId,
-                        "Ukendt kommando. Skriv /hjælp for at se muligheder.", ct);
+                    if(command.Trim().Length > 20 && !command.Trim().StartsWith("/"))
+                    {
+                        try
+                        {
+                            await _repo.UpdateUserChatIdAsync(command.Trim(), chatId.ToString(), ct);
+                            _logger.LogInformation("Linked Telegram chat {ChatId} to Firebase UID '{FirebaseId}'", chatId, command.Trim());
+                            await _telegramService.SendMessageAsync(chatId,
+                                "Din Telegram chat er nu knyttet til din konto. Du vil modtage notifikationer her.", ct);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            throw;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to link Firebase UID for chat {ChatId}", chatId);
+                            await _telegramService.SendMessageAsync(chatId,
+                                "Fejl: Kunne ikke knytte din konto. Tjek at Firebase ID er korrekt og prøv igen.", ct);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Unknown command '{Command}' received from chat {ChatId}", normalizedCommand, chatId);
+                        await _telegramService.SendMessageAsync(chatId,
+                            "Ukendt kommando. Skriv /hjælp for at se muligheder.", ct);
+                    }
                     break;
+                    
             }
+            
         }
 
 
@@ -216,18 +263,32 @@ namespace Rest_SikkerApi.Services
                     "Fejl: En uventet fejl opstod.", ct);
             }
         }
-            private async Task PingAsync(long chatId, CancellationToken ct)
+        private async Task PingAsync(long chatId, CancellationToken ct)
+        {
+            var start = DateTime.UtcNow;
+            try
             {
-                var start = DateTime.UtcNow;
                 var response = await _httpClient.GetAsync($"{_backendBaseUrl}/Sikker/ping", ct);
                 var ms = (DateTime.UtcNow - start).TotalMilliseconds;
 
-            if (response.IsSuccessStatusCode)
-                await _telegramService.SendMessageAsync(chatId,
-                    $"Pong! Response time: {ms:F0}ms", ct);
-            else
+                if (response.IsSuccessStatusCode)
+                    await _telegramService.SendMessageAsync(chatId,
+                        $"Pong! Response time: {ms:F0}ms", ct);
+                else
+                    await _telegramService.SendMessageAsync(chatId,
+                        "Ping failed — backend not responding.", ct);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Ping request was cancelled for chat {ChatId}", chatId);
+                throw;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Ping failed for chat {ChatId}", chatId);
                 await _telegramService.SendMessageAsync(chatId,
                     "Ping failed — backend not responding.", ct);
             }
+        }
     }
 }

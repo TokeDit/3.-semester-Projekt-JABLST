@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Rest_SikkerApi.models
 {
@@ -11,6 +12,7 @@ namespace Rest_SikkerApi.models
         public string ImageType { get; set; } = string.Empty;
 
         // Store as bytes in database
+        [JsonIgnore]
         public byte[] ImageData { get; set; } = Array.Empty<byte>();
 
         public string Description { get; set; } = string.Empty;
@@ -20,7 +22,7 @@ namespace Rest_SikkerApi.models
         public string DetectedObject { get; set; } = string.Empty;
         
         // Add owner UID (Firebase UID) to tie image to a user
-        public string OwnerUid { get; set; } = string.Empty;
+        public string? OwnerUid { get; set; }
 
         // For API - accept/return Base64 string
 
