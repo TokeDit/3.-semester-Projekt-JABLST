@@ -1,18 +1,13 @@
 <template>
   <div class="profile-page">
+    <AppSidebar active-page="profile" />
+
     <main class="profile-shell">
       <header class="profile-topbar">
         <div>
           <p class="eyebrow">Account</p>
           <h1>Profile</h1>
         </div>
-        <button class="back-btn" @click="goHome">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5" />
-            <path d="M12 19l-7-7 7-7" />
-          </svg>
-          Dashboard
-        </button>
       </header>
 
       <section v-if="user" class="profile-panel">
@@ -60,11 +55,16 @@
 </template>
 
 <script>
+import AppSidebar from "./Sidebar.vue";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
 export default {
   name: "ProfilePage",
+
+  components: {
+    AppSidebar,
+  },
 
   data() {
     return {
@@ -104,10 +104,6 @@ export default {
   },
 
   methods: {
-    goHome() {
-      this.$router.push("/home");
-    },
-
     formatFirebaseDate(value) {
       if (!value) return "Not available";
 
@@ -123,15 +119,18 @@ export default {
 <style scoped>
 .profile-page {
   min-height: 100vh;
+  display: grid;
+  grid-template-columns: 220px 1fr;
   background: #0b1120;
   color: #f1f5f9;
   font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
 }
 
 .profile-shell {
-  width: min(1040px, calc(100% - 2rem));
+  width: min(1040px, calc(100% - 4rem));
   margin: 0 auto;
   padding: 2rem 0;
+  min-width: 0;
 }
 
 .profile-topbar {
@@ -160,31 +159,6 @@ p {
 h1 {
   font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 1.55rem;
-}
-
-.back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  background: #111827;
-  color: #cbd5e1;
-  padding: 0.55rem 0.8rem;
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.back-btn:hover {
-  border-color: rgba(148, 163, 184, 0.35);
-  color: #f1f5f9;
-}
-
-.back-btn svg {
-  width: 15px;
-  height: 15px;
 }
 
 .profile-panel {
@@ -276,6 +250,17 @@ h1 {
 
   .info-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .profile-page {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-shell {
+    width: min(1040px, calc(100% - 2rem));
+    padding: 1rem 0;
   }
 }
 </style>
