@@ -1,24 +1,19 @@
 <template>
-  <div class="images-container">
-    <!-- <div v-if="isLoading">Loading images...
-      <svg class="loading-spinner" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-      </svg>
-    </div> -->
-    <!-- <div v-else-if="error" class="error-message">{{ error }}</div> -->
-    <!-- <div v-else-if="images.length === 0">No images available.</div> -->
-     <div v-if="images.length === 0">No images available.</div>
-    <div v-else class="images-grid">
-      <div v-for="(image, index) in images" :key="index" class="image-card">
-        <button type="button" class="image-button">
-          <img :src="`data:image/jpeg;base64,${image.imageDataBase64}`" :alt="'Image ' + (index + 1)" />
-        </button>
+  <body>
+    <div>
+      <div v-if="images.length === 0">No images available.</div>
+      <div v-else class="images-grid">
+        <div v-for="(image, index) in images" :key="index" class="image-card">
+          <button type="button" class="image-button">
+            <img :src="`data:image/jpeg;base64,${image.imageDataBase64}`" :alt="'Image ' + (index + 1)" />
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-  <div v-for="value in test">
-    <p>{{ value }}</p>
-  </div>
+    <div v-for="value in test">
+      <p>{{ value }}</p>
+    </div>
+  </body>
   <!-- <div @scroll.passive="handleScroll()"></div> -->
 </template>
 

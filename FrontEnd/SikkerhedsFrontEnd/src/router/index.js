@@ -34,19 +34,16 @@ const routes = [
   },
 
   {
-<<<<<<< HEAD
     path: '/images',
     component: Images,
     meta: { requiresAuth: true }
   },
-=======
+  
+  {
     path: '/profile',
     component: Profile,
     meta: { requiresAuth: true }
   },
-
-  
->>>>>>> main
 ]
 
 const router = createRouter({
