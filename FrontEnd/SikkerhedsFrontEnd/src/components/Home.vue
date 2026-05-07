@@ -753,34 +753,35 @@ export default {
       }).format(date);
     },
 
-    async loadEvents() {
-      try {
-        // Wait for Firebase auth to resolve
-        if (!this.user) return;
+   async loadEvents() {
+  try {
+    // Wait for Firebase auth to resolve
+    if (!this.user) return;
 
-        const uid = this.user.uid;
-        const res = await fetch(`https://localhost:7018/api/Image/user/${uid}`);
+    const uid = this.user.uid;
+        const res = await fetch(`${this.apiBase}/api/Image/user/${uid}`);
 
-        if (res.status === 204) {
-          this.events = [];
-          return;
-        }
 
-        const data = await res.json();
-        this.events = data.map((img) => ({
-          id: img.id,
-          type: img.description || "Bevægelse registreret",
-          timestamp: img.timeStamp
-            ? new Intl.DateTimeFormat("da-DK", {
-                dateStyle: "short",
-                timeStyle: "medium",
-              }).format(new Date(img.timeStamp))
-            : "Unknown",
-        }));
-      } catch {
-        this.events = [];
-      }
-    },
+    if (res.status === 204) {
+      this.events = [];
+      return;
+    }
+
+    const data = await res.json();
+    this.events = data.map(img => ({
+      id: img.id,
+      type: img.description || "Bevægelse registreret",
+      timestamp: img.timeStamp
+        ? new Intl.DateTimeFormat("da-DK", {
+            dateStyle: "short",
+            timeStyle: "medium"
+          }).format(new Date(img.timeStamp))
+        : "Unknown"
+    }));
+  } catch {
+    this.events = [];
+  }
+},
   },
 };
 </script>

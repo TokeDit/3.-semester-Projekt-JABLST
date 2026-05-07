@@ -74,10 +74,10 @@ var telegramSection = builder.Configuration.GetSection("Telegram");
 var telegramBotToken = telegramSection["BotToken"] ?? Environment.GetEnvironmentVariable("TELEGRAM_BOT_TOKEN");
 var telegramChatId = telegramSection["ChatId"] ?? Environment.GetEnvironmentVariable("TELEGRAM_CHAT_ID");
 
-// Register TelegramService and a chat registration store as singletons.
-builder.Services.AddSingleton(provider => 
+//Register TelegramService and a chat registration store as singletons.
+builder.Services.AddScoped(provider => 
     new TelegramBotService(
-        telegramBotToken ?? string.Empty, 
+        telegramBotToken ?? string.Empty,
         provider.GetRequiredService<ISikkerRepo>()
     )
 );
