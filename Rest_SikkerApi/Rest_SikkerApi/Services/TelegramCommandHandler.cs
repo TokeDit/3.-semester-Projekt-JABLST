@@ -40,6 +40,7 @@ namespace Rest_SikkerApi.Services
             // Add to appsettings.json: "Backend": { "BaseUrl": "http://localhost:5000" }
             _backendBaseUrl = config["Backend:BaseUrl"]
                 ?? throw new InvalidOperationException("Backend BaseUrl not found in configuration.");
+            var raw = config["Telegram"]
         }
         private async Task CallBackendGetAsync(long chatId, string url, CancellationToken ct)
         {
