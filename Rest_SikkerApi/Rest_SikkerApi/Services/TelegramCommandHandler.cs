@@ -96,7 +96,7 @@ namespace Rest_SikkerApi.Services
 
         public async Task HandleCommandAsync(long chatId, string command, CancellationToken ct = default)
         {
-            // COMMIT: 
+           
             if (_authorizedChatIds.Count > 0 && !_authorizedChatIds.Contains(chatId))
             {
                 _logger.LogWarning("Unauthorized access attempt from chat {ChatId}", chatId);
