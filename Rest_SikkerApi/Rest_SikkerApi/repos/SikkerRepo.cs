@@ -84,6 +84,12 @@ namespace Rest_SikkerApi.repos
                 .OrderByDescending(i => i.Id)
                 .ToListAsync();
         }
+        // COMMIT:
+        public async Task<List<User>> GetUsersWithReportsEnabledAsync()
+        {
+            return await _context.Users
+                .Where(u => u.ReportsEnabled && u.TelegramChatId != null)
+                .ToListAsync();
+        }
     }
-}
 
