@@ -527,7 +527,7 @@ async fetchTelegramStatus() {
   }
 },
     async fetchPiStatus() {                                                                                                                                                         try {
-        const res = await fetch("https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/PI/status");
+      const res = await fetch(`${this.apiBase}/api/PI/status`);
         const data = await res.json();
         this.piStatus.lastSeen = data.lastSeen
           ? new Date(data.lastSeen).toLocaleTimeString("da-DK")
@@ -569,7 +569,7 @@ async fetchTelegramStatus() {
     if (!this.user) return;
 
     const uid = this.user.uid;
-    const res = await fetch(`https://localhost:7018/api/Image/user/${uid}`);
+        const res = await fetch(`${this.apiBase}/api/Image/user/${uid}`);
 
 
     if (res.status === 204) {
