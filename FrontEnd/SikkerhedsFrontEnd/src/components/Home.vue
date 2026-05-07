@@ -1,20 +1,3 @@
-<!--
-  FILE: HomeDashboard.vue
-  DESCRIPTION: Full redesign matching sample screenshot layout.
-  All original Vue logic (auth, checkStatus, onControl, loadEvents, Firebase) preserved unchanged.
-
-  CHANGES:
-  - git commit -m "style: full redesign matching sample UI - sidebar with grouped nav sections"
-  - git commit -m "style: topbar with date display and refresh button"
-  - git commit -m "style: stat cards with colored icon badges per service"
-  - git commit -m "style: middle row - Recent Image + AI Summary + System Health 3-panel layout"
-  - git commit -m "style: event logs with colored type badges, pagination row, result count"
-  - git commit -m "style: bottom dashboard cards section preserved, styled to match new design system"
-  - git commit -m "refactor: remove duplicate event logs table"
-  - git commit -m "refactor: remove redundant user-dashboard-header block"
-  - git commit -m "chore: all script/logic completely untouched"
--->
-
 <template>
   <div class="home-dashboard">
     <AppSidebar active-page="dashboard" />
@@ -1740,6 +1723,7 @@ tbody tr:hover td {
   .ctrl-grid {
     grid-template-columns: 1fr;
   }
-}
+}
+
 
 </style>
