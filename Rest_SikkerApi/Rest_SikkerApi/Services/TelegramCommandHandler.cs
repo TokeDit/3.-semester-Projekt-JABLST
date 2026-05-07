@@ -1,8 +1,11 @@
-﻿using Rest_SikkerApi.interfaces;
-using System.Net.Http.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Rest_SikkerApi.interfaces;
 using Rest_SikkerApi.repos;
+using System.Net.Http.Json;
+using Telegram.Bot.Types;
+using static Azure.Core.HttpHeader;
 
 namespace Rest_SikkerApi.Services
 {
@@ -23,6 +26,8 @@ namespace Rest_SikkerApi.Services
 
         private readonly ISikkerRepo _repo;
 
+        private readonly HashSet<long> _authorizedChatIds;
+
 
         public TelegramCommandHandler(
             ITelegramService telegramService,
@@ -40,6 +45,11 @@ namespace Rest_SikkerApi.Services
             // Add to appsettings.json: "Backend": { "BaseUrl": "http://localhost:5000" }
             _backendBaseUrl = config["Backend:BaseUrl"]
                 ?? throw new InvalidOperationException("Backend BaseUrl not found in configuration.");
+               var raw = config["Telegram:AuthorizedChatIds"] ?? "";
+            _authorizedChatIds = raw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(id => long.Parse(id.Trim()))
+                .ToHashSet();
         }
         private async Task CallBackendGetAsync(long chatId, string url, CancellationToken ct)
         {
@@ -86,6 +96,14 @@ namespace Rest_SikkerApi.Services
 
         public async Task HandleCommandAsync(long chatId, string command, CancellationToken ct = default)
         {
+           
+            if (_authorizedChatIds.Count > 0 && !_authorizedChatIds.Contains(chatId))
+            {
+                _logger.LogWarning("Unauthorized access attempt from chat {ChatId}", chatId);
+                await _telegramService.SendMessageAsync(chatId,
+                    "Unauthorized. You are not allowed to use this bot.", ct);
+                return;
+            }
             var normalizedCommand = command.Trim().ToLower();
 
             _logger.LogInformation("Handling command '{Command}' for chat {ChatId}", normalizedCommand, chatId);
