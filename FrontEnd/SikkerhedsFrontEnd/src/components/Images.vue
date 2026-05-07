@@ -37,7 +37,7 @@
         isLoading: false,
         error: null,
         noMoreImages: false,
-        loadImagesCount: 1,
+        loadImagesCount: 20,
         test: [],
         startTime: new Date(),
         endTime: new Date()
