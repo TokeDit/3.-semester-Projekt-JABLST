@@ -867,73 +867,61 @@ export default {
     },
 
     goToLogin() {
-      this.$router.push("/login");
-    },
+  this.$router.push("/login");
+},
 
-    goToProfile() {
-      this.$router.push("/profile");
-    },
+async pingBot() {
+  const start = Date.now();
+  try {
+    const res = await fetch(`${this.apiBase}/Sikker/ping`);
+    const ms = Date.now() - start;
+    this.pingResult = `Pong! ${ms}ms`;
+    this.pingSuccess = true;  // ADDED THIS
+    this.telegramStatus.connected = true;
+  } catch {
+    this.pingResult = "Bot unreachable";
+    this.pingSuccess = false;  // ADD THIS
+    this.telegramStatus.connected = false;
+  }
+},
 
-    async pingBot() {
-      const start = Date.now();
-      try {
-        const res = await fetch(`${this.apiBase}/Sikker/ping`);
-        const ms = Date.now() - start;
-        this.pingResult = `Pong! ${ms}ms`;
-        this.pingSuccess = true; // ADDED THIS
-        this.telegramStatus.connected = true;
-      } catch {
-        this.pingResult = "Bot unreachable";
-        this.pingSuccess = false; // ADD THIS
-        this.telegramStatus.connected = false;
-      }
-    },
+async checkStatus() {
+  this.statusText = "Checking...";
+  this.statusClass = "status-unknown";
+  try {
+    const res = await fetch("https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/Sikker/status");
+    const data = await res.json();
+    this.status = data.status;
+    this.statusText = this.status === "online" ? "🟢 Online" : "🔴 Offline";
+    this.statusClass = this.status === "online" ? "status-online" : "status-offline";
+    this.lastChecked = new Date().toLocaleTimeString();
+  } catch {
+    this.statusText = "⚠️ Could not reach system";
+    this.statusClass = "status-unknown";
+  }
+},
 
-    async checkStatus() {
-      this.statusText = "Checking...";
-      this.statusClass = "status-unknown";
-      try {
-        const res = await fetch(
-          "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/Sikker/status",
-        );
-        const data = await res.json();
-        this.status = data.status;
-        this.statusText = this.status === "online" ? "🟢 Online" : "🔴 Offline";
-        this.statusClass =
-          this.status === "online" ? "status-online" : "status-offline";
-        this.lastChecked = new Date().toLocaleTimeString();
-      } catch {
-        this.statusText = "⚠️ Could not reach system";
-        this.statusClass = "status-unknown";
-      }
-    },
-
-    async fetchTelegramStatus() {
-      try {
-        const res = await fetch(`${this.apiBase}/telegram/status`);
-        const data = await res.json();
-        this.telegramStatus.lastMessage =
-          data.lastMessage || "No commands received yet";
-        this.telegramStatus.lastMessageTime = data.lastMessageTime
-          ? new Date(data.lastMessageTime).toLocaleTimeString("da-DK")
-          : "Never";
-        this.telegramStatus.connected =
-          this.pingSuccess || !!data.lastMessageTime;
-      } catch {
-        if (!this.pingSuccess) {
-          this.telegramStatus.connected = false;
-        }
-        // FIX: don't say "Could not reach bot" if ping already confirmed it's up
-        this.telegramStatus.lastMessage = this.pingSuccess
-          ? "Waiting for first message..."
-          : "Could not reach bot";
-      }
-    },
-    async fetchPiStatus() {
-      try {
-        const res = await fetch(
-          "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/PI/status",
-        );
+async fetchTelegramStatus() {
+  try {
+    const res = await fetch(`${this.apiBase}/telegram/status`);
+    const data = await res.json();
+    this.telegramStatus.lastMessage = data.lastMessage || "No commands received yet";
+    this.telegramStatus.lastMessageTime = data.lastMessageTime
+      ? new Date(data.lastMessageTime).toLocaleTimeString("da-DK")
+      : "Never";
+    this.telegramStatus.connected = this.pingSuccess || !!data.lastMessageTime;
+  } catch {
+    if (!this.pingSuccess) {
+      this.telegramStatus.connected = false;
+    }
+    // FIX: don't say "Could not reach bot" if ping already confirmed it's up
+    this.telegramStatus.lastMessage = this.pingSuccess 
+      ? "Waiting for first message..." 
+      : "Could not reach bot";
+  }
+},
+    async fetchPiStatus() {                                                                                                                                                         try {
+      const res = await fetch(`${this.apiBase}/api/PI/status`);
         const data = await res.json();
         this.piStatus.lastSeen = data.lastSeen
           ? new Date(data.lastSeen).toLocaleTimeString("da-DK")
@@ -970,34 +958,35 @@ export default {
       }).format(date);
     },
 
-    async loadEvents() {
-      try {
-        // Wait for Firebase auth to resolve
-        if (!this.user) return;
+   async loadEvents() {
+  try {
+    // Wait for Firebase auth to resolve
+    if (!this.user) return;
 
-        const uid = this.user.uid;
-        const res = await fetch(`https://localhost:7018/api/Image/user/${uid}`);
+    const uid = this.user.uid;
+        const res = await fetch(`${this.apiBase}/api/Image/user/${uid}`);
 
-        if (res.status === 204) {
-          this.events = [];
-          return;
-        }
 
-        const data = await res.json();
-        this.events = data.map((img) => ({
-          id: img.id,
-          type: img.description || "Bevægelse registreret",
-          timestamp: img.timeStamp
-            ? new Intl.DateTimeFormat("da-DK", {
-                dateStyle: "short",
-                timeStyle: "medium",
-              }).format(new Date(img.timeStamp))
-            : "Unknown",
-        }));
-      } catch {
-        this.events = [];
-      }
-    },
+    if (res.status === 204) {
+      this.events = [];
+      return;
+    }
+
+    const data = await res.json();
+    this.events = data.map(img => ({
+      id: img.id,
+      type: img.description || "Bevægelse registreret",
+      timestamp: img.timeStamp
+        ? new Intl.DateTimeFormat("da-DK", {
+            dateStyle: "short",
+            timeStyle: "medium"
+          }).format(new Date(img.timeStamp))
+        : "Unknown"
+    }));
+  } catch {
+    this.events = [];
+  }
+},
   },
 };
 </script>
