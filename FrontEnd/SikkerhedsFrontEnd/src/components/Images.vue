@@ -107,7 +107,10 @@
 
       async getImagesStartup(amount) {
         this.error = null
+        await this.loadImagesUntilFilled(amount)
+      },
 
+      async loadImagesUntilFilled(amount) {
         while (true) {
           const lastImage = this.images[this.images.length - 1]
           const lastImageId = lastImage ? lastImage.id : 0
@@ -115,6 +118,7 @@
 
           await this.getImages(lastImageId, amount)
           await this.$nextTick()
+          await this.waitForImagesToLoad()
 
           const pageHeight = document.documentElement.scrollHeight || document.body.scrollHeight
           if (this.noMoreImages) {
@@ -129,11 +133,28 @@
         }
       },
 
-      handleScroll() {
-        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 && !this.isLoading) {
-          const lastImage = this.images[this.images.length - 1]
-          const lastImageId = lastImage ? lastImage.id : 1
-          this.getImages(lastImageId, this.loadImagesCount)
+      async waitForImagesToLoad() {
+        const imgs = Array.from(document.querySelectorAll('.images-grid img'))
+        const pending = imgs.filter(img => !img.complete)
+        if (!pending.length) {
+          return
+        }
+
+        await Promise.all(
+          pending.map(img =>
+            new Promise(resolve => {
+              const done = () => resolve()
+              img.addEventListener('load', done, { once: true })
+              img.addEventListener('error', done, { once: true })
+            })
+          )
+        )
+      },
+
+      async handleScroll() {
+        const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight
+        if (window.innerHeight + window.scrollY >= scrollHeight - 100 && !this.isLoading) {
+          await this.loadImagesUntilFilled(this.loadImagesCount)
         }
       }
     }

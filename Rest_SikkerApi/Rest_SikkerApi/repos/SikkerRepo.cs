@@ -47,6 +47,11 @@ namespace Rest_SikkerApi.repos
         {
             return _context.Images.Where(i => i.Id > id).OrderByDescending(i => i.Id).Take(amount);
         }
+
+        public IEnumerable<Image> GetBeforeIDImage(int id, int amount = 20)
+        {
+            return _context.Images.Where(i => i.Id < id).OrderByDescending(i => i.Id).Take(amount);
+        }
     
             // System state - stored in memory for now
         private static bool _systemOnline = false;

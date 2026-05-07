@@ -35,7 +35,7 @@ public class ImageController : ControllerBase
         IEnumerable<Image> images;
         if (id.HasValue && id.Value >= 1)
         {
-            images = m_repo.GetAfterIDImage(id.Value, amount);
+            images = m_repo.GetBeforeIDImage(id.Value, amount);
         }
         else
         {
