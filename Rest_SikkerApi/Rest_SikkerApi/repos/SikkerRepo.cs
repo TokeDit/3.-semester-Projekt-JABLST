@@ -91,7 +91,7 @@ namespace Rest_SikkerApi.repos
                 .Where(u => u.ReportEnabled && u.TelegramChatId != null)
                 .ToListAsync();
         }
-        // COMMIT: Get images for a user within a time range
+        //  Get images for a user within a time range
         public async Task<List<Image>> GetImagesByOwnerUidSinceAsync(string ownerUid, DateTime since)
         {
             return await _context.Images
