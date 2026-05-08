@@ -49,6 +49,11 @@ builder.Services.AddScoped<ITelegramCommandHandler, TelegramCommandHandler>();
 builder.Services.AddScoped<SikkerRepo>();
 builder.Services.AddScoped<ISikkerRepo, SikkerRepo>();
 
+// Register background report service
+builder.Services.AddHostedService<ReportService>();
+
+
+
 // ==========================================================================================
 // Telegram Bot Configuration
 // ==========================================================================================

@@ -47,7 +47,7 @@ namespace Rest_SikkerApi.repos
             var user = await _context.Users.FindAsync(new object?[] { ownerUid }, ct);
             if (user == null)
             {
-               return false;
+                return false;
 
                 // _context.Users.Add(new User { OwnerUid = ownerUid, TelegramChatId = telegramChatId });
             }
@@ -75,8 +75,8 @@ namespace Rest_SikkerApi.repos
         {
             return _context.Images.Where(i => i.Id < id).OrderByDescending(i => i.Id).Take(amount);
         }
-    
-            // System state - stored in memory for now
+
+        // System state - stored in memory for now
         private static bool _systemOnline = false;
 
         public bool GetSystemState()
@@ -93,6 +93,22 @@ namespace Rest_SikkerApi.repos
         {
             return await _context.Images
                 .Where(i => i.OwnerUid == ownerUid)
+                .OrderByDescending(i => i.Id)
+                .ToListAsync();
+        }
+        // Get all users with Telegram chat ID and reports enabled
+        public async Task<List<User>> GetUsersWithReportsEnabledAsync()
+        {
+            return await _context.Users
+                .Where(u => u.ReportEnabled && u.TelegramChatId != null)
+                .ToListAsync();
+        }
+        //  Get images for a user within a time range
+        public async Task<List<Image>> GetImagesByOwnerUidSinceAsync(string ownerUid, DateTime since)
+        {
+            return await _context.Images
+                .Where(i => i.OwnerUid == ownerUid &&
+                       DateTime.Parse(i.TimeStamp) >= since)
                 .OrderByDescending(i => i.Id)
                 .ToListAsync();
         }
