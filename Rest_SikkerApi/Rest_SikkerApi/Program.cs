@@ -49,7 +49,7 @@ builder.Services.AddScoped<ITelegramCommandHandler, TelegramCommandHandler>();
 builder.Services.AddScoped<SikkerRepo>();
 builder.Services.AddScoped<ISikkerRepo, SikkerRepo>();
 
-// COMMIT: Register background report service
+// Register background report service
 builder.Services.AddHostedService<ReportService>();
 
 
