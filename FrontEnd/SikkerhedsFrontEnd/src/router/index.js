@@ -6,6 +6,8 @@ import Profile from '../components/Profile.vue'
 import { auth } from '../firebase'
 import { onAuthStateChanged } from "firebase/auth";
 
+import Images from '../components/Images.vue'
+
 let isAuthResolved = false;
 
 function getCurrentUser() {
@@ -32,12 +34,16 @@ const routes = [
   },
 
   {
+    path: '/images',
+    component: Images,
+    meta: { requiresAuth: true }
+  },
+  
+  {
     path: '/profile',
     component: Profile,
     meta: { requiresAuth: true }
   },
-
-  
 ]
 
 const router = createRouter({

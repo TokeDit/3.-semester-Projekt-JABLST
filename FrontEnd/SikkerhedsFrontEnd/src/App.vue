@@ -7,5 +7,12 @@
 </script>
 
 <style>
-body { margin: 0; padding: 0; background: #eff2f7; }
+
+body {
+  --bg: #0b1120;
+
+  margin: 0; 
+  padding: 0; 
+  background: var(--bg);
+}
 </style>

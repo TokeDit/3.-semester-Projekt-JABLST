@@ -166,63 +166,28 @@
         <!-- Recent Image -->
         <div class="panel">
           <div class="panel-hd">
-            <h2>Recent Image</h2>
-            <span class="badge-live"
-              ><span class="pulse-dot sm"></span>Live</span
-            >
+            <h2>Recent Images</h2>
+            <span class="badge-live"><span class="pulse-dot sm"></span>Live</span>
           </div>
           <div class="img-preview">
-            <svg
-              width="34"
-              height="34"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.2"
-              opacity="0.2"
-            >
-              <path
-                d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
-              />
-              <circle cx="12" cy="13" r="4" />
-            </svg>
-            <span>Camera snapshot preview</span>
+            <div v-if="imagesLoading">
+              <svg class="loading-spinner" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              </svg>
+              <span>Loading images...</span>
+            </div>
+            <div v-else-if="images.length === 0">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span>Camera snapshot preview</span>
+            </div>
+            <div v-else v-for="image in images">
+              <img :src="`data:image/jpeg;base64,${image.imageDataBase64}`" alt="Captured Image" class="captured-image" />
+            </div>
           </div>
           <div class="panel-meta">
-            <span>Captured: 29 Apr 2025, 14:32:10</span>
-            <span class="link-text">Device: RASPI-01</span>
-          </div>
-        </div>
-
-        <!-- AI Summary -->
-        <!-- git commit -m "style: AI summary panel with star icon, blockquote, confidence footer" -->
-        <div class="panel ai-panel">
-          <div class="panel-hd">
-            <div class="ai-title">
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                style="color: var(--c-indigo)"
-              >
-                <polygon
-                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
-                />
-              </svg>
-              <h2>AI Summary</h2>
-            </div>
-            <button class="btn-ghost">View All</button>
-          </div>
-          <blockquote class="ai-quote">
-            "A person is walking on a driveway at night near a parked car. The
-            area is illuminated by outdoor lights."
-          </blockquote>
-          <div class="ai-footer">
-            <span>Confidence: <strong class="c-green">92%</strong></span>
-            <span>Processed: <strong>14:32:12</strong></span>
+            <span v-if="!imagesLoading && images.length > 0">newest photo captured: {{ formatImageTimestamp(images[0].timeStamp) }}</span>
+            <span v-else>yyyy-mm-dd:hh:mm:ss</span>
+            <button v-on:click="getResentImages()">View all images</button>
           </div>
         </div>
 
@@ -632,7 +597,28 @@ export default {
       statusText: "Checking...",
       statusClass: "status-unknown",
       events: [],
+      images: [],
+      imagesLoading: false,
     };
+  },
+
+  computed: {
+    userEmail() {
+      return this.user?.email ?? "";
+    },
+
+    userUid() {
+      return this.user?.uid ?? "";
+    },
+
+    userInitials() {
+      if (!this.userEmail) return "?";
+      return this.userEmail.substring(0, 2).toUpperCase();
+    },
+  },
+
+  async created() {
+    this.getResentImages();
   },
 
   mounted() {
@@ -753,35 +739,61 @@ export default {
       }).format(date);
     },
 
-   async loadEvents() {
-  try {
-    // Wait for Firebase auth to resolve
-    if (!this.user) return;
+    formatImageTimestamp(timestamp) {
+      if (!timestamp) return "";
+      const date = new Date(timestamp);
+      if (Number.isNaN(date.getTime())) return timestamp;
+      const pad = (value) => String(value).padStart(2, "0");
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}:${pad(date.getHours())}h:${pad(date.getMinutes())}m:${pad(date.getSeconds())}s`;
+    },
+
+    loadEvents() {
+      this.events = [
+        { id: 1, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date()) },
+        { id: 2, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date(Date.now() - 3600000)) },
+        { id: 3, type: "Bevægelse registreret", timestamp: this.formatTimestamp(new Date(Date.now() - 7200000)) },
+      ];
+    },
+    async loadEvents() {
+      try {
+        // Wait for Firebase auth to resolve
+        if (!this.user) return;
 
     const uid = this.user.uid;
         const res = await fetch(`${this.apiBase}/api/Image/user/${uid}`);
 
 
-    if (res.status === 204) {
-      this.events = [];
-      return;
-    }
+        const data = await res.json();
+        this.events = data.map((img) => ({
+          id: img.id,
+          type: img.description || "Bevægelse registreret",
+          timestamp: img.timeStamp
+            ? new Intl.DateTimeFormat("da-DK", {
+                dateStyle: "short",
+                timeStyle: "medium",
+              }).format(new Date(img.timeStamp))
+            : "Unknown",
+        }));
+      } catch {
+        this.events = [];
+      }
+    },
 
-    const data = await res.json();
-    this.events = data.map(img => ({
-      id: img.id,
-      type: img.description || "Bevægelse registreret",
-      timestamp: img.timeStamp
-        ? new Intl.DateTimeFormat("da-DK", {
-            dateStyle: "short",
-            timeStyle: "medium"
-          }).format(new Date(img.timeStamp))
-        : "Unknown"
-    }));
-  } catch {
-    this.events = [];
-  }
-},
+    async getResentImages()
+    {
+      this.imagesLoading = true;
+      try {
+        const res = await fetch("https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/image");
+        const data = await res.json();
+        console.log("Fetched images:", data);
+        this.images = data || [];
+      } catch {
+        this.images = [];
+      }
+      finally {
+        this.imagesLoading = false;
+      }
+    }
   },
 };
 </script>
@@ -1054,10 +1066,8 @@ export default {
 
 /* ─── Middle row ─────────────────────────────────────────── */
 .middle-row {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr 1fr;
-  gap: 0.7rem;
-  align-items: start;
+  display: grid; grid-template-columns: 1.1fr 1fr;
+  gap: 0.7rem; align-items: start;
 }
 
 .panel {
