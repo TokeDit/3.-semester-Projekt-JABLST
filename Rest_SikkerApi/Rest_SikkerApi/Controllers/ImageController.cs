@@ -53,7 +53,7 @@ public class ImageController : ControllerBase
         return Ok(images);
     }
 
-    [HttpGet("api/[controller]/{id}")]
+    [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(int id)
