@@ -27,7 +27,7 @@ namespace Rest_SikkerApi.repos
 
         public async Task<Image?> GetImageByIdAsync(int id)
         {
-            return await _context.Images.FindAsync(id);
+            return await _context.Images.FirstOrDefaultAsync(i => i.Id == id);
         }
 
         public async Task<User?> GetUserByFirebaseIdAsync(string ownerUid)
