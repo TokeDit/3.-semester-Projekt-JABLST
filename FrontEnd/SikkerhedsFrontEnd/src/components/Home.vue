@@ -187,7 +187,6 @@
           <div class="panel-meta">
             <span v-if="!imagesLoading && images.length > 0">newest photo captured: {{ formatImageTimestamp(images[0].timeStamp) }}</span>
             <span v-else>yyyy-mm-dd:hh:mm:ss</span>
-            <button v-on:click="getResentImages()">View all images</button>
           </div>
         </div>
 
@@ -618,7 +617,7 @@ export default {
   },
 
   async created() {
-    this.getResentImages();
+    // this.getResentImages();
   },
 
   mounted() {

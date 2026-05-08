@@ -50,16 +50,16 @@
     },
 
     mounted() {
-      window.addEventListener('scroll', this.handleScroll)
-      window.addEventListener('wheel', this.handleScroll, { passive: true })
-      window.addEventListener('touchmove', this.handleScroll, { passive: true })
-      this.getImagesStartup(this.loadImagesCount)
+      // window.addEventListener('scroll', this.handleScroll)
+      // window.addEventListener('wheel', this.handleScroll, { passive: true })
+      // window.addEventListener('touchmove', this.handleScroll, { passive: true })
+      // this.getImagesStartup(this.loadImagesCount)
     },
 
     beforeUnmount() {
-      window.removeEventListener('scroll', this.handleScroll)
-      window.removeEventListener('wheel', this.handleScroll, { passive: true })
-      window.removeEventListener('touchmove', this.handleScroll, { passive: true })
+      // window.removeEventListener('scroll', this.handleScroll)
+      // window.removeEventListener('wheel', this.handleScroll, { passive: true })
+      // window.removeEventListener('touchmove', this.handleScroll, { passive: true })
     },
 
     methods: {
