@@ -52,6 +52,18 @@ public class ImageController : ControllerBase
         }
         return Ok(images);
     }
+
+    [HttpGet("api/[controller]/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Get(int id)
+    {
+        var image = await m_repo.GetImageByIdAsync(id);
+        if (image == null)
+            return NotFound($"Image with ID {id} not found.");
+        return Ok(image);
+    }
+
     [HttpGet("user/{ownerUid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
