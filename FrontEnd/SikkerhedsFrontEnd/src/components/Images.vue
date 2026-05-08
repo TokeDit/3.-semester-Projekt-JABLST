@@ -1,6 +1,7 @@
 <template>
-  <body>
-    <div>
+  <div class="layout">
+    <AppSidebar :activePage="images" />
+    <div class="content">
       <div v-if="images.length === 0">No images available.</div>
       <div v-else class="images-grid">
         <div v-for="(image, index) in images" :key="index" class="image-card">
@@ -9,22 +10,27 @@
           </button>
         </div>
       </div>
+      <div v-for="value in test">
+        <p>{{ value }}</p>
+      </div>
     </div>
-    <div v-for="value in test">
-      <p>{{ value }}</p>
-    </div>
-  </body>
+  </div>
   <!-- <div @scroll.passive="handleScroll()"></div> -->
 </template>
 
 
 <script>
   import { ref, onMounted } from 'vue'
+  import AppSidebar from './Sidebar.vue'
 
   const baseUrl = 'https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/image'
 
   export default {
     name: 'Images',
+
+    components: {
+      AppSidebar,
+    },
 
     data() {
       return {
@@ -158,6 +164,17 @@
 </script>
 
 <style scoped>
+.layout {
+  display: flex;
+  height: 100vh;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
 .images-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));

@@ -22,6 +22,18 @@
       </button>
     </nav>
 
+    <nav class="nav-main">
+      <button class="nav-item" :class="{ active: activePage === 'images' }" @click="goToImages">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+        </svg>
+        <span>Images</span>
+      </button>
+    </nav>
+
     <div class="nav-group">
       <p class="nav-group-label">Monitoring</p>
       <button class="nav-item">
@@ -159,6 +171,10 @@ export default {
   methods: {
     goToDashboard() {
       this.$router.push("/home");
+    },
+    
+    goToImages() {
+      this.$router.push("/images");
     },
 
     goToProfile() {
