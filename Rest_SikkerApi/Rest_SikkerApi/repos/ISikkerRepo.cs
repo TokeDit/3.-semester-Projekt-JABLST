@@ -5,6 +5,7 @@ namespace Rest_SikkerApi.repos
     public interface ISikkerRepo
     {
         Task<Image> SaveImageAsync(Image imageEntity);
+        Task<User> SaveUserAsync(User user);
         Task<List<Image>> GetAllImagesAsync();
         Task<Image?> GetImageByIdAsync(int id);
         Task<User?> GetUserByFirebaseIdAsync(string ownerUid);
