@@ -55,11 +55,11 @@ namespace Rest_SikkerApi.Services
                     try
                     {
 
-                        var images = await repo.GetImagesByOwnerUidSinceAsync(user.OwnerUid);
+                        var images = await repo.GetImagesByOwnerUidSinceAsync(user.OwnerUid, user.ReportFrequency);
                         var periodLabel = user.ReportFrequency;
 
                         // Build report message
-                        var report = BuildReport(images, periodLabel);
+                        var report = BuildReport(images, periodLabel.ToString());
 
                         await telegramService.SendMessageAsync(report, user.TelegramChatId!);
 
