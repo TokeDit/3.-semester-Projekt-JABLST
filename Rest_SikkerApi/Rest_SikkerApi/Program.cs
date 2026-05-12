@@ -186,31 +186,20 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-// Configure database provider before building the app.
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseInMemoryDatabase("DbConnectionDev"));
-}
-else
-{
-    var prodConnectionString = builder.Configuration.GetConnectionString("DbConnectionProd")
-        ?? builder.Configuration.GetConnectionString("DbConnection") // fallback to generic name
-        ?? builder.Configuration.GetConnectionString("DbConnectionDev")
-        ?? throw new InvalidOperationException("No SQL connection string configured. Set ConnectionStrings:DbConnectionProd (or DbConnectionDev as fallback).");
+var connectionString = builder.Configuration.GetConnectionString("DbConnectionProd")
+    ?? builder.Configuration.GetConnectionString("DbConnection")
+    ?? builder.Configuration.GetConnectionString("DbConnectionDev")
+    ?? throw new InvalidOperationException("No SQL connection string configured.");
 
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlServer(prodConnectionString,
-        sqlServerOptions =>
-        {
-            // Enable automatic retries for transient failures.
-            sqlServerOptions.EnableRetryOnFailure(
-                maxRetryCount: 3,
-                maxRetryDelay: TimeSpan.FromSeconds(5),
-                errorNumbersToAdd: null
-            );
-        }));
-}
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(connectionString, sqlServerOptions =>
+    {
+        sqlServerOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
+            errorNumbersToAdd: null
+        );
+    }));
 
 
 var app = builder.Build();
