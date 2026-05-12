@@ -108,8 +108,7 @@ namespace Rest_SikkerApi.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("ReportFrequency")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("int");
 
                     b.Property<string>("TelegramChatId")
                         .HasMaxLength(128)
