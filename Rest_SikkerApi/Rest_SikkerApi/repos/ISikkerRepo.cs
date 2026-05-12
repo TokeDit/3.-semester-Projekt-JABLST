@@ -14,5 +14,6 @@ namespace Rest_SikkerApi.repos
         Task<List<Image>> GetImagesByOwnerUidAsync(string ownerUid);
                 Task<List<User>> GetUsersWithReportsEnabledAsync();
         Task<List<Image>> GetImagesByOwnerUidSinceAsync(string ownerUid, DateTime since);
+        Task<List<Image>> GetImagesByOwnerUidAndMonthAsync(string ownerUid, int year, int month);
     }
 }
