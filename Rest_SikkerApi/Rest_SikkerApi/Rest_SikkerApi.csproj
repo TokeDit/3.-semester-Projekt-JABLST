@@ -6,6 +6,8 @@
     <UserSecretsId>8734679c-c44e-49b3-949e-11d840273ca1</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.21.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
     <PackageReference Include="EntityFramework" Version="6.5.1" />
     <PackageReference Include="FirebaseAdmin" Version="3.5.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.73.0" />

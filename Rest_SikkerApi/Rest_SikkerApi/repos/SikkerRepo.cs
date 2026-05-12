@@ -1,6 +1,11 @@
 ﻿using Rest_SikkerApi.data;
 using Microsoft.EntityFrameworkCore;
 using Rest_SikkerApi.models;
+using Azure.Identity;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
+using System.Security.Policy;
 
 namespace Rest_SikkerApi.repos
 {
@@ -27,7 +32,25 @@ namespace Rest_SikkerApi.repos
 
         public async Task<Image?> GetImageByIdAsync(int id)
         {
-            return await _context.Images.FirstOrDefaultAsync(i => i.Id == id);
+            BlobServiceClient blobServiceClient = new BlobServiceClient(new Uri("https://jablstimage.blob.core.windows.net"),
+            new DefaultAzureCredential());
+            BlobContainerClient blobContainerClient = blobServiceClient.GetBlobContainerClient("images");
+
+            BlobClient blobClient = blobContainerClient.GetBlobClient(id.ToString());
+            if (await blobClient.ExistsAsync())
+            {                
+                BlobDownloadResult download = await blobClient.DownloadContentAsync();
+                var image = new Image
+                {
+                    Id = id,
+                    OwnerUid = "unknown",
+                    ImageData = download.Content.ToArray()
+                };
+                return image;
+            }
+             return null;
+
+            // return await _context.Images.FirstOrDefaultAsync(i => i.Id == id);
         }
 
         public async Task<User?> GetUserByFirebaseIdAsync(string ownerUid)
