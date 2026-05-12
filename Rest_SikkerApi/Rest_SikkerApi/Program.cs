@@ -1,6 +1,7 @@
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2.Flows;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -170,28 +171,31 @@ if (FirebaseApp.DefaultInstance is null)
 {
     var firebaseCredentialsJson = builder.Configuration["Firebase:ServiceAccountJson"];
 
-    if (string.IsNullOrWhiteSpace(firebaseCredentialsJson))
+    try
     {
-        // For testing: skip Firebase initialization if file doesn't exist
-        try
+        GoogleCredential credential;
+
+        if (!string.IsNullOrWhiteSpace(firebaseCredentialsJson))
         {
-            FirebaseApp.Create(new AppOptions
-            {
-                Credential = GoogleCredential.FromFile("firebase-service-account.json")
-            });
+            credential = CredentialFactory
+                .FromJson<ServiceAccountCredential>(firebaseCredentialsJson)
+                .ToGoogleCredential();
         }
-        catch (System.IO.FileNotFoundException)
+        else
         {
-            // Skip Firebase setup for testing
-            Console.WriteLine("Firebase service account file not found. Skipping Firebase initialization for testing.");
+            credential = CredentialFactory
+                .FromFile<ServiceAccountCredential>("firebase-service-account.json")
+                .ToGoogleCredential();
         }
-    }
-    else
-    {
+
         FirebaseApp.Create(new AppOptions
         {
-            Credential = GoogleCredential.FromJson(firebaseCredentialsJson)
+            Credential = credential
         });
+    }
+    catch (System.IO.FileNotFoundException)
+    {
+        Console.WriteLine("Firebase service account file not found. Skipping Firebase initialization for testing.");
     }
 }
 
