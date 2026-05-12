@@ -111,6 +111,17 @@ namespace Rest_SikkerApi.repos
             List<Image> result = await _context.Images.Where(i => i.OwnerUid == ownerUid && dt.CompareTo(DateTime.Parse(i.TimeStamp)) <= 0).ToListAsync();
             return result; 
         }
+
+        //  Get images for a user filtered by month and year
+        public async Task<List<Image>> GetImagesByOwnerUidAndMonthAsync(string ownerUid, int year, int month)
+        {
+            return await _context.Images
+                .Where(i => i.OwnerUid == ownerUid &&
+                       DateTime.Parse(i.TimeStamp).Year == year &&
+                       DateTime.Parse(i.TimeStamp).Month == month)
+                .OrderByDescending(i => i.Id)
+                .ToListAsync();
+        }
     }
 }
 

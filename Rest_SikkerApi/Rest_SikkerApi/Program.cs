@@ -17,22 +17,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.CaptureStartupErrors(true);
 builder.WebHost.UseSetting("detailedErrors", "true");
 
-var configuration = builder.Configuration; // unecessary assignment, 
-var services = builder.Services; // unecessary assignment, Did it to try to fix an issue.
-// Add services to the container.
-
-services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DbConnection"), 
-            sqlServerOptions =>
-            {
-                // Enable automatic retries for transient failures
-                // Default: 6 retries with exponential backoff
-                sqlServerOptions.EnableRetryOnFailure(
-                    maxRetryCount: 3,
-                    maxRetryDelay: TimeSpan.FromSeconds(5),
-                    errorNumbersToAdd: null
-                );
-            })); // looks in appSettings.json or environment variables for a connection string named "DefaultConnection"
 
 // COMMIT 1: Register HttpClient via AddHttpClient to use IHttpClientFactory under the hood
 // COMMIT 10: Register ITelegramService -> TelegramService for DI and testability
@@ -202,17 +186,39 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// Configure database provider before building the app.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseInMemoryDatabase("DbConnectionDev"));
+}
+else
+{
+    var prodConnectionString = builder.Configuration.GetConnectionString("DbConnectionProd")
+        ?? builder.Configuration.GetConnectionString("DbConnectionDev")
+        ?? throw new InvalidOperationException("No SQL connection string configured. Set ConnectionStrings:DbConnectionProd (or DbConnectionDev as fallback).");
+
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlServer(prodConnectionString,
+        sqlServerOptions =>
+        {
+            // Enable automatic retries for transient failures.
+            sqlServerOptions.EnableRetryOnFailure(
+                maxRetryCount: 3,
+                maxRetryDelay: TimeSpan.FromSeconds(5),
+                errorNumbersToAdd: null
+            );
+        }));
+}
+
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 // Remove if you want swagger in production
-//if (app.Environment.IsDevelopment())
-//{
 app.UseSwagger();
 app.UseSwaggerUI();
 app.MapOpenApi();
-//}
 
 app.UseCors("allowAll");
 
@@ -272,7 +278,10 @@ app.MapFallbackToFile("index.html");
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    if (db.Database.IsRelational())
+    {
+        db.Database.Migrate();
+    }
 }
 
 app.Run();
