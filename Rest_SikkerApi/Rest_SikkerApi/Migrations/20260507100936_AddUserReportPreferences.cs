@@ -15,14 +15,14 @@ namespace Rest_SikkerApi.Migrations
                 table: "Users",
                 type: "bit",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "ReportFrequency",
                 table: "Users",
-                type: "nvarchar(max)",
-                nullable: false,
-                defaultValue: "");
+                type: "int",
+                nullable: true,
+                defaultValue: 7);
         }
 
         /// <inheritdoc />

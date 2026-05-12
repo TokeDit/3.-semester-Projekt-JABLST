@@ -29,7 +29,7 @@ namespace Rest_SikkerApi.repos
 
         public async Task<List<Image>> GetAllImagesAsync()
         {
-            return await _context.Images.ToListAsync();
+            return await _context.Images.ToListAsync() ?? new List<Image>();
         }
 
         public async Task<Image?> GetImageByIdAsync(int id)
@@ -104,13 +104,11 @@ namespace Rest_SikkerApi.repos
                 .ToListAsync();
         }
         //  Get images for a user within a time range
-        public async Task<List<Image>> GetImagesByOwnerUidSinceAsync(string ownerUid, DateTime since)
+        public async Task<List<Image>>? GetImagesByOwnerUidSinceAsync(string ownerUid, int reportFrequency)
         {
-            return await _context.Images
-                .Where(i => i.OwnerUid == ownerUid &&
-                       DateTime.Parse(i.TimeStamp) >= since)
-                .OrderByDescending(i => i.Id)
-                .ToListAsync();
+            DateTime dt = DateTime.UtcNow.AddDays(reportFrequency);
+            List<Image> result = await _context.Images.Where(i => i.OwnerUid == ownerUid && dt.CompareTo(DateTime.Parse(i.TimeStamp)) <= 0).ToListAsync();
+            return result; 
         }
 
         //  Get images for a user filtered by month and year
