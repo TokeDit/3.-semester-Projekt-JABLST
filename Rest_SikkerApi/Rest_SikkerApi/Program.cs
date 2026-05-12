@@ -195,6 +195,7 @@ if (builder.Environment.IsDevelopment())
 else
 {
     var prodConnectionString = builder.Configuration.GetConnectionString("DbConnectionProd")
+        ?? builder.Configuration.GetConnectionString("DbConnection") // fallback to generic name
         ?? builder.Configuration.GetConnectionString("DbConnectionDev")
         ?? throw new InvalidOperationException("No SQL connection string configured. Set ConnectionStrings:DbConnectionProd (or DbConnectionDev as fallback).");
 
