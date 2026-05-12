@@ -1,7 +1,6 @@
 ﻿using Rest_SikkerApi.data;
 using Microsoft.EntityFrameworkCore;
 using Rest_SikkerApi.models;
-using System.Data.Entity;
 
 namespace Rest_SikkerApi.repos
 {
