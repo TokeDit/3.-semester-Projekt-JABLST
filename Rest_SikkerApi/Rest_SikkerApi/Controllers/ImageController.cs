@@ -74,7 +74,7 @@ public class ImageController : ControllerBase
             return NoContent();
         return Ok(images);
     }
-    // COMMIT: Get monthly event log for a user — issue #151
+    // Get monthly event log for a user — issue #151
     [HttpGet("user/{ownerUid}/monthly")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
