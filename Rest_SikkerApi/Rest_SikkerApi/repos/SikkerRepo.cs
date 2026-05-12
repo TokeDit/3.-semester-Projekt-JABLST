@@ -113,7 +113,7 @@ namespace Rest_SikkerApi.repos
                 .ToListAsync();
         }
 
-        // COMMIT: Get images for a user filtered by month and year
+        //  Get images for a user filtered by month and year
         public async Task<List<Image>> GetImagesByOwnerUidAndMonthAsync(string ownerUid, int year, int month)
         {
             return await _context.Images
