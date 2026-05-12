@@ -30,7 +30,7 @@ namespace Rest_SikkerApi.repos
 
         public async Task<List<Image>> GetAllImagesAsync()
         {
-            return await _context.Images.ToListAsync();
+            return await _context.Images.ToListAsync() ?? new List<Image>();
         }
 
         public async Task<Image?> GetImageByIdAsync(int id)
