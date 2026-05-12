@@ -10,6 +10,7 @@ import Images from '../components/Images.vue'
 
 import MonthlyLog from '../components/MonthlyLog.vue'
 
+
 let isAuthResolved = false;
 
 function getCurrentUser() {
@@ -46,6 +47,11 @@ const routes = [
     component: Profile,
     meta: { requiresAuth: true }
   },
+  {
+  path: '/events/monthly',
+  component: MonthlyLog,
+  meta: { requiresAuth: true }
+}
 ]
 
 const router = createRouter({
