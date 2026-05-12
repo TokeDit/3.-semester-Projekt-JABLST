@@ -74,4 +74,20 @@ public class ImageController : ControllerBase
             return NoContent();
         return Ok(images);
     }
+    // Get monthly event log for a user — issue #151
+    [HttpGet("user/{ownerUid}/monthly")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> GetMonthlyLog(
+        string ownerUid,
+        [FromQuery] int year,
+        [FromQuery] int month)
+    {
+        if (year == 0) year = DateTime.UtcNow.Year;
+        if (month == 0) month = DateTime.UtcNow.Month;
+
+        var images = await m_repo.GetImagesByOwnerUidAndMonthAsync(ownerUid, year, month);
+        if (!images.Any()) return NoContent();
+        return Ok(images);
+    }
 }
