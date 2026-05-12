@@ -8,6 +8,8 @@ import { onAuthStateChanged } from "firebase/auth";
 
 import Images from '../components/Images.vue'
 
+import MonthlyLog from '../components/MonthlyLog.vue'
+
 let isAuthResolved = false;
 
 function getCurrentUser() {
