@@ -87,7 +87,6 @@ builder.Services.AddScoped(provider =>
     )
 );
 
-builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
 // builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
 // Jwt Authentication -----------------------------------------------------------------------------
 // ==========================================================================================

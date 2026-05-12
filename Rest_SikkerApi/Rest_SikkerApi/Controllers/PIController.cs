@@ -13,7 +13,7 @@ public class PIController : ControllerBase
     private readonly TelegramBotService _telegramService;
 
 
-    
+
     public PIController(ISikkerRepo repo, TelegramBotService telegramService)
     {
         _repo = repo;
@@ -39,8 +39,6 @@ public class PIController : ControllerBase
                 ?? User.FindFirst("firebase_uid")?.Value
                 ?? image.OwnerUid
                 ?? string.Empty;
-            
-
 
             // Create Image entity, set OwnerUid and save
             var imageEntity = new Image
