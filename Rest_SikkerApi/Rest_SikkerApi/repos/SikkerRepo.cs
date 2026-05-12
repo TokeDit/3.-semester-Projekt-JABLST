@@ -1,6 +1,7 @@
 ﻿using Rest_SikkerApi.data;
 using Microsoft.EntityFrameworkCore;
 using Rest_SikkerApi.models;
+using System.Data.Entity;
 
 namespace Rest_SikkerApi.repos
 {
@@ -104,13 +105,11 @@ namespace Rest_SikkerApi.repos
                 .ToListAsync();
         }
         //  Get images for a user within a time range
-        public async Task<List<Image>> GetImagesByOwnerUidSinceAsync(string ownerUid, DateTime since)
+        public async Task<List<Image>>? GetImagesByOwnerUidSinceAsync(string ownerUid, int reportFrequency)
         {
-            return await _context.Images
-                .Where(i => i.OwnerUid == ownerUid &&
-                       DateTime.Parse(i.TimeStamp) >= since)
-                .OrderByDescending(i => i.Id)
-                .ToListAsync();
+            DateTime dt = DateTime.UtcNow.AddDays(reportFrequency);
+            List<Image> result = await _context.Images.Where(i => i.OwnerUid == ownerUid && dt.CompareTo(DateTime.Parse(i.TimeStamp)) <= 0).ToListAsync();
+            return result; 
         }
     }
 }

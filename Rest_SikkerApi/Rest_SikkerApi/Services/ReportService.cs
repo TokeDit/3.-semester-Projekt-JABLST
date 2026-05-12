@@ -51,16 +51,12 @@ namespace Rest_SikkerApi.Services
                 _logger.LogInformation("Sending reports to {Count} users.", users.Count);
 
                 foreach (var user in users)
-                {
+                { 
                     try
                     {
-                        // Determine report period
-                        var since = user.ReportFrequency == "weekly"
-                            ? now.AddDays(-7)
-                            : now.AddDays(-1);
 
-                        var images = await repo.GetImagesByOwnerUidSinceAsync(user.OwnerUid, since);
-                        var periodLabel = user.ReportFrequency == "weekly" ? "7 days" : "24 hours";
+                        var images = await repo.GetImagesByOwnerUidSinceAsync(user.OwnerUid);
+                        var periodLabel = user.ReportFrequency;
 
                         // Build report message
                         var report = BuildReport(images, periodLabel);
