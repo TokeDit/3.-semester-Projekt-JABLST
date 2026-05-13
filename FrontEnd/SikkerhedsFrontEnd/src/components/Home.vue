@@ -709,7 +709,7 @@ export default {
         this.piStatus.isAlive = data.isAlive;
       } catch {
         this.piStatus.isAlive = false;
-        this.piStatus.lastSeen = "Unreachable";
+        this.piStatus.lastSeen = data.lastSeen;
       }
     },
 

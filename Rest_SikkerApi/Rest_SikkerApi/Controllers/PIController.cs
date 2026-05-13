@@ -79,7 +79,7 @@ public class PIController : ControllerBase
     [HttpGet("status")]
     public IActionResult GetStatus()
     {
-        var threshold = TimeSpan.FromMinutes(2);
+        var threshold = TimeSpan.FromSeconds(30);
         var isAlive = _lastHeartBeat.HasValue && (DateTime.UtcNow - _lastHeartBeat.Value) < threshold;
 
         return Ok(new
