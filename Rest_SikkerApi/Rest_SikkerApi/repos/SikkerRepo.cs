@@ -14,18 +14,22 @@ namespace Rest_SikkerApi.repos
         private readonly AppDbContext _context;
         private readonly BlobServiceClient _blobServiceClient;
         private readonly BlobContainerClient _blobContainerClient;
+        private readonly FileHandlingService _fileHandlerService;
+        private readonly DatabaseHandlingService _databaseHandlingService;
         // måske implementer en user, så they can't get others imges
-        public SikkerRepo(AppDbContext context, BlobServiceClient blobServiceClient)
+        public SikkerRepo(AppDbContext context, BlobServiceClient blobServiceClient, FileHandlingService fileHandlingService, DatabaseHandlingService databaseHandlingService)
         {
             _context = context;
             _blobServiceClient = blobServiceClient;
             _blobContainerClient = _blobServiceClient.GetBlobContainerClient("images");
+            _fileHandlerService = fileHandlingService;
+            _databaseHandlingService = databaseHandlingService;
         }
 
         public async Task<Image> SaveImageAsync(Image imageEntity)
         {
-            _context.Images.Add(imageEntity);
-            await _context.SaveChangesAsync();
+            await _databaseHandlingService.SaveImageAsync(imageEntity);
+            await _fileHandlerService.UploadImageAsync(imageEntity.Id, Convert.FromBase64String(imageEntity.ImageData));
             return imageEntity;
         }
 
@@ -52,7 +56,7 @@ namespace Rest_SikkerApi.repos
                 var image = new Image
                 {
                     Id = id,
-                    ImageData = download.Value.Content.ToArray()
+                    ImageData = download.Value.Content.ToArray().ToString()!
                 };
                 return image;
             }
@@ -128,9 +132,9 @@ namespace Rest_SikkerApi.repos
                 .ToListAsync();
         }
         //  Get images for a user within a time range
-        public async Task<List<Image>>? GetImagesByOwnerUidSinceAsync(string ownerUid, int reportFrequency)
+        public async Task<List<Image>>? GetImagesByOwnerUidSinceAsync(string ownerUid, uint reportFrequency)
         {
-            DateTime dt = DateTime.UtcNow.AddDays(reportFrequency);
+            DateTime dt = DateTime.UtcNow.AddDays(-reportFrequency);
             List<Image> result = await _context.Images.Where(i => i.OwnerUid == ownerUid && dt.CompareTo(DateTime.Parse(i.TimeStamp)) <= 0).ToListAsync();
             return result; 
         }

@@ -13,6 +13,7 @@ using Rest_SikkerApi.Services;
 using System.Security.Claims;
 using System.Text;
 using Azure.Storage.Blobs;
+using Rest_SikkerApi;
 
 var builder = WebApplication.CreateBuilder(args);
 // uddyber error msg på startup fejl, så man kan se hvad der gik galt, i stedet for en generisk "Application failed to start" besked. Det er især nyttigt under udvikling.
@@ -34,6 +35,8 @@ builder.Services.AddScoped<ITelegramCommandHandler, TelegramCommandHandler>();
 // Register repository for database operations
 builder.Services.AddScoped<SikkerRepo>();
 builder.Services.AddScoped<ISikkerRepo, SikkerRepo>();
+
+builder.Services.AddScoped<DatabaseHandlingService>();
 
 // Register background report service
 builder.Services.AddHostedService<ReportService>();
@@ -72,11 +75,6 @@ builder.Services.AddScoped(provider =>
         provider.GetRequiredService<ISikkerRepo>()
     )
 );
-
-string connectionStringFileServer = builder.Configuration["Azure:BlobConnectionString"]!;
-BlobServiceClient blobServiceClient = new BlobServiceClient(connectionStringFileServer);
-
-builder.Services.AddSingleton(blobServiceClient);
 
 string connectionStringFileServer = builder.Configuration["Azure:BlobConnectionString"]!;
 BlobServiceClient blobServiceClient = new BlobServiceClient(connectionStringFileServer);

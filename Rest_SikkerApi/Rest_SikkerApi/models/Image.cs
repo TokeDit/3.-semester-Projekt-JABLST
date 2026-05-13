@@ -12,7 +12,7 @@ namespace Rest_SikkerApi.models
         public string ImageType { get; set; } = string.Empty;
 
         // Store as bytes in database
-        public byte[] ImageData { get; set; } = Array.Empty<byte>();
+        public string ImageData { get; set; } = string.Empty;
 
         public string Description { get; set; } = string.Empty;
 
@@ -26,15 +26,15 @@ namespace Rest_SikkerApi.models
         // For API - accept/return Base64 string
 
         // Helper method to get image bytes (now direct access)
-        public byte[]? GetImageBytes()
+        public string? GetImageBytes()
         {
             return ImageData.Length > 0 ? ImageData : null;
         }
 
         // Helper method to set image from bytes
-        public void SetImageBytes(byte[] bytes)
+        public void SetImageBytes(string bytes)
         {
-            ImageData = bytes ?? Array.Empty<byte>();
+            ImageData = bytes ?? string.Empty;
         }
     }
 }
