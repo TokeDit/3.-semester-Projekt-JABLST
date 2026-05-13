@@ -12,10 +12,14 @@ namespace Rest_SikkerApi.repos
     public class SikkerRepo : ISikkerRepo
     {
         private readonly AppDbContext _context;
+        private readonly BlobServiceClient _blobServiceClient;
+        private readonly BlobContainerClient _blobContainerClient;
         // måske implementer en user, så they can't get others imges
-        public SikkerRepo(AppDbContext context)
+        public SikkerRepo(AppDbContext context, BlobServiceClient blobServiceClient)
         {
             _context = context;
+            _blobServiceClient = blobServiceClient;
+            _blobContainerClient = _blobServiceClient.GetBlobContainerClient("images");
         }
 
         public async Task<Image> SaveImageAsync(Image imageEntity)
@@ -30,25 +34,22 @@ namespace Rest_SikkerApi.repos
             return await _context.Images.ToListAsync();
         }
 
+        // Failure occurs Azure.RequestFailedException. Multiple failures occur, an AggregateException will be thrown
+        // Exceptions thrown (Azure.RequestFailedException, AggregateException)
         public async Task<Image?> GetImageByIdAsync(int id)
         {
-            BlobServiceClient blobServiceClient = new BlobServiceClient(new Uri("https://jablstimage.blob.core.windows.net"),
-            new DefaultAzureCredential());
-            BlobContainerClient blobContainerClient = blobServiceClient.GetBlobContainerClient("images");
-
-            BlobClient blobClient = blobContainerClient.GetBlobClient(id.ToString());
+            BlobClient blobClient = _blobContainerClient.GetBlobClient(id.ToString());
             if (await blobClient.ExistsAsync())
             {                
-                BlobDownloadResult download = await blobClient.DownloadContentAsync();
+                Azure.Response<BlobDownloadResult> download = await blobClient.DownloadContentAsync();
                 var image = new Image
                 {
                     Id = id,
-                    OwnerUid = "unknown",
-                    ImageData = download.Content.ToArray()
+                    ImageData = download.Value.Content.ToArray()
                 };
                 return image;
             }
-             return null;
+            return null;
 
             // return await _context.Images.FirstOrDefaultAsync(i => i.Id == id);
         }
