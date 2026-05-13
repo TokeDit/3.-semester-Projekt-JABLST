@@ -29,9 +29,16 @@ namespace Rest_SikkerApi.repos
             return imageEntity;
         }
 
+        public async Task<User> SaveUserAsync(User user)
+        {
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
         public async Task<List<Image>> GetAllImagesAsync()
         {
-            return await _context.Images.ToListAsync();
+            return await _context.Images.ToListAsync() ?? new List<Image>();
         }
 
         // Failure occurs Azure.RequestFailedException. Multiple failures occur, an AggregateException will be thrown
@@ -64,7 +71,7 @@ namespace Rest_SikkerApi.repos
             var user = await _context.Users.FindAsync(new object?[] { ownerUid }, ct);
             if (user == null)
             {
-               return false;
+                return false;
 
                 // _context.Users.Add(new User { OwnerUid = ownerUid, TelegramChatId = telegramChatId });
             }
@@ -92,8 +99,8 @@ namespace Rest_SikkerApi.repos
         {
             return _context.Images.Where(i => i.Id < id).OrderByDescending(i => i.Id).Take(amount);
         }
-    
-            // System state - stored in memory for now
+
+        // System state - stored in memory for now
         private static bool _systemOnline = false;
 
         public bool GetSystemState()
@@ -110,6 +117,31 @@ namespace Rest_SikkerApi.repos
         {
             return await _context.Images
                 .Where(i => i.OwnerUid == ownerUid)
+                .OrderByDescending(i => i.Id)
+                .ToListAsync();
+        }
+        // Get all users with Telegram chat ID and reports enabled
+        public async Task<List<User>> GetUsersWithReportsEnabledAsync()
+        {
+            return await _context.Users
+                .Where(u => u.ReportEnabled && u.TelegramChatId != null)
+                .ToListAsync();
+        }
+        //  Get images for a user within a time range
+        public async Task<List<Image>>? GetImagesByOwnerUidSinceAsync(string ownerUid, int reportFrequency)
+        {
+            DateTime dt = DateTime.UtcNow.AddDays(reportFrequency);
+            List<Image> result = await _context.Images.Where(i => i.OwnerUid == ownerUid && dt.CompareTo(DateTime.Parse(i.TimeStamp)) <= 0).ToListAsync();
+            return result; 
+        }
+
+        //  Get images for a user filtered by month and year
+        public async Task<List<Image>> GetImagesByOwnerUidAndMonthAsync(string ownerUid, int year, int month)
+        {
+            return await _context.Images
+                .Where(i => i.OwnerUid == ownerUid &&
+                       DateTime.Parse(i.TimeStamp).Year == year &&
+                       DateTime.Parse(i.TimeStamp).Month == month)
                 .OrderByDescending(i => i.Id)
                 .ToListAsync();
         }

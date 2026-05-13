@@ -148,7 +148,11 @@ async function handleRegister() {
   }
 
   try {
-    await createUserWithEmailAndPassword(auth, email.value, password.value);
+    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
+    const idToken = await userCredential.user.getIdToken();
+    await fetch('https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/Auth/me', {
+      headers: { Authorization: `Bearer ${idToken}` }
+    });
     message.value = 'Bruger oprettet. Du bliver sendt til dashboard.';
     router.push('/home');
   } catch (err) {

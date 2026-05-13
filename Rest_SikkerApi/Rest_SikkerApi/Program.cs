@@ -1,6 +1,7 @@
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2.Flows;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -18,22 +19,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.CaptureStartupErrors(true);
 builder.WebHost.UseSetting("detailedErrors", "true");
 
-var configuration = builder.Configuration; // unecessary assignment, 
-var services = builder.Services; // unecessary assignment, Did it to try to fix an issue.
-// Add services to the container.
-
-services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DbConnection"), 
-            sqlServerOptions =>
-            {
-                // Enable automatic retries for transient failures
-                // Default: 6 retries with exponential backoff
-                sqlServerOptions.EnableRetryOnFailure(
-                    maxRetryCount: 3,
-                    maxRetryDelay: TimeSpan.FromSeconds(5),
-                    errorNumbersToAdd: null
-                );
-            })); // looks in appSettings.json or environment variables for a connection string named "DefaultConnection"
 
 // COMMIT 1: Register HttpClient via AddHttpClient to use IHttpClientFactory under the hood
 // COMMIT 10: Register ITelegramService -> TelegramService for DI and testability
@@ -49,6 +34,11 @@ builder.Services.AddScoped<ITelegramCommandHandler, TelegramCommandHandler>();
 // Register repository for database operations
 builder.Services.AddScoped<SikkerRepo>();
 builder.Services.AddScoped<ISikkerRepo, SikkerRepo>();
+
+// Register background report service
+builder.Services.AddHostedService<ReportService>();
+
+
 
 // ==========================================================================================
 // Telegram Bot Configuration
@@ -88,7 +78,11 @@ BlobServiceClient blobServiceClient = new BlobServiceClient(connectionStringFile
 
 builder.Services.AddSingleton(blobServiceClient);
 
-builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
+string connectionStringFileServer = builder.Configuration["Azure:BlobConnectionString"]!;
+BlobServiceClient blobServiceClient = new BlobServiceClient(connectionStringFileServer);
+
+builder.Services.AddSingleton(blobServiceClient);
+
 // builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
 // Jwt Authentication -----------------------------------------------------------------------------
 // ==========================================================================================
@@ -172,28 +166,31 @@ if (FirebaseApp.DefaultInstance is null)
 {
     var firebaseCredentialsJson = builder.Configuration["Firebase:ServiceAccountJson"];
 
-    if (string.IsNullOrWhiteSpace(firebaseCredentialsJson))
+    try
     {
-        // For testing: skip Firebase initialization if file doesn't exist
-        try
+        GoogleCredential credential;
+
+        if (!string.IsNullOrWhiteSpace(firebaseCredentialsJson))
         {
-            FirebaseApp.Create(new AppOptions
-            {
-                Credential = GoogleCredential.FromFile("firebase-service-account.json")
-            });
+            credential = CredentialFactory
+                .FromJson<ServiceAccountCredential>(firebaseCredentialsJson)
+                .ToGoogleCredential();
         }
-        catch (System.IO.FileNotFoundException)
+        else
         {
-            // Skip Firebase setup for testing
-            Console.WriteLine("Firebase service account file not found. Skipping Firebase initialization for testing.");
+            credential = CredentialFactory
+                .FromFile<ServiceAccountCredential>("firebase-service-account.json")
+                .ToGoogleCredential();
         }
-    }
-    else
-    {
+
         FirebaseApp.Create(new AppOptions
         {
-            Credential = GoogleCredential.FromJson(firebaseCredentialsJson)
+            Credential = credential
         });
+    }
+    catch (System.IO.FileNotFoundException)
+    {
+        Console.WriteLine("Firebase service account file not found. Skipping Firebase initialization for testing.");
     }
 }
 
@@ -204,17 +201,29 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+var connectionString = builder.Configuration.GetConnectionString("DbConnectionProd")
+    ?? builder.Configuration.GetConnectionString("DbConnection")
+    ?? builder.Configuration.GetConnectionString("DbConnectionDev")
+    ?? throw new InvalidOperationException("No SQL connection string configured.");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(connectionString, sqlServerOptions =>
+    {
+        sqlServerOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
+            errorNumbersToAdd: null
+        );
+    }));
+
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 // Remove if you want swagger in production
-//if (app.Environment.IsDevelopment())
-//{
 app.UseSwagger();
 app.UseSwaggerUI();
 app.MapOpenApi();
-//}
 
 app.UseCors("allowAll");
 
@@ -270,12 +279,6 @@ app.MapControllers();
 // Fallback to index.html so Vue Router handles all routes
 // Must be AFTER MapControllers so API routes take priority
 app.MapFallbackToFile("index.html");
-
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
 
 app.Run();
 
