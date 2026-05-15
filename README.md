@@ -127,7 +127,7 @@ graph TB
 
 ### Prerequisites
 
-- prerequisit 1
+- prerequisit 1: downlaoded Node.js
 - prerequisit 2
 
 ### Installation
@@ -147,12 +147,77 @@ graph TB
 ## Usage
 
 <!-- How do you run or use the project? Include examples, screenshots, or code snippets -->
+### Local host af projected
 
-```bash
-# Example command to run the project
+1. Etabler en local DB med følgene sruktur:
+
+benyt nederstående SQL qurie til at etablere din egen Database.
+
+```SQL
+-- Create Users table
+CREATE TABLE Users (
+    OwnerUid VARCHAR(128) NOT NULL PRIMARY KEY,
+    TelegramChatId VARCHAR(128) NULL,
+    ReportFrequency INT NOT NULL DEFAULT 7,
+    ReportEnabled BIT NOT NULL DEFAULT 1
+);
+
+-- Create Images table
+CREATE TABLE Images (
+    Id VARCHAR(50) NOT NULL PRIMARY KEY,
+    TimeStamp VARCHAR(50) NOT NULL,
+    ImageType VARCHAR(50) NOT NULL,
+    ImageData VARBINARY(MAX) NOT NULL,
+    Description VARCHAR(500) NULL,
+    Confidence REAL NULL DEFAULT 0.0,
+    DetectedObject VARCHAR(200) NULL,
+    OwnerUid VARCHAR(128) NULL,
+    
+    -- Foreign key constraint to Users table
+    CONSTRAINT FK_Images_Users_OwnerUid 
+        FOREIGN KEY (OwnerUid) 
+        REFERENCES Users(OwnerUid)
+        ON DELETE SET NULL
+);
+
+-- Create index on OwnerUid for efficient querying by user
+CREATE INDEX IX_Images_OwnerUid ON Images(OwnerUid);
+
+-- Create index on TimeStamp for efficient querying by date
+CREATE INDEX IX_Images_TimeStamp ON Images(TimeStamp);
 ```
+2. Set din appsettings eller user secrets up:
 
----
+Billedet viser at den chekker efter en key i Apsettings eller user secrets som heder DbCornnectionLokal, hvis det er et development envirement (localhost)
+<img width="2217" height="477" alt="image" src="https://github.com/user-attachments/assets/37cada7a-9880-477c-9371-53ae6f628044" />
+
+Du skal tilføje dette til dine user secrets eller appsettings.json.
+```json
+"ConnectionStrings": {
+  "DbConnectionLocal": "Din lokale connection string her"
+}
+```
+3. Kør back end
+    1. cd in i back end projectet:
+    ```bash
+    cd Rest_SikkerApi/Rest_SikkerApi
+    ```
+    2. kør Not net projekt
+   ```bash
+    dotnet run
+    ```
+
+4. Kør Front end
+
+    1. cd in i front end projectet:
+    ```bash
+    cd FrontEnd/SikkerhedsFrontEnd
+    ```
+    2. kør Node.js
+   ```bash
+    npm run dev
+    ```
+   
 
 ## Deployment
 
