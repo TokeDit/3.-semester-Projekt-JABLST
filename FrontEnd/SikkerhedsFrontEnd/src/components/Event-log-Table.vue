@@ -1,9 +1,9 @@
 <template>
   <div class="table-header">
-    <button class="refresh-btn" @click="asyncGetItems" :disabled="loading">
+    <!-- <button class="refresh-btn" @click="asyncGetItems" :disabled="loading"> -->
       <svg :class="{ spinning: loading }" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       {{ loading ? 'Refreshing…' : 'Refresh' }}
-    </button>
+    <!-- </button> -->
   </div>
   <div class="table-scroll">
     <table>
@@ -13,7 +13,7 @@
           <th>Image</th>
           <th>Time</th>
           <th>Confidence</th>
-          <th>Status</th>
+          
         </tr>
       </thead>
 
@@ -31,11 +31,7 @@
               <div v-else class="thumbnail placeholder">No image</div>
             </td>
             <td class="td-time">{{ formatTimestamp(item) }}</td>
-            <td>
-              <span class="confidence-badge" :class="getConfidenceClass(item.confidence ?? item.Confidence)">
-                {{ formatConfidence(item.confidence ?? item.Confidence) }}
-              </span>
-            </td>
+           
             <td>
               <span class="sdot" :class="getStatusClass(item.confidence ?? item.Confidence)"></span>
               <span class="slabel" :class="getStatusClass(item.confidence ?? item.Confidence)">
@@ -72,10 +68,7 @@
                     <span class="detail-label">Description</span>
                     <span class="detail-value">{{ item.description || '-' }}</span>
                   </div>
-                  <div class="detail-item">
-                    <span class="detail-label">Owner UID</span>
-                    <span class="detail-value detail-mono">{{ item.ownerUid || '-' }}</span>
-                  </div>
+                  
                 </div>
                 <div v-if="item.imageDataBase64" class="detail-image">
                   <img :src="`data:image/jpeg;base64,${item.imageDataBase64}`" :alt="`Full image ${item.id}`" />
@@ -101,7 +94,7 @@
 import { ref, onMounted } from 'vue'
 
 onMounted(() => { // køre når komponenten er monteret
-  asyncGetItems()
+  // asyncGetItems()
 })
 
 
@@ -110,6 +103,9 @@ const items = ref([])
 const error = ref('')
 const loading = ref(false)
 const expandedIndex = ref(null)
+// Granseværdierne for confidence/status markaterne, inklusiv farverne og teksterne
+const HigEnd = 0.85
+const MedEnd = 0.65
 
 function toggleExpanded(index) {
   expandedIndex.value = expandedIndex.value === index ? null : index
@@ -118,24 +114,24 @@ function toggleExpanded(index) {
 function getConfidenceClass(value) {
   const numeric = Number(value)
   if (Number.isNaN(numeric)) return ''
-  if (numeric >= 0.75) return 'high'
-  if (numeric >= 0.5) return 'medium'
+  if (numeric >= HigEnd) return 'high'
+  if (numeric >= MedEnd) return 'medium'
   return 'low'
 }
 
 function getStatusClass(value) {
   const numeric = Number(value)
   if (Number.isNaN(numeric)) return ''
-  if (numeric >= 0.75) return 'green'
-  if (numeric >= 0.5) return 'yellow'
+  if (numeric >= HigEnd) return 'green'
+  if (numeric >= MedEnd) return 'yellow'
   return 'blue'
 }
 
 function getStatusText(value) {
   const numeric = Number(value)
   if (Number.isNaN(numeric)) return '-'
-  if (numeric >= 0.75) return 'High'
-  if (numeric >= 0.5) return 'Medium'
+  if (numeric >= HigEnd) return 'High'
+  if (numeric >= MedEnd) return 'Medium'
   return 'Low'
 }
 

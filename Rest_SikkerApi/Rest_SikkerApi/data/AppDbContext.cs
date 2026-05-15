@@ -18,6 +18,10 @@ namespace Rest_SikkerApi.data
 
         // Ties the Image model to a database table named "Images"
         public DbSet<Image> Images { get; set; }
+        //Added DbSet for TelegramMessage entity
+        public DbSet<TelegramMessage> TelegramMessages { get; set; }
+
+        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -73,6 +77,18 @@ namespace Rest_SikkerApi.data
                 entity.HasIndex(i => i.OwnerUid);
                 // Optional: create an index on TimeStamp for efficient querying by date
                 entity.HasIndex(i => i.TimeStamp);
+
+            });
+
+            // Configure User entity
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(u => u.OwnerUid);
+                entity.Property(u => u.OwnerUid)
+                    .IsRequired()
+                    .HasMaxLength(128);
+                entity.Property(u => u.TelegramChatId)
+                    .HasMaxLength(128);
             });
         }
     }

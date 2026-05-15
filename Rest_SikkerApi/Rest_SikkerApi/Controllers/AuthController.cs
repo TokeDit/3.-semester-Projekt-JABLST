@@ -1,5 +1,7 @@
 using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Mvc;
+using Rest_SikkerApi.models;
+using Rest_SikkerApi.repos;
 
 namespace Rest_SikkerApi.Controllers
 {
@@ -8,10 +10,12 @@ namespace Rest_SikkerApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly ILogger<AuthController> _logger;
+        private readonly SikkerRepo _repo;
 
-        public AuthController(ILogger<AuthController> logger)
+        public AuthController(ILogger<AuthController> logger, SikkerRepo repo)
         {
             _logger = logger;
+            _repo = repo;
         }
 
         [HttpGet("me")]
@@ -29,10 +33,15 @@ namespace Rest_SikkerApi.Controllers
             try
             {
                 FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(idToken);
+                var uid = decodedToken.Uid;
+
+                var existing = await _repo.GetUserByFirebaseIdAsync(uid);
+                if (existing == null)
+                    await _repo.SaveUserAsync(new User { OwnerUid = uid });
 
                 return Ok(new
                 {
-                    firebaseUid = decodedToken.Uid,
+                    firebaseUid = uid,
                     email = decodedToken.Claims.TryGetValue("email", out var email)
                         ? email?.ToString()
                         : null

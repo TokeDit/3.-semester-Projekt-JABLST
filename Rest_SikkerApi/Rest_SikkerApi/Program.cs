@@ -1,6 +1,7 @@
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2.Flows;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -17,22 +18,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.CaptureStartupErrors(true);
 builder.WebHost.UseSetting("detailedErrors", "true");
 
-var configuration = builder.Configuration; // unecessary assignment, 
-var services = builder.Services; // unecessary assignment, Did it to try to fix an issue.
-// Add services to the container.
-
-services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DbConnection"), 
-            sqlServerOptions =>
-            {
-                // Enable automatic retries for transient failures
-                // Default: 6 retries with exponential backoff
-                sqlServerOptions.EnableRetryOnFailure(
-                    maxRetryCount: 3,                          // Max number of retry attempts
-                    maxRetryDelay: TimeSpan.FromSeconds(30),   // Cap the delay between retries
-                    errorNumbersToAdd: null                    // null = use default transient error list
-                );
-            })); // looks in appSettings.json or environment variables for a connection string named "DefaultConnection"
 
 // COMMIT 1: Register HttpClient via AddHttpClient to use IHttpClientFactory under the hood
 // COMMIT 10: Register ITelegramService -> TelegramService for DI and testability
@@ -45,9 +30,54 @@ builder.Services.AddHttpClient<TelegramCommandHandler>();
 builder.Services.AddScoped<ITelegramCommandHandler, TelegramCommandHandler>();
 
 //services.AddScoped<RepoMusicRecords>();
+// Register repository for database operations
 builder.Services.AddScoped<SikkerRepo>();
+builder.Services.AddScoped<ISikkerRepo, SikkerRepo>();
+
+// Register background report service
+builder.Services.AddHostedService<ReportService>();
+
+
+
+// ==========================================================================================
+// Telegram Bot Configuration
+// ==========================================================================================
+// The TelegramService is configured here with credentials:
+// - Bot Token: The unique token for your Telegram bot (create via @BotFather)
+// - Chat ID: The Telegram chat where messages will be sent
+//
+// Configuration sources (in order of precedence):
+// 1. Environment variables: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+// 2. appsettings.json: "Telegram" section with "BotToken" and "ChatId"
+// 3. Hardcoded default token in TelegramService class
+//
+// Example appsettings.json configuration:
+// {
+//   "Telegram": {
+//     "BotToken": "your-bot-token-here",
+//     "ChatId": "your-chat-id-here"
+//   }
+// }
+// ==========================================================================================
+
+var telegramSection = builder.Configuration.GetSection("Telegram");
+var telegramBotToken = telegramSection["BotToken"] ?? Environment.GetEnvironmentVariable("TELEGRAM_BOT_TOKEN");
+var telegramChatId = telegramSection["ChatId"] ?? Environment.GetEnvironmentVariable("TELEGRAM_CHAT_ID");
+
+//Register TelegramService and a chat registration store as singletons.
+builder.Services.AddScoped(provider => 
+    new TelegramBotService(
+        telegramBotToken ?? string.Empty,
+        provider.GetRequiredService<ISikkerRepo>()
+    )
+);
+
 // builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
 // Jwt Authentication -----------------------------------------------------------------------------
+// ==========================================================================================
+// JWT Authentication Configuration
+// ==========================================================================================
+// Configure JWT token validation for API endpoints
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
 
@@ -125,19 +155,31 @@ if (FirebaseApp.DefaultInstance is null)
 {
     var firebaseCredentialsJson = builder.Configuration["Firebase:ServiceAccountJson"];
 
-    if (string.IsNullOrWhiteSpace(firebaseCredentialsJson))
+    try
     {
+        GoogleCredential credential;
+
+        if (!string.IsNullOrWhiteSpace(firebaseCredentialsJson))
+        {
+            credential = CredentialFactory
+                .FromJson<ServiceAccountCredential>(firebaseCredentialsJson)
+                .ToGoogleCredential();
+        }
+        else
+        {
+            credential = CredentialFactory
+                .FromFile<ServiceAccountCredential>("firebase-service-account.json")
+                .ToGoogleCredential();
+        }
+
         FirebaseApp.Create(new AppOptions
         {
-            Credential = GoogleCredential.FromFile("firebase-service-account.json")
+            Credential = credential
         });
     }
-    else
+    catch (System.IO.FileNotFoundException)
     {
-        FirebaseApp.Create(new AppOptions
-        {
-            Credential = GoogleCredential.FromJson(firebaseCredentialsJson)
-        });
+        Console.WriteLine("Firebase service account file not found. Skipping Firebase initialization for testing.");
     }
 }
 
@@ -148,17 +190,29 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+var connectionString = builder.Configuration.GetConnectionString("DbConnectionProd")
+    ?? builder.Configuration.GetConnectionString("DbConnection")
+    ?? builder.Configuration.GetConnectionString("DbConnectionDev")
+    ?? throw new InvalidOperationException("No SQL connection string configured.");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(connectionString, sqlServerOptions =>
+    {
+        sqlServerOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
+            errorNumbersToAdd: null
+        );
+    }));
+
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 // Remove if you want swagger in production
-//if (app.Environment.IsDevelopment())
-//{
 app.UseSwagger();
 app.UseSwaggerUI();
 app.MapOpenApi();
-//}
 
 app.UseCors("allowAll");
 
@@ -194,9 +248,6 @@ app.Use(async (context, next) =>
                 }
             }
             else
-            {
-
-            }
             {
                 var newId = new ClaimsIdentity(new[] { new Claim("firebase_uid", uid) });
                 context.User = new ClaimsPrincipal(newId);

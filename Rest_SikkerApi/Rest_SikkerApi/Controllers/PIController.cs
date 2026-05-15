@@ -2,17 +2,22 @@
 using Rest_SikkerApi.repos;
 namespace Rest_SikkerApi;
 using Rest_SikkerApi.models;
+using Rest_SikkerApi.Services;
 
 [ApiController]
 [Route("api/[controller]")]
 public class PIController : ControllerBase
 {
-    private readonly SikkerRepo m_repo;
+    private readonly ISikkerRepo _repo;
     private static DateTime? _lastHeartBeat;
-    
-    public PIController(SikkerRepo repo)
+    private readonly TelegramBotService _telegramService;
+
+
+
+    public PIController(ISikkerRepo repo, TelegramBotService telegramService)
     {
-        m_repo = repo;
+        _repo = repo;
+        _telegramService = telegramService;
     }
 
     [HttpPost]
@@ -30,9 +35,10 @@ public class PIController : ControllerBase
             }
 
             // tilgiver FirebaseUid i både HttpContext og User.Claims for at sikre kompatibilitet med forskellige autentificeringsmetoder
-            var firebaseUid = HttpContext.Items["FirebaseUid"] as string ?? User.FindFirst("firebase_uid")?.Value ?? string.Empty;
-
-
+            var firebaseUid = HttpContext.Items["FirebaseUid"] as string
+                ?? User.FindFirst("firebase_uid")?.Value
+                ?? image.OwnerUid
+                ?? string.Empty;
 
             // Create Image entity, set OwnerUid and save
             var imageEntity = new Image
@@ -41,12 +47,17 @@ public class PIController : ControllerBase
                 ImageType = image.ImageType,
                 ImageData = image.ImageData,
                 Description = image.Description,
-                OwnerUid = firebaseUid,
+                OwnerUid = image.OwnerUid,
                 Confidence = image.Confidence
             };
 
-            await m_repo.SaveImageAsync(imageEntity);
+            await _repo.SaveImageAsync(imageEntity);
+            if(!string.IsNullOrWhiteSpace(firebaseUid))
+            {
+                    var dashboardUrl = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/home";
 
+                    await _telegramService.SendImageLinkAsync(dashboardUrl, image.Description, firebaseUid);
+            }
             return Ok(imageEntity);
         }
         catch (Exception ex)
@@ -68,7 +79,7 @@ public class PIController : ControllerBase
     [HttpGet("status")]
     public IActionResult GetStatus()
     {
-        var threshold = TimeSpan.FromMinutes(2);
+        var threshold = TimeSpan.FromSeconds(30);
         var isAlive = _lastHeartBeat.HasValue && (DateTime.UtcNow - _lastHeartBeat.Value) < threshold;
 
         return Ok(new

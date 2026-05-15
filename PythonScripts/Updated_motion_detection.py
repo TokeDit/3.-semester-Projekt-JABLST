@@ -91,6 +91,7 @@ def send_to_api(frame, timestamp, confidence):
         return False
 
     image_b64 = base64.b64encode(buffer.tobytes()).decode("utf-8")
+    timestamp = datetime.now(timezone.utc)
 
     payload = {
         "ImageDataBase64": image_b64,
@@ -99,6 +100,7 @@ def send_to_api(frame, timestamp, confidence):
         "DetectedObject": "person",
         "Confidence": round(confidence, 4),
         "TimeStamp": timestamp.isoformat(timespec = 'minutes'),
+        "OwnerUid": "x4cIZZqygmYXvsTBu7xImgfVT6z1"
     }
 
     try:

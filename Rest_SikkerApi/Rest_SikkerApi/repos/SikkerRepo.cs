@@ -4,7 +4,7 @@ using Rest_SikkerApi.models;
 
 namespace Rest_SikkerApi.repos
 {
-    public class SikkerRepo
+    public class SikkerRepo : ISikkerRepo
     {
         private readonly AppDbContext _context;
         // måske implementer en user, så they can't get others imges
@@ -13,12 +13,6 @@ namespace Rest_SikkerApi.repos
             _context = context;
         }
 
-        /// <summary>
-        /// Asynchronously saves a new image entity to the data store.
-        /// </summary>
-        /// <param name="imageEntity">The image entity to be saved. Cannot be null.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains the saved image entity,
-        /// including any updated properties such as generated identifiers.</returns>
         public async Task<Image> SaveImageAsync(Image imageEntity)
         {
             _context.Images.Add(imageEntity);
@@ -26,29 +20,63 @@ namespace Rest_SikkerApi.repos
             return imageEntity;
         }
 
-        /// <summary>
-        /// Asynchronously retrieves all images from the data store.
-        /// </summary>
-        /// <remarks>This method executes a database query to retrieve all image records. The returned
-        /// list reflects the current state of the data store at the time of the query.</remarks>
-        /// <returns>A task that represents the asynchronous operation. The task result contains a list of all images. If no
-        /// images are found, the list will be empty.</returns>
+        public async Task<User> SaveUserAsync(User user)
+        {
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
         public async Task<List<Image>> GetAllImagesAsync()
         {
-            return await _context.Images.ToListAsync();
+            return await _context.Images.ToListAsync() ?? new List<Image>();
+        }
+
+        public async Task<Image?> GetImageByIdAsync(int id)
+        {
+            return await _context.Images.FirstOrDefaultAsync(i => i.Id == id);
+        }
+
+        public async Task<User?> GetUserByFirebaseIdAsync(string ownerUid)
+        {
+            return await _context.Users.FindAsync(ownerUid);
+        }
+
+        public async Task<bool> UpdateUserChatIdAsync(string ownerUid, string telegramChatId, CancellationToken ct = default)
+        {
+            var user = await _context.Users.FindAsync(new object?[] { ownerUid }, ct);
+            if (user == null)
+            {
+                return false;
+
+                // _context.Users.Add(new User { OwnerUid = ownerUid, TelegramChatId = telegramChatId });
+            }
+            user.TelegramChatId = telegramChatId;
+            await _context.SaveChangesAsync(ct);
+            return true;
+        }
+
+        public async Task<User?> GetUserByChatIdAsync(string telegramChatId)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.TelegramChatId == telegramChatId);
         }
 
         public IEnumerable<Image> GetAmountImage(int amount = 20)
         {
-            return _context.Images.OrderBy(i => i.Id).Take(amount);
+            return _context.Images.OrderByDescending(i => i.Id).Take(amount);
         }
 
         public IEnumerable<Image> GetAfterIDImage(int id, int amount = 20)
         {
-            return _context.Images.Where(i => i.Id > id).OrderBy(i => i.Id).Take(amount);
+            return _context.Images.Where(i => i.Id > id).OrderByDescending(i => i.Id).Take(amount);
         }
-    
-            // System state - stored in memory for now
+
+        public IEnumerable<Image> GetBeforeIDImage(int id, int amount = 20)
+        {
+            return _context.Images.Where(i => i.Id < id).OrderByDescending(i => i.Id).Take(amount);
+        }
+
+        // System state - stored in memory for now
         private static bool _systemOnline = false;
 
         public bool GetSystemState()
@@ -60,6 +88,38 @@ namespace Rest_SikkerApi.repos
         {
             _systemOnline = state;
             return _systemOnline;
+        }
+        public async Task<List<Image>> GetImagesByOwnerUidAsync(string ownerUid)
+        {
+            return await _context.Images
+                .Where(i => i.OwnerUid == ownerUid)
+                .OrderByDescending(i => i.Id)
+                .ToListAsync();
+        }
+        // Get all users with Telegram chat ID and reports enabled
+        public async Task<List<User>> GetUsersWithReportsEnabledAsync()
+        {
+            return await _context.Users
+                .Where(u => u.ReportEnabled && u.TelegramChatId != null)
+                .ToListAsync();
+        }
+        //  Get images for a user within a time range
+        public async Task<List<Image>>? GetImagesByOwnerUidSinceAsync(string ownerUid, int reportFrequency)
+        {
+            DateTime dt = DateTime.UtcNow.AddDays(reportFrequency);
+            List<Image> result = await _context.Images.Where(i => i.OwnerUid == ownerUid && dt.CompareTo(DateTime.Parse(i.TimeStamp)) <= 0).ToListAsync();
+            return result; 
+        }
+
+        //  Get images for a user filtered by month and year
+        public async Task<List<Image>> GetImagesByOwnerUidAndMonthAsync(string ownerUid, int year, int month)
+        {
+            return await _context.Images
+                .Where(i => i.OwnerUid == ownerUid &&
+                       DateTime.Parse(i.TimeStamp).Year == year &&
+                       DateTime.Parse(i.TimeStamp).Month == month)
+                .OrderByDescending(i => i.Id)
+                .ToListAsync();
         }
     }
 }

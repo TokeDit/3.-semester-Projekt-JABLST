@@ -10,6 +10,7 @@ Dette er et simplet sikkerhedssystem, som registre bevægelse og sender billedet
 - [Getting Started](#getting-started)
 - [Usage](#usage)
 - [Deployment](#deployment)
+- [Testing](#testing)
 - [Contributing](#contributing)
 - [Contributors](#contributors)
 - [License](#license)
@@ -29,7 +30,7 @@ Målet er et pålideligt system med lav vedligeholdelse, der øger hjemme sikker
 ```mermaid
 graph TB
     subgraph Client["Client Layer"]
-        Browser["Browser\nVue 3 SPA"]
+        Browser["Browser\nVue 3 SPA (served from ASP.NET wwwroot)"]
     end
 
     subgraph Firebase["Firebase (Google Cloud)"]
@@ -38,60 +39,69 @@ graph TB
 
     subgraph Pi["Raspberry Pi"]
         PiCam["PiCamera2\n1280×720"]
-        TFLite["TFLite Model\nCOCO person detection"]
-        PyScript["Python Script\nMotion Detection"]
-        PiCam --> TFLite --> PyScript
+        TFLite["TFLite Model\nperson detection"]
+        PyScript["Updated_motion_detection.py\nmotion + upload + heartbeat"]
+        PiCam --> TFLite
+        TFLite --> PyScript
     end
 
     subgraph Telegram["Telegram"]
-        TelegramBot["Telegram Bot\n@webhook"]
+        TelegramBot["Telegram Bot API"]
         TelegramUser["User\n(mobile app)"]
         TelegramUser <--> TelegramBot
-    end
-
-    subgraph Gemini["Google Gemini API"]
-        GeminiModel["gemini-2.5-flash\nImage Analysis"]
     end
 
     subgraph API["ASP.NET Core REST API (Azure)"]
         AuthCtrl["AuthController\nGET /api/auth/me"]
         PICtrl["PIController\nPOST /api/PI\nPOST /api/PI/heartbeat\nGET /api/PI/status"]
         SikkerCtrl["SikkerController\nGET|POST /Sikker/*"]
-        ImageCtrl["ImageController\nGET /api/image"]
+        ImageCtrl["ImageController\nGET /api/Image/*"]
         TelegramCtrl["TelegramController\nPOST /telegram/update\nGET /telegram/status"]
+        TelegramBotCtrl["TelegramBotController\nPOST /api/TelegramBot/webhook|message|link"]
+        AdminReportsCtrl["AdminReportsController\nGET /api/admin/reports/ping"]
 
-        TelegramSvc["TelegramService\nsendMessage → Bot API"]
+        TelegramSvc["TelegramService"]
+        TelegramBotSvc["TelegramBotService\nsend alerts/reports"]
         TelegramCmdHandler["TelegramCommandHandler\n/on /off /status /ping /help"]
-        GeminiSvc["GeminiImageAnalysisService\nanalyze image → JSON"]
+        ReportSvc["ReportService (Background)\nhourly check, sends scheduled reports"]
 
-        SikkerRepo["SikkerRepo\nSaveImage / GetImages"]
+        SikkerRepo["SikkerRepo\nimages/users/messages + system state"]
         AppDbContext["AppDbContext\nEF Core"]
     end
 
     subgraph DB["SQL Server (Azure)"]
-        ImagesTable["Images table\n(Id, ImageData, OwnerUid,\nDescription, Confidence…)"]
+        ImagesTable["Images"]
+        UsersTable["Users\n(OwnerUid, TelegramChatId,\nReportFrequency, ReportEnabled)"]
+        TelegramMessagesTable["TelegramMessages"]
     end
 
     Browser -->|"signIn/register"| FirebaseAuth
     FirebaseAuth -->|"ID Token"| Browser
     Browser -->|"Bearer token\nGET /api/auth/me"| AuthCtrl
-    Browser -->|"GET /api/image"| ImageCtrl
+    Browser -->|"GET /api/Image/user/{uid}\nGET /api/Image/user/{uid}/monthly"| ImageCtrl
     Browser -->|"GET /Sikker/status"| SikkerCtrl
+    Browser -->|"GET /telegram/status"| TelegramCtrl
+    Browser -->|"GET /api/PI/status"| PICtrl
 
     PyScript -->|"POST /api/PI (image + metadata)"| PICtrl
     PyScript -->|"POST /api/PI/heartbeat"| PICtrl
-    PICtrl --> GeminiSvc
-    GeminiSvc -->|"Base64 image + prompt"| GeminiModel
-    GeminiModel -->|"{ hasPerson, description }"| GeminiSvc
-    GeminiSvc --> SikkerRepo
+    PICtrl --> SikkerRepo
+    PICtrl --> TelegramBotSvc
 
     TelegramBot -->|"POST /telegram/update"| TelegramCtrl
+    TelegramBot -->|"POST /api/TelegramBot/webhook"| TelegramBotCtrl
     TelegramCtrl --> TelegramCmdHandler
     TelegramCmdHandler -->|"/on /off /status"| SikkerCtrl
     TelegramCmdHandler --> TelegramSvc
+    TelegramBotCtrl --> SikkerRepo
+    ReportSvc --> SikkerRepo
+    ReportSvc --> TelegramBotSvc
     TelegramSvc -->|"sendMessage"| TelegramBot
+    TelegramBotSvc -->|"sendMessage"| TelegramBot
 
     SikkerRepo --> AppDbContext --> ImagesTable
+    AppDbContext --> UsersTable
+    AppDbContext --> TelegramMessagesTable
     ImageCtrl --> SikkerRepo
 ```
 
@@ -153,6 +163,64 @@ All changes must be submitted through a pull request targeting the `main` branch
 to `main` are restricted. Pull requests require review approval and must pass all required status
 checks before merging. Upon merge, the pipeline automatically builds and deploys the application
 to Azure.
+
+---
+
+
+## Testing
+
+The project contains both backend unit tests and frontend UI tests.
+The purpose of the tests is to verify important logic and user flows before changes are merged into the `main` branch.
+
+### xUnit Tests
+
+Backend tests are written with **xUnit**. These tests focus on isolated logic in the API and model layer.
+
+Examples of what is tested:
+
+- Image model behavior, including Base64 conversion between `byte[]` and string
+- Controller logic and expected HTTP responses
+- Service behavior through interfaces and dependency injection
+- Edge cases such as empty data, invalid input, and failed operations
+
+To run the xUnit tests locally, use:
+
+```bash
+dotnet test
+```
+
+To generate a code coverage report locally, use:
+
+```bash
+dotnet test --collect:"XPlat Code Coverage"
+```
+
+This generates a `coverage.cobertura.xml` file inside the `TestResults` folder.
+
+### Selenium UI Tests
+
+Frontend UI tests are written with **Selenium WebDriver**. These tests verify that important user flows work in the browser.
+
+Examples of what is tested:
+
+- Login page loads correctly
+- Required UI elements are visible, such as email input, password input, and login button
+- User interaction with input fields and buttons
+- Basic login flow behavior and validation
+
+Before running Selenium tests locally, make sure the frontend is running:
+
+```bash
+npm run dev
+```
+
+Then run the Selenium tests from the frontend test project/folder:
+
+```bash
+npm test
+```
+
+Selenium tests require Google Chrome and a compatible ChromeDriver/browser driver setup.
 
 ---
 
