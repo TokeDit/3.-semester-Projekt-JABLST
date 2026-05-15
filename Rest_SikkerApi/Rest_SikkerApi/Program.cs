@@ -18,9 +18,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.CaptureStartupErrors(true);
 builder.WebHost.UseSetting("detailedErrors", "true");
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnectionLocal") 
+        ?? throw new InvalidOperationException("No SQL connection string configured.")));
+}
+else
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection") 
+        ?? throw new InvalidOperationException("No SQL connection string configured.")));
+}
 
-// COMMIT 1: Register HttpClient via AddHttpClient to use IHttpClientFactory under the hood
-// COMMIT 10: Register ITelegramService -> TelegramService for DI and testability
+    // COMMIT 1: Register HttpClient via AddHttpClient to use IHttpClientFactory under the hood
+    // COMMIT 10: Register ITelegramService -> TelegramService for DI and testability
 builder.Services.AddHttpClient<TelegramService>();
 builder.Services.AddScoped<ITelegramService, TelegramService>();
 
