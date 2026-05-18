@@ -37,8 +37,7 @@ namespace Rest_SikkerApi.Controllers
 
                 var existing = await _repo.GetUserByFirebaseIdAsync(uid);
                 if (existing == null)
-                    return NotFound();
-                await _repo.SaveUserAsync(new User { OwnerUid = uid });
+                    await _repo.SaveUserAsync(new User { OwnerUid = uid });
 
                 return Ok(new
                 {
@@ -51,7 +50,7 @@ namespace Rest_SikkerApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Invalid Firebase token");
-                return Unauthorized("Invalid Firebase token.");
+                return Unauthorized("Invalid Firebase token.\n" + ex.Message);
             }
         }
     }
