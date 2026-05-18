@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Rest_SikkerApi.repos;
-namespace Rest_SikkerApi;
 using Rest_SikkerApi.models;
 using Rest_SikkerApi.Services;
+
+namespace Rest_SikkerApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
