@@ -55,7 +55,7 @@ namespace Rest_SikkerApi.Services
                     try
                     {
 
-                        var images = await repo.GetImagesByOwnerUidSinceAsync(user.OwnerUid, user.ReportFrequency);
+                        var images = await repo.GetImagesByOwnerUidSinceAsync(user.OwnerUid, (uint)user.ReportFrequency);
                         var periodLabel = user.ReportFrequency;
 
                         // Build report message

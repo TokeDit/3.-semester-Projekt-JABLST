@@ -132,7 +132,7 @@ namespace Rest_SikkerApi.repos
                 .ToListAsync();
         }
         //  Get images for a user within a time range
-        public async Task<List<Image>>? GetImagesByOwnerUidSinceAsync(string ownerUid, uint reportFrequency)
+        public async Task<List<Image>> GetImagesByOwnerUidSinceAsync(string ownerUid, uint reportFrequency)
         {
             DateTime dt = DateTime.UtcNow.AddDays(-reportFrequency);
             List<Image> result = await _context.Images.Where(i => i.OwnerUid == ownerUid && dt <= i.TimeStamp).ToListAsync();

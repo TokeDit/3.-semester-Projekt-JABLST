@@ -35,16 +35,11 @@ namespace Rest_SikkerApi.Controllers
             if (image == null || image.ImageData == null || image.ImageData.Length == 0)
                 return BadRequest("Image object is null or Imagedata is missing");
 
-            if (string.IsNullOrWhiteSpace(image.TimeStamp))
-            {
-                image.TimeStamp = DateTime.UtcNow.ToString("o");
-            }
-
             _logger.LogInformation("Received image with ID: {ImageId} and Type: {ImageType}", image.Id, image.ImageType);
 
             try
             {
-                byte[] imageBytes = image.GetImageBytes() ?? Array.Empty<byte>();
+                byte[] imageBytes = image.GetImageBytes();
 
                 await _repo.SaveImageAsync(image);
                 var dashboardUrl = _dashboardUrl;
