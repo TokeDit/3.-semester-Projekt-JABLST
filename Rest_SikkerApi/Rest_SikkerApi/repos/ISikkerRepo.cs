@@ -19,5 +19,7 @@ namespace Rest_SikkerApi.repos
         Task<List<Image>> GetImagesByOwnerUidAndMonthAsync(string ownerUid, int year, int month);
         Task<User?> UpdateUserAsync(string ownerUid, string? telegramChatId, int reportFrequency, bool reportEnabled);
         IEnumerable<Image> GetAmountImage(int amount = 20);
+        IEnumerable<Image> GetAfterIDImage(int id, int amount = 20);
+
     }
 }
