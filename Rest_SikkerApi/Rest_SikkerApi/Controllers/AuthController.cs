@@ -37,7 +37,8 @@ namespace Rest_SikkerApi.Controllers
 
                 var existing = await _repo.GetUserByFirebaseIdAsync(uid);
                 if (existing == null)
-                    await _repo.SaveUserAsync(new User { OwnerUid = uid });
+                    return NotFound();
+                await _repo.SaveUserAsync(new User { OwnerUid = uid });
 
                 return Ok(new
                 {
