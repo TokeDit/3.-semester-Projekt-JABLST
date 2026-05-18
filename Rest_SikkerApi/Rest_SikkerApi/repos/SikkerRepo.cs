@@ -25,6 +25,22 @@ namespace Rest_SikkerApi.repos
             _fileHandlerService = fileHandlingService;
             _databaseHandlingService = databaseHandlingService;
         }
+        public async Task<User?> UpdateUserAsync(
+    string ownerUid,
+    string? telegramChatId,
+    int reportFrequency,
+    bool reportEnabled)
+        {
+            var user = await _context.Users.FindAsync(ownerUid);
+            if (user == null) return null;
+
+            user.TelegramChatId = telegramChatId;
+            user.ReportFrequency = reportFrequency;
+            user.ReportEnabled = reportEnabled;
+
+            await _context.SaveChangesAsync();
+            return user;
+        }
 
         public async Task<Image> SaveImageAsync(Image imageEntity)
         {
