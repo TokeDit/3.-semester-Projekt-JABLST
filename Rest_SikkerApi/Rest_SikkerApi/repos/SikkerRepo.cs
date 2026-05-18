@@ -135,7 +135,7 @@ namespace Rest_SikkerApi.repos
         public async Task<List<Image>>? GetImagesByOwnerUidSinceAsync(string ownerUid, uint reportFrequency)
         {
             DateTime dt = DateTime.UtcNow.AddDays(-reportFrequency);
-            List<Image> result = await _context.Images.Where(i => i.OwnerUid == ownerUid && dt.CompareTo(DateTime.Parse(i.TimeStamp)) <= 0).ToListAsync();
+            List<Image> result = await _context.Images.Where(i => i.OwnerUid == ownerUid && dt <= i.TimeStamp).ToListAsync();
             return result; 
         }
 
@@ -144,8 +144,8 @@ namespace Rest_SikkerApi.repos
         {
             return await _context.Images
                 .Where(i => i.OwnerUid == ownerUid &&
-                       DateTime.Parse(i.TimeStamp).Year == year &&
-                       DateTime.Parse(i.TimeStamp).Month == month)
+                       i.TimeStamp.Year == year &&
+                       i.TimeStamp.Month == month)
                 .OrderByDescending(i => i.Id)
                 .ToListAsync();
         }

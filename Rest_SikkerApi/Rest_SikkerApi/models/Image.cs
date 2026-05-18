@@ -7,7 +7,7 @@ namespace Rest_SikkerApi.models
     {
         public int Id { get; set; }
 
-        public string TimeStamp { get; set; } = string.Empty;
+        public DateTime TimeStamp { get; set; }
 
         public string ImageType { get; set; } = string.Empty;
 
