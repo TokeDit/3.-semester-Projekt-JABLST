@@ -13,6 +13,6 @@ namespace Rest_SikkerApi.repos
         Task<User?> GetUserByChatIdAsync(string telegramChatId);
         Task<List<Image>> GetImagesByOwnerUidAsync(string ownerUid);
                 Task<List<User>> GetUsersWithReportsEnabledAsync();
-        Task<List<Image>> GetImagesByOwnerUidSinceAsync(string ownerUid, int reportFrequency);
+        Task<List<Image>> GetImagesByOwnerUidSinceAsync(string ownerUid, uint reportFrequency);
     }
 }

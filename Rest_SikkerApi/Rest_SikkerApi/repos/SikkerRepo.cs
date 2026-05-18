@@ -1,22 +1,35 @@
 ﻿using Rest_SikkerApi.data;
 using Microsoft.EntityFrameworkCore;
 using Rest_SikkerApi.models;
+using Azure.Identity;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
+using System.Security.Policy;
 
 namespace Rest_SikkerApi.repos
 {
     public class SikkerRepo : ISikkerRepo
     {
         private readonly AppDbContext _context;
+        private readonly BlobServiceClient _blobServiceClient;
+        private readonly BlobContainerClient _blobContainerClient;
+        private readonly FileHandlingService _fileHandlerService;
+        private readonly DatabaseHandlingService _databaseHandlingService;
         // måske implementer en user, så they can't get others imges
-        public SikkerRepo(AppDbContext context)
+        public SikkerRepo(AppDbContext context, BlobServiceClient blobServiceClient, FileHandlingService fileHandlingService, DatabaseHandlingService databaseHandlingService)
         {
             _context = context;
+            _blobServiceClient = blobServiceClient;
+            _blobContainerClient = _blobServiceClient.GetBlobContainerClient("images");
+            _fileHandlerService = fileHandlingService;
+            _databaseHandlingService = databaseHandlingService;
         }
 
         public async Task<Image> SaveImageAsync(Image imageEntity)
         {
-            _context.Images.Add(imageEntity);
-            await _context.SaveChangesAsync();
+            await _databaseHandlingService.SaveImageAsync(imageEntity);
+            await _fileHandlerService.UploadImageAsync(imageEntity.Id, Convert.FromBase64String(imageEntity.ImageData));
             return imageEntity;
         }
 
@@ -32,9 +45,24 @@ namespace Rest_SikkerApi.repos
             return await _context.Images.ToListAsync() ?? new List<Image>();
         }
 
+        // Failure occurs Azure.RequestFailedException. Multiple failures occur, an AggregateException will be thrown
+        // Exceptions thrown (Azure.RequestFailedException, AggregateException)
         public async Task<Image?> GetImageByIdAsync(int id)
         {
-            return await _context.Images.FirstOrDefaultAsync(i => i.Id == id);
+            BlobClient blobClient = _blobContainerClient.GetBlobClient(id.ToString());
+            if (await blobClient.ExistsAsync())
+            {                
+                Azure.Response<BlobDownloadResult> download = await blobClient.DownloadContentAsync();
+                var image = new Image
+                {
+                    Id = id,
+                    ImageData = download.Value.Content.ToArray().ToString()!
+                };
+                return image;
+            }
+            return null;
+
+            // return await _context.Images.FirstOrDefaultAsync(i => i.Id == id);
         }
 
         public async Task<User?> GetUserByFirebaseIdAsync(string ownerUid)
@@ -104,10 +132,10 @@ namespace Rest_SikkerApi.repos
                 .ToListAsync();
         }
         //  Get images for a user within a time range
-        public async Task<List<Image>>? GetImagesByOwnerUidSinceAsync(string ownerUid, int reportFrequency)
+        public async Task<List<Image>> GetImagesByOwnerUidSinceAsync(string ownerUid, uint reportFrequency)
         {
-            DateTime dt = DateTime.UtcNow.AddDays(reportFrequency);
-            List<Image> result = await _context.Images.Where(i => i.OwnerUid == ownerUid && dt.CompareTo(DateTime.Parse(i.TimeStamp)) <= 0).ToListAsync();
+            DateTime dt = DateTime.UtcNow.AddDays(-reportFrequency);
+            List<Image> result = await _context.Images.Where(i => i.OwnerUid == ownerUid && dt <= i.TimeStamp).ToListAsync();
             return result; 
         }
 
@@ -116,8 +144,8 @@ namespace Rest_SikkerApi.repos
         {
             return await _context.Images
                 .Where(i => i.OwnerUid == ownerUid &&
-                       DateTime.Parse(i.TimeStamp).Year == year &&
-                       DateTime.Parse(i.TimeStamp).Month == month)
+                       i.TimeStamp.Year == year &&
+                       i.TimeStamp.Month == month)
                 .OrderByDescending(i => i.Id)
                 .ToListAsync();
         }

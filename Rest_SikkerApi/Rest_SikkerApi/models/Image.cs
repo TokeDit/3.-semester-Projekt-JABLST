@@ -7,13 +7,13 @@ namespace Rest_SikkerApi.models
     {
         public int Id { get; set; }
 
-        public string TimeStamp { get; set; } = string.Empty;
+        public DateTime TimeStamp { get; set; }
 
         public string ImageType { get; set; } = string.Empty;
 
+        // Stored as base64
         // Store as bytes in database
-        [JsonIgnore]
-        public byte[] ImageData { get; set; } = Array.Empty<byte>();
+        public string ImageData { get; set; } = string.Empty;
 
         public string Description { get; set; } = string.Empty;
 
@@ -26,23 +26,17 @@ namespace Rest_SikkerApi.models
 
         // For API - accept/return Base64 string
 
-        [NotMapped]
-        public string ImageDataBase64
-        {
-            get => ImageData.Length > 0 ? Convert.ToBase64String(ImageData) : string.Empty;
-            set => ImageData = !string.IsNullOrEmpty(value) ? Convert.FromBase64String(value) : Array.Empty<byte>();
-        }
-
         // Helper method to get image bytes (now direct access)
-        public byte[]? GetImageBytes()
+
+        public byte[] GetImageBytes()
         {
-            return ImageData.Length > 0 ? ImageData : null;
+            return Convert.FromBase64String(ImageData);
         }
 
         // Helper method to set image from bytes
         public void SetImageBytes(byte[] bytes)
         {
-            ImageData = bytes ?? Array.Empty<byte>();
+            ImageData = Convert.ToBase64String(bytes);
         }
     }
 }

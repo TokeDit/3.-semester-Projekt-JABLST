@@ -58,7 +58,27 @@ public class ImageController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(int id)
     {
-        var image = await m_repo.GetImageByIdAsync(id);
+        Image? image;
+        try
+        {
+            if (id < 1)
+            {
+                return BadRequest("ID must be a positive integer.");
+            }
+            image = await m_repo.GetImageByIdAsync(id);
+        }
+        catch (Exception ex) when (ex is Azure.RequestFailedException || ex is AggregateException || ex is FormatException)
+        {
+            if (ex is FormatException)
+            {
+                return BadRequest("ID must be a valid number.");
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving the image.");
+            }
+        }
+
         if (image == null)
             return NotFound($"Image with ID {id} not found.");
         return Ok(image);
