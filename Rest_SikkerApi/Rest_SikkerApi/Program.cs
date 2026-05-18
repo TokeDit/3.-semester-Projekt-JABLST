@@ -49,6 +49,7 @@ builder.Services.AddScoped<SikkerRepo>();
 builder.Services.AddScoped<ISikkerRepo, SikkerRepo>();
 
 builder.Services.AddScoped<DatabaseHandlingService>();
+builder.Services.AddScoped<FileHandlingService>();
 
 // Register background report service
 builder.Services.AddHostedService<ReportService>();
