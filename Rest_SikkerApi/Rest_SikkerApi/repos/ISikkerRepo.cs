@@ -16,5 +16,7 @@ namespace Rest_SikkerApi.repos
         Task<List<Image>> GetImagesByOwnerUidSinceAsync(string ownerUid, uint reportFrequency);
 
         //ADDITIONAL METHODS FOR USER MANAGEMENT
+        Task<List<Image>> GetImagesByOwnerUidAndMonthAsync(string ownerUid, int year, int month);
+        Task<User?> UpdateUserAsync(string ownerUid, string? telegramChatId, int reportFrequency, bool reportEnabled);
     }
 }
