@@ -71,7 +71,7 @@ public class ImageController : ControllerBase
         {
             if (ex is FormatException)
             {
-                return BadRequest("ID must be a valid number.");
+                return BadRequest("ID must be a valid number."); 
             }
             else
             {
