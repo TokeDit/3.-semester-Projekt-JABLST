@@ -20,3 +20,5 @@ dist/
 .agents/
 
 Rest_SikkerApi/Rest_SikkerApi.sln
+# Ignore local development settings
+appsettings.Development.json
