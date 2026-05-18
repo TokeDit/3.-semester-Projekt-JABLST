@@ -21,5 +21,7 @@ namespace Rest_SikkerApi.repos
         IEnumerable<Image> GetAmountImage(int amount = 20);
         IEnumerable<Image> GetAfterIDImage(int id, int amount = 20);
 
+        bool GetSystemState();
+
     }
 }
