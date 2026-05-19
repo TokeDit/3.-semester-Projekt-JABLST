@@ -41,17 +41,18 @@ public class PIController : ControllerBase
                 ?? string.Empty;
 
             // Create Image entity, set OwnerUid and save
-            // var imageEntity = new Image
-            // {
-            //     TimeStamp = image.TimeStamp,
-            //     ImageType = image.ImageType,
-            //     Description = image.Description,
-            //     OwnerUid = image.OwnerUid,
-            //     Confidence = image.Confidence,
-            //     ImagePath = "image"
-            // };
+            var imageEntity = new Image
+            {
+                TimeStamp = image.TimeStamp,
+                ImageType = image.ImageType,
+                Description = image.Description,
+                OwnerUid = image.OwnerUid,
+                Confidence = image.Confidence,
+                ImagePath = "image",
+                ImageData = image.ImageData
+            };
 
-            await _repo.SaveImageAsync(image);
+            await _repo.SaveImageAsync(imageEntity);
             if(!string.IsNullOrWhiteSpace(firebaseUid))
             {
                     var dashboardUrl = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/home";
