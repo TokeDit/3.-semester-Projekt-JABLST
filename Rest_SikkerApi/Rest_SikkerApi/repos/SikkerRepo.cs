@@ -12,6 +12,7 @@ namespace Rest_SikkerApi.repos
     public class SikkerRepo : ISikkerRepo
     {
         private readonly AppDbContext _context;
+        
         private readonly BlobServiceClient _blobServiceClient;
         private readonly BlobContainerClient _blobContainerClient;
         private readonly FileHandlingService _fileHandlerService;
@@ -24,6 +25,7 @@ namespace Rest_SikkerApi.repos
             _blobContainerClient = _blobServiceClient.GetBlobContainerClient("images");
             _fileHandlerService = fileHandlingService;
             _databaseHandlingService = databaseHandlingService;
+
         }
         public async Task<User?> UpdateUserAsync(
     string ownerUid,
@@ -150,7 +152,7 @@ namespace Rest_SikkerApi.repos
         //  Get images for a user within a time range
         public async Task<List<Image>> GetImagesByOwnerUidSinceAsync(string ownerUid, uint reportFrequency)
         {
-            DateTime dt = DateTime.UtcNow.AddDays(-reportFrequency);
+            DateTime dt = DateTime.UtcNow.AddDays(-(double)reportFrequency);
             List<Image> result = await _context.Images.Where(i => i.OwnerUid == ownerUid && dt <= i.TimeStamp).ToListAsync();
             return result; 
         }

@@ -1,0 +1,92 @@
+﻿using FirebaseAdmin.Auth;
+using Microsoft.AspNetCore.Mvc;
+using Rest_SikkerApi.models;
+using Rest_SikkerApi.repos;
+
+namespace Rest_SikkerApi.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class UserController : ControllerBase
+    {
+        private readonly ISikkerRepo _repo;
+        private readonly ILogger<UserController> _logger;
+
+        public UserController(ISikkerRepo repo, ILogger<UserController> logger)
+        {
+            _repo = repo;
+            _logger = logger;
+        }
+
+        // COMMIT: GET /api/User/{ownerUid} — fetch user profile settings
+        [HttpGet("{ownerUid}")]
+        public async Task<IActionResult> GetUser(string ownerUid)
+        {
+            var authHeader = Request.Headers.Authorization.ToString();
+            if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
+                return Unauthorized("Missing Authorization header.");
+
+            var idToken = authHeader["Bearer ".Length..];
+            try
+            {
+                FirebaseToken decodedToken = await FirebaseAuth
+                    .DefaultInstance.VerifyIdTokenAsync(idToken);
+
+                if (decodedToken.Uid != ownerUid)
+                    return Forbid();
+
+                var user = await _repo.GetUserByFirebaseIdAsync(ownerUid);
+                if (user == null) return NotFound();
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Invalid Firebase token");
+                return Unauthorized("Invalid Firebase token.");
+            }
+        }
+
+        // COMMIT: PUT /api/User/{ownerUid} — update report preferences
+        [HttpPut("{ownerUid}")]
+        public async Task<IActionResult> UpdateUser(
+            string ownerUid,
+            [FromBody] UpdateUserRequest request)
+        {
+            var authHeader = Request.Headers.Authorization.ToString();
+            if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
+                return Unauthorized("Missing Authorization header.");
+
+            var idToken = authHeader["Bearer ".Length..];
+            try
+            {
+                FirebaseToken decodedToken = await FirebaseAuth
+                    .DefaultInstance.VerifyIdTokenAsync(idToken);
+
+                if (decodedToken.Uid != ownerUid)
+                    return Forbid();
+
+                var updated = await _repo.UpdateUserAsync(
+                    ownerUid,
+                    request.TelegramChatId,
+                    request.ReportFrequency,
+                    request.ReportEnabled);
+
+                if (updated == null) return NotFound();
+                return Ok(updated);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Invalid Firebase token");
+                return Unauthorized("Invalid Firebase token.");
+            }
+        }
+    }
+
+    // COMMIT: Request model for updating user preferences
+    public class UpdateUserRequest
+    {
+        public string? TelegramChatId { get; set; }
+        public int ReportFrequency { get; set; } = 7; // 1=daily, 7=weekly, 30=monthly
+        public bool ReportEnabled { get; set; } = true;
+    }
+}
