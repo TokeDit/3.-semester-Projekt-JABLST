@@ -27,20 +27,41 @@ namespace Rest_SikkerApi.repos
             _databaseHandlingService = databaseHandlingService;
 
         }
-        public async Task<User?> UpdateUserAsync(
-    string ownerUid,
-    string? telegramChatId,
-    int reportFrequency,
-    bool reportEnabled)
-        {
-            var user = await _context.Users.FindAsync(ownerUid);
-            if (user == null) return null;
 
+        /// <summary>
+        /// Updates an existing user's notification settings, or creates a new user record if none exists (Upsert).
+        /// </summary>
+        /// <param name="ownerUid">Firebase UID of the user (primary key)</param>
+        /// <param name="telegramChatId">Telegram chat ID for notifications (can be null)</param>
+        /// <param name="reportFrequency">Number of days between reports (1, 7, or 30)</param>
+        /// <param name="reportEnabled">Whether reports are enabled for this user</param>
+        /// <returns>The updated or newly created User entity</returns>
+        public async Task<User?> UpdateUserAsync(
+            string ownerUid,
+            string? telegramChatId,
+            int reportFrequency,
+            bool reportEnabled)
+        {
+            // Try to find existing user by its primary key (OwnerUid)
+            var user = await _context.Users.FindAsync(ownerUid);
+
+            if (user == null)
+            {
+                // No user record exists yet – create one (UPSERT behaviour)
+                // This allows local testing where the database starts empty,
+                // and the first Save operation will succeed instead of returning 404.
+                user = new User { OwnerUid = ownerUid };
+                _context.Users.Add(user);
+            }
+
+            // Update the settings regardless of whether the user was new or existing
             user.TelegramChatId = telegramChatId;
             user.ReportFrequency = reportFrequency;
             user.ReportEnabled = reportEnabled;
 
+            // Persist changes to the database
             await _context.SaveChangesAsync();
+
             return user;
         }
 
