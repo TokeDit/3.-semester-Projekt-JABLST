@@ -48,70 +48,7 @@ namespace Rest_SikkerApi.Controllers
             return Ok(user);
         }
 
-        // GET /api/User/{ownerUid} — fetch user profile settings
-        //[HttpGet("{ownerUid}")]
-        //public async Task<IActionResult> GetUser(string ownerUid)
-        //{
-        //    var authHeader = Request.Headers.Authorization.ToString();
-        //    if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
-        //        return Unauthorized("Missing Authorization header.");
-
-        //    var idToken = authHeader["Bearer ".Length..];
-        //    try
-        //    {
-        //        FirebaseToken decodedToken = await FirebaseAuth
-        //            .DefaultInstance.VerifyIdTokenAsync(idToken);
-
-        //        if (decodedToken.Uid != ownerUid)
-        //            return Forbid();
-
-        //        var user = await _repo.GetUserByFirebaseIdAsync(ownerUid);
-        //        if (user == null) return NotFound();
-        //        return Ok(user);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogWarning(ex, "Invalid Firebase token");
-        //        return Unauthorized("Invalid Firebase token.");
-        //    }
-        //}
-
-        //  PUT /api/User/{ownerUid} — update report preferences
-        //    [HttpPut("{ownerUid}")]
-        //    public async Task<IActionResult> UpdateUser(
-        //        string ownerUid,
-        //        [FromBody] UpdateUserRequest request)
-        //    {
-        //        var authHeader = Request.Headers.Authorization.ToString();
-        //        if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
-        //            return Unauthorized("Missing Authorization header.");
-
-        //        var idToken = authHeader["Bearer ".Length..];
-        //        try
-        //        {
-        //            FirebaseToken decodedToken = await FirebaseAuth
-        //                .DefaultInstance.VerifyIdTokenAsync(idToken);
-
-        //            if (decodedToken.Uid != ownerUid)
-        //                return Forbid();
-
-        //            var updated = await _repo.UpdateUserAsync(
-        //                ownerUid,
-        //                request.TelegramChatId,
-        //                request.ReportFrequency,
-        //                request.ReportEnabled);
-
-        //            if (updated == null) return NotFound();
-        //            return Ok(updated);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            _logger.LogWarning(ex, "Invalid Firebase token");
-        //            return Unauthorized("Invalid Firebase token.");
-        //        }
-        //    }
-        //}
-        // COMMIT: Updated PUT endpoint to allow local testing without Firebase auth
+        // Updated PUT endpoint to allow local testing without Firebase auth
         [HttpPut("{ownerUid}")]
         public async Task<IActionResult> UpdateUser(string ownerUid, [FromBody] UpdateUserRequest request)
         {
