@@ -11,6 +11,7 @@
       </header>
 
       <section v-if="user" class="profile-panel">
+        <!-- Identity -->
         <div class="identity">
           <div class="avatar">{{ userInitials }}</div>
           <div>
@@ -19,6 +20,7 @@
           </div>
         </div>
 
+        <!-- Firebase info -->
         <div class="info-grid">
           <article class="info-item">
             <span>Email</span>
@@ -45,6 +47,64 @@
             <strong>{{ lastSignInAt }}</strong>
           </article>
         </div>
+
+        <!-- Settings section -->
+        <div class="settings-section">
+          <h3 class="settings-title">Notification Settings</h3>
+
+          <div v-if="settingsLoading" class="state-msg">Loading settings...</div>
+
+          <div v-else class="settings-grid">
+            <!-- Telegram Chat ID -->
+            <div class="setting-item">
+              <label>Telegram Chat ID</label>
+              <input
+                v-model="form.telegramChatId"
+                type="text"
+                placeholder="e.g. 8386100582"
+                class="setting-input"
+              />
+            </div>
+
+            <!-- Report frequency -->
+            <div class="setting-item">
+              <label>Report Frequency</label>
+              <select v-model="form.reportFrequency" class="setting-input">
+                <option :value="1">Daily</option>
+                <option :value="7">Weekly</option>
+                <option :value="30">Monthly</option>
+              </select>
+            </div>
+
+            <!-- Reports enabled -->
+            <div class="setting-item">
+              <label>Reports Enabled</label>
+              <div class="toggle-row">
+                <input
+                  type="checkbox"
+                  v-model="form.reportEnabled"
+                  id="reportEnabled"
+                  class="toggle-checkbox"
+                />
+                <label for="reportEnabled" class="toggle-label">
+                  {{ form.reportEnabled ? "Enabled" : "Disabled" }}
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Save button -->
+          <div class="settings-actions">
+            <button
+              @click="saveSettings"
+              :disabled="saving"
+              class="save-btn">
+              {{ saving ? "Saving..." : "Save Settings" }}
+            </button>
+            <span v-if="saveSuccess" class="success-msg">✓ Saved successfully</span>
+            <span v-if="saveError" class="error-message">{{ saveError }}</span>
+          </div>
+        </div>
       </section>
 
       <section v-else class="profile-panel loading-panel">
@@ -59,17 +119,29 @@ import AppSidebar from "./Sidebar.vue";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
+const apiBase = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net";
+
 export default {
   name: "ProfilePage",
-
-  components: {
-    AppSidebar,
-  },
+  components: { AppSidebar },
 
   data() {
     return {
       user: null,
       unsubscribeAuth: null,
+
+      // Settings form
+      form: {
+        telegramChatId: "",
+        reportFrequency: 7,
+        reportEnabled: true,
+      },
+
+      // UI state
+      settingsLoading: false,
+      saving: false,
+      saveSuccess: false,
+      saveError: "",
     };
   },
 
@@ -78,24 +150,18 @@ export default {
       if (!this.user?.email) return "?";
       return this.user.email.substring(0, 2).toUpperCase();
     },
-
     createdAt() {
       return this.formatFirebaseDate(this.user?.metadata?.creationTime);
     },
-
     lastSignInAt() {
       return this.formatFirebaseDate(this.user?.metadata?.lastSignInTime);
-    },
-
-    providerNames() {
-      const providers = this.user?.providerData?.map((provider) => provider.providerId) ?? [];
-      return providers.length ? providers.join(", ") : "Not available";
     },
   },
 
   mounted() {
     this.unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       this.user = user;
+      if (user) this.fetchSettings();
     });
   },
 
@@ -106,11 +172,66 @@ export default {
   methods: {
     formatFirebaseDate(value) {
       if (!value) return "Not available";
-
       return new Intl.DateTimeFormat("da-DK", {
         dateStyle: "medium",
         timeStyle: "short",
       }).format(new Date(value));
+    },
+
+    async fetchSettings() {
+      this.settingsLoading = true;
+      try {
+        const token = await this.user.getIdToken();
+        const res = await fetch(`${apiBase}/api/User/${this.user.uid}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.status === 404) {
+          // User exists in Firebase but not in DB yet — use defaults
+          return;
+        }
+
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+
+        const data = await res.json();
+        this.form.telegramChatId = data.telegramChatId || "";
+        this.form.reportFrequency = data.reportFrequency ?? 7;
+        this.form.reportEnabled = data.reportEnabled ?? true;
+      } catch (err) {
+        // Don't show error — just use defaults so form is still usable
+        console.warn("Could not load settings, using defaults.", err);
+      } finally {
+        this.settingsLoading = false;
+      }
+    },
+
+    async saveSettings() {
+      this.saving = true;
+      this.saveSuccess = false;
+      this.saveError = "";
+      try {
+        const token = await this.user.getIdToken();
+        const res = await fetch(`${apiBase}/api/User/${this.user.uid}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            telegramChatId: this.form.telegramChatId || null,
+            reportFrequency: this.form.reportFrequency,
+            reportEnabled: this.form.reportEnabled,
+          }),
+        });
+
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        this.saveSuccess = true;
+        setTimeout(() => (this.saveSuccess = false), 3000);
+      } catch (err) {
+        this.saveError = "Could not save settings.";
+      } finally {
+        this.saving = false;
+      }
     },
   },
 };
