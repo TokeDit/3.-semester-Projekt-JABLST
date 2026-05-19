@@ -13,7 +13,9 @@ namespace Rest_SikkerApi.models
 
         // Stored as base64
         // Store as bytes in database
+        [NotMapped]
         public string ImageData { get; set; } = string.Empty;
+        public string ImagePath { get; set; } = string.Empty;
 
         public string Description { get; set; } = string.Empty;
 

@@ -14,9 +14,10 @@ public class FileHandlingService
 		_blobContainerClient = _blobServiceClient.GetBlobContainerClient("images");
 	}
 
-	public async Task<BlobContentInfo> UploadImageAsync(int id, byte[] image)
+	public async Task<BlobContentInfo> UploadImageAsync(int id, string image)
 	{
-		BinaryData imageData = new BinaryData(image);
+		byte[] imageByteData = Convert.FromBase64String(image);
+		BinaryData imageData = new BinaryData(imageByteData);
 		return await _blobContainerClient.UploadBlobAsync(id.ToString(), imageData);
 	}
 

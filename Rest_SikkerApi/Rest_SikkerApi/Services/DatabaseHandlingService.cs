@@ -13,11 +13,10 @@ public class DatabaseHandlingService
 		_context = context;
 	}
 
-	public async Task<Image> SaveImageAsync(Image imageEntity)
+	public async Task SaveImageAsync(Image imageEntity)
 	{
-		imageEntity.ImageData = "image";
+		imageEntity.ImagePath = "images";
 		_context.Images.Add(imageEntity);
 		await _context.SaveChangesAsync();
-		return imageEntity;
 	}
 }
