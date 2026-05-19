@@ -94,7 +94,7 @@ builder.Services.AddScoped(provider =>
 
 //builder.Services.AddSingleton(blobServiceClient);
 
-/////MUST CHANGE BACK
+/////MUST CHANGE BACK///////
 var blobConnectionString =builder.Configuration["AzureBlobStorage:ConnectionString"];
 if (!string.IsNullOrWhiteSpace(blobConnectionString))
 {
