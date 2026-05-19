@@ -64,7 +64,7 @@ public class PIController : ControllerBase
         {
             return StatusCode(500, new
             {
-                message = "Image analysis failed.",
+                message = "Image analysis failed.\n" + ex.Message,
                 error = ex.Message
             });
         }
