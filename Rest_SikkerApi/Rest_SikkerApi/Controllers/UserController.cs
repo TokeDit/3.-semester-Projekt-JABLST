@@ -18,33 +18,33 @@ namespace Rest_SikkerApi.Controllers
             _logger = logger;
         }
 
-        // COMMIT: GET /api/User/{ownerUid} — fetch user profile settings
-        [HttpGet("{ownerUid}")]
-        public async Task<IActionResult> GetUser(string ownerUid)
-        {
-            var authHeader = Request.Headers.Authorization.ToString();
-            if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
-                return Unauthorized("Missing Authorization header.");
+        // GET /api/User/{ownerUid} — fetch user profile settings
+        //[HttpGet("{ownerUid}")]
+        //public async Task<IActionResult> GetUser(string ownerUid)
+        //{
+        //    var authHeader = Request.Headers.Authorization.ToString();
+        //    if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
+        //        return Unauthorized("Missing Authorization header.");
 
-            var idToken = authHeader["Bearer ".Length..];
-            try
-            {
-                FirebaseToken decodedToken = await FirebaseAuth
-                    .DefaultInstance.VerifyIdTokenAsync(idToken);
+        //    var idToken = authHeader["Bearer ".Length..];
+        //    try
+        //    {
+        //        FirebaseToken decodedToken = await FirebaseAuth
+        //            .DefaultInstance.VerifyIdTokenAsync(idToken);
 
-                if (decodedToken.Uid != ownerUid)
-                    return Forbid();
+        //        if (decodedToken.Uid != ownerUid)
+        //            return Forbid();
 
-                var user = await _repo.GetUserByFirebaseIdAsync(ownerUid);
-                if (user == null) return NotFound();
-                return Ok(user);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Invalid Firebase token");
-                return Unauthorized("Invalid Firebase token.");
-            }
-        }
+        //        var user = await _repo.GetUserByFirebaseIdAsync(ownerUid);
+        //        if (user == null) return NotFound();
+        //        return Ok(user);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogWarning(ex, "Invalid Firebase token");
+        //        return Unauthorized("Invalid Firebase token.");
+        //    }
+        //}
 
         //  PUT /api/User/{ownerUid} — update report preferences
         //    [HttpPut("{ownerUid}")]
