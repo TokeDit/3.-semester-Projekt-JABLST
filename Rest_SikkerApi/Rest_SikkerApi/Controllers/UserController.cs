@@ -18,6 +18,36 @@ namespace Rest_SikkerApi.Controllers
             _logger = logger;
         }
 
+        [HttpGet("{ownerUid}")]
+        public async Task<IActionResult> GetUser(string ownerUid)
+        {
+            // COMMIT: Skip Firebase auth locally when DefaultInstance is null
+            if (FirebaseAuth.DefaultInstance != null)
+            {
+                var authHeader = Request.Headers.Authorization.ToString();
+                if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
+                    return Unauthorized("Missing Authorization header.");
+
+                var idToken = authHeader["Bearer ".Length..];
+                try
+                {
+                    FirebaseToken decodedToken = await FirebaseAuth
+                        .DefaultInstance.VerifyIdTokenAsync(idToken);
+                    if (decodedToken.Uid != ownerUid)
+                        return Forbid();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Invalid Firebase token");
+                    return Unauthorized("Invalid Firebase token.");
+                }
+            }
+
+            var user = await _repo.GetUserByFirebaseIdAsync(ownerUid);
+            if (user == null) return NotFound();
+            return Ok(user);
+        }
+
         // GET /api/User/{ownerUid} — fetch user profile settings
         //[HttpGet("{ownerUid}")]
         //public async Task<IActionResult> GetUser(string ownerUid)
