@@ -95,17 +95,7 @@ builder.Services.AddScoped(provider =>
 //builder.Services.AddSingleton(blobServiceClient);
 
 /////MUST CHANGE BACK///////
-var blobConnectionString =builder.Configuration["AzureBlobStorage:ConnectionString"];
-if (!string.IsNullOrWhiteSpace(blobConnectionString))
-{
-    builder.Services.AddSingleton(new BlobServiceClient(blobConnectionString));
-}
-else
-{
-    // Local dev — use a dummy connection string
-    builder.Services.AddSingleton(
-        new BlobServiceClient("UseDevelopmentStorage=true"));
-}
+
 builder.Services.AddScoped<FileHandlingService>();
 builder.Services.AddScoped<DatabaseHandlingService>();
 
