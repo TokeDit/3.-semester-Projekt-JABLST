@@ -21,7 +21,7 @@ namespace Rest_SikkerApi.Controllers
         [HttpGet("{ownerUid}")]
         public async Task<IActionResult> GetUser(string ownerUid)
         {
-            // COMMIT: Skip Firebase auth locally when DefaultInstance is null
+            //  Skip Firebase auth locally when DefaultInstance is null
             if (FirebaseAuth.DefaultInstance != null)
             {
                 var authHeader = Request.Headers.Authorization.ToString();
@@ -149,9 +149,10 @@ namespace Rest_SikkerApi.Controllers
 
         // COMMIT: Request model for updating user preferences
         public class UpdateUserRequest
-    {
-        public string? TelegramChatId { get; set; }
-        public int ReportFrequency { get; set; } = 7; // 1=daily, 7=weekly, 30=monthly
-        public bool ReportEnabled { get; set; } = true;
+        {
+            public string? TelegramChatId { get; set; }
+            public int ReportFrequency { get; set; } = 7; // 1=daily, 7=weekly, 30=monthly
+            public bool ReportEnabled { get; set; } = true;
+        }
     }
 }
