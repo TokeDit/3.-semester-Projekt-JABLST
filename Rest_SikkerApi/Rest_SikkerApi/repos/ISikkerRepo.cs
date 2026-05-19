@@ -12,7 +12,7 @@ namespace Rest_SikkerApi.repos
         Task<bool> UpdateUserChatIdAsync(string ownerUid, string telegramChatId, CancellationToken ct = default);
         Task<User?> GetUserByChatIdAsync(string telegramChatId);
         Task<List<Image>> GetImagesByOwnerUidAsync(string ownerUid);
-                Task<List<User>> GetUsersWithReportsEnabledAsync();
+        Task<List<User>> GetUsersWithReportsEnabledAsync();
         Task<List<Image>> GetImagesByOwnerUidSinceAsync(string ownerUid, uint reportFrequency);
 
         //ADDITIONAL METHODS FOR USER MANAGEMENT
