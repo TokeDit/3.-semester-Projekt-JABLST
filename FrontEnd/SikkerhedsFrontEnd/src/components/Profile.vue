@@ -119,7 +119,8 @@ import AppSidebar from "./Sidebar.vue";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
-const apiBase = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net";
+//const apiBase = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net";
+const apiBase = "http://localhost:5180";
 
 export default {
   name: "ProfilePage",
