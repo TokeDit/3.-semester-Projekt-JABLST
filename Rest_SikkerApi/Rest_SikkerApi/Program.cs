@@ -224,15 +224,15 @@ var connectionString = builder.Configuration.GetConnectionString("DbConnectionPr
     ?? builder.Configuration.GetConnectionString("DbConnectionDev")
     ?? throw new InvalidOperationException("No SQL connection string configured.");
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString, sqlServerOptions =>
-    {
-        sqlServerOptions.EnableRetryOnFailure(
-            maxRetryCount: 3,
-            maxRetryDelay: TimeSpan.FromSeconds(5),
-            errorNumbersToAdd: null
-        );
-    }));
+// builder.Services.AddDbContext<AppDbContext>(options =>
+//     options.UseSqlServer(connectionString, sqlServerOptions =>
+//     {
+//         sqlServerOptions.EnableRetryOnFailure(
+//             maxRetryCount: 3,
+//             maxRetryDelay: TimeSpan.FromSeconds(5),
+//             errorNumbersToAdd: null
+//         );
+//     }));
 
 
 var app = builder.Build();
