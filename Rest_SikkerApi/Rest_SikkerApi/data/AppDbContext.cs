@@ -30,31 +30,36 @@ namespace Rest_SikkerApi.data
             // Configure Image entity
             modelBuilder.Entity<Image>(entity =>
             {
+                entity.ToTable("Images");
+
                 // Primary key
                 entity.HasKey(i => i.Id);
 
-                // Id as VARCHAR (since it's a string in your model)
+                // Database uses VARCHAR(50) for Id; keep model int and convert.
                 entity.Property(i => i.Id)
                     .IsRequired()
-                    .HasMaxLength(50);
+                    .HasConversion<string>()
+                    .HasColumnType("varchar(50)");
 
-                // TimeStamp as VARCHAR
+                // TimeStamp maps to SQL datetime
                 entity.Property(i => i.TimeStamp)
                     .IsRequired()
-                    .HasMaxLength(50);
+                    .HasColumnType("datetime");
 
-                // ImageType as VARCHAR
+                // ImageType as VARCHAR(50)
                 entity.Property(i => i.ImageType)
                     .IsRequired()
-                    .HasMaxLength(50);
+                    .HasColumnType("varchar(50)");
 
-                // Store as VARBINARY(MAX) - binary data
+                // Existing model uses ImageData, but DB column is ImagePath VARCHAR(255)
                 entity.Property(i => i.ImageData)
                     .IsRequired()
-                    .HasColumnType("varbinary(max)");
+                    .HasColumnName("ImagePath")
+                    .HasColumnType("varchar(255)");
 
                 entity.Property(i => i.Description)
-                    .HasMaxLength(500);
+                    .HasColumnType("varchar(500)")
+                    .IsRequired(false);
 
                 // Confidence: single-precision float -> SQL Server "real"
                 entity.Property(i => i.Confidence)
@@ -70,8 +75,14 @@ namespace Rest_SikkerApi.data
                 // OwnerUid (Firebase UID) - tie image to a user
                 // Allow null for legacy images; change IsRequired() if you want it mandatory
                 entity.Property(i => i.OwnerUid)
-                    .HasMaxLength(128)
+                    .HasColumnType("varchar(128)")
                     .IsRequired(false);
+
+                entity.HasOne<User>()
+                    .WithMany()
+                    .HasForeignKey(i => i.OwnerUid)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("FK_Images_Users_OwnerUid");
 
                 // Optional: create an index to query images by owner efficiently
                 entity.HasIndex(i => i.OwnerUid);
@@ -83,12 +94,24 @@ namespace Rest_SikkerApi.data
             // Configure User entity
             modelBuilder.Entity<User>(entity =>
             {
+                entity.ToTable("Users");
+
                 entity.HasKey(u => u.OwnerUid);
                 entity.Property(u => u.OwnerUid)
                     .IsRequired()
-                    .HasMaxLength(128);
+                    .HasColumnType("varchar(128)");
+
                 entity.Property(u => u.TelegramChatId)
-                    .HasMaxLength(128);
+                    .HasColumnType("varchar(128)")
+                    .IsRequired(false);
+
+                entity.Property(u => u.ReportFrequency)
+                    .IsRequired()
+                    .HasDefaultValue(7);
+
+                entity.Property(u => u.ReportEnabled)
+                    .IsRequired()
+                    .HasDefaultValue(true);
             });
         }
     }
