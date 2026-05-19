@@ -5,7 +5,6 @@
     <!-- ==================== MAIN CONTENT ==================== -->
     <main class="content">
       <!-- TOPBAR -->
-      <!-- git commit -m "style: topbar - title left, status chip + datetime + refresh right" -->
       <header class="topbar">
         <div class="topbar-left">
           <h1>Dashboard</h1>
@@ -17,14 +16,7 @@
             System Online
           </div>
           <div class="topbar-date">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="4" width="18" height="18" rx="2" />
               <line x1="16" y1="2" x2="16" y2="6" />
               <line x1="8" y1="2" x2="8" y2="6" />
@@ -33,22 +25,25 @@
             <span>29 Apr 2025, 14:32:45</span>
           </div>
           <button class="refresh-btn" @click="checkStatus" title="Refresh">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="1 4 1 10 7 10" />
               <path d="M3.51 15a9 9 0 1 0 .49-4.95" />
             </svg>
           </button>
+
+          <!-- Profile link - THIS IS THE FIX -->
+          <RouterLink to="/profile" class="profile-btn" title="Profile">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Profile
+          </RouterLink>
+
         </div>
       </header>
 
-      <!-- STATS GRID -->
+        <!-- STATS GRID -->
       <!-- git commit -m "style: stat cards with colored icon badges matching sample screenshot" -->
       <section class="stats-grid">
         <article class="stat-card">
