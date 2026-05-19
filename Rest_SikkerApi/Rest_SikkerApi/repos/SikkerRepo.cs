@@ -28,9 +28,6 @@ namespace Rest_SikkerApi.repos
 
         public async Task<Image> SaveImageAsync(Image imageEntity)
         {
-            if (!string.IsNullOrWhiteSpace(imageEntity.ImagePath))
-                _blobServiceClient.GetBlobContainerClient(imageEntity.ImagePath);
-
             await _databaseHandlingService.SaveImageAsync(imageEntity);
             await _fileHandlerService.UploadImageAsync(imageEntity.Id, imageEntity.ImageData);
             return imageEntity;
@@ -52,20 +49,7 @@ namespace Rest_SikkerApi.repos
         // Exceptions thrown (Azure.RequestFailedException, AggregateException)
         public async Task<Image?> GetImageByIdAsync(int id)
         {
-            BlobClient blobClient = _blobContainerClient.GetBlobClient(id.ToString());
-            if (await blobClient.ExistsAsync())
-            {                
-                Azure.Response<BlobDownloadResult> download = await blobClient.DownloadContentAsync();
-                var image = new Image
-                {
-                    Id = id,
-                    ImageData = download.Value.Content.ToArray().ToString()!
-                };
-                return image;
-            }
-            return null;
-
-            // return await _context.Images.FirstOrDefaultAsync(i => i.Id == id);
+            return await _fileHandlerService.GetImageAsync(id);
         }
 
         public async Task<User?> GetUserByFirebaseIdAsync(string ownerUid)
