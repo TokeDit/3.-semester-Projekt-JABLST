@@ -48,9 +48,6 @@ builder.Services.AddScoped<ITelegramCommandHandler, TelegramCommandHandler>();
 builder.Services.AddScoped<SikkerRepo>();
 builder.Services.AddScoped<ISikkerRepo, SikkerRepo>();
 
-builder.Services.AddScoped<DatabaseHandlingService>();
-builder.Services.AddScoped<FileHandlingService>();
-
 // Register background report service
 builder.Services.AddHostedService<ReportService>();
 
@@ -90,10 +87,10 @@ builder.Services.AddScoped(provider =>
 );
 ////////////////MUST  DECOMMENT////////////
 
-//string connectionStringFileServer = builder.Configuration["Azure:BlobConnectionString"]!;
-//BlobServiceClient blobServiceClient = new BlobServiceClient(connectionStringFileServer);
+string connectionStringFileServer = builder.Configuration["Azure:BlobConnectionString"]!;
+BlobServiceClient blobServiceClient = new BlobServiceClient(connectionStringFileServer);
 
-//builder.Services.AddSingleton(blobServiceClient);
+builder.Services.AddSingleton(blobServiceClient);
 
 /////MUST CHANGE BACK///////
 
