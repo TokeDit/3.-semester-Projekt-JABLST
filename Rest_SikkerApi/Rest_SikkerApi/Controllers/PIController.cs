@@ -39,6 +39,11 @@ public class PIController : ControllerBase
                 ?? User.FindFirst("firebase_uid")?.Value
                 ?? image.OwnerUid
                 ?? string.Empty;
+            
+            if (string.IsNullOrWhiteSpace(firebaseUid))
+            {
+                return BadRequest("No firebase id found");
+            }
 
             // Create Image entity, set OwnerUid and save
             var imageEntity = new Image
@@ -48,17 +53,16 @@ public class PIController : ControllerBase
                 Description = image.Description,
                 OwnerUid = image.OwnerUid,
                 Confidence = image.Confidence,
-                ImagePath = "image",
+                ImagePath = "gamer",
                 ImageData = image.ImageData
             };
 
-            await _repo.SaveImageAsync(imageEntity);
-            if(!string.IsNullOrWhiteSpace(firebaseUid))
-            {
-                    var dashboardUrl = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/home";
 
-                    await _telegramService.SendImageLinkAsync(dashboardUrl, image.Description, firebaseUid);
-            }
+            await _repo.SaveImageAsync(imageEntity);
+            var dashboardUrl = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/home";
+
+            await _telegramService.SendImageLinkAsync(dashboardUrl, image.Description, firebaseUid);
+
             return Ok(image);
         }
         catch (Exception ex)
