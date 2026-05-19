@@ -29,7 +29,7 @@ namespace Rest_SikkerApi.repos
         public async Task<Image> SaveImageAsync(Image imageEntity)
         {
             await _databaseHandlingService.SaveImageAsync(imageEntity);
-            await _fileHandlerService.UploadImageAsync(imageEntity.Id, Convert.FromBase64String(imageEntity.ImageData));
+            await _fileHandlerService.UploadImageAsync(imageEntity.Id, imageEntity.ImageData);
             return imageEntity;
         }
 

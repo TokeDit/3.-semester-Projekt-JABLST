@@ -41,24 +41,24 @@ public class PIController : ControllerBase
                 ?? string.Empty;
 
             // Create Image entity, set OwnerUid and save
-            var imageEntity = new Image
-            {
-                TimeStamp = image.TimeStamp,
-                ImageType = image.ImageType,
-                ImageData = image.ImageData,
-                Description = image.Description,
-                OwnerUid = image.OwnerUid,
-                Confidence = image.Confidence
-            };
+            // var imageEntity = new Image
+            // {
+            //     TimeStamp = image.TimeStamp,
+            //     ImageType = image.ImageType,
+            //     Description = image.Description,
+            //     OwnerUid = image.OwnerUid,
+            //     Confidence = image.Confidence,
+            //     ImagePath = "image"
+            // };
 
-            await _repo.SaveImageAsync(imageEntity);
+            await _repo.SaveImageAsync(image);
             if(!string.IsNullOrWhiteSpace(firebaseUid))
             {
                     var dashboardUrl = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/home";
 
                     await _telegramService.SendImageLinkAsync(dashboardUrl, image.Description, firebaseUid);
             }
-            return Ok(imageEntity);
+            return Ok(image);
         }
         catch (Exception ex)
         {
