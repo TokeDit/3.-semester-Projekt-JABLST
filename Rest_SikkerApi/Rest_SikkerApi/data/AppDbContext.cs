@@ -35,23 +35,16 @@ namespace Rest_SikkerApi.data
 
                 // Id as VARCHAR (since it's a string in your model)
                 entity.Property(i => i.Id)
-                    .IsRequired()
-                    .HasMaxLength(50);
+                    .IsRequired();
 
                 // TimeStamp as VARCHAR
                 entity.Property(i => i.TimeStamp)
-                    .IsRequired()
-                    .HasMaxLength(50);
+                    .IsRequired();
 
                 // ImageType as VARCHAR
                 entity.Property(i => i.ImageType)
                     .IsRequired()
                     .HasMaxLength(50);
-
-                // Store as VARBINARY(MAX) - binary data
-                entity.Property(i => i.ImageData)
-                    .IsRequired()
-                    .HasColumnType("varbinary(max)");
 
                 entity.Property(i => i.Description)
                     .HasMaxLength(500);

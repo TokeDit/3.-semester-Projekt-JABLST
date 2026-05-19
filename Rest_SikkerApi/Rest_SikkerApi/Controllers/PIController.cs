@@ -52,7 +52,7 @@ public class PIController : ControllerBase
                 ImageData = image.ImageData
             };
 
-            // await _repo.SaveImageAsync(imageEntity);
+            await _repo.SaveImageAsync(imageEntity);
             if(!string.IsNullOrWhiteSpace(firebaseUid))
             {
                     var dashboardUrl = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/home";
