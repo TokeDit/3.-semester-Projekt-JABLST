@@ -46,44 +46,79 @@ namespace Rest_SikkerApi.Controllers
             }
         }
 
-        // COMMIT: PUT /api/User/{ownerUid} — update report preferences
+        //  PUT /api/User/{ownerUid} — update report preferences
+        //    [HttpPut("{ownerUid}")]
+        //    public async Task<IActionResult> UpdateUser(
+        //        string ownerUid,
+        //        [FromBody] UpdateUserRequest request)
+        //    {
+        //        var authHeader = Request.Headers.Authorization.ToString();
+        //        if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
+        //            return Unauthorized("Missing Authorization header.");
+
+        //        var idToken = authHeader["Bearer ".Length..];
+        //        try
+        //        {
+        //            FirebaseToken decodedToken = await FirebaseAuth
+        //                .DefaultInstance.VerifyIdTokenAsync(idToken);
+
+        //            if (decodedToken.Uid != ownerUid)
+        //                return Forbid();
+
+        //            var updated = await _repo.UpdateUserAsync(
+        //                ownerUid,
+        //                request.TelegramChatId,
+        //                request.ReportFrequency,
+        //                request.ReportEnabled);
+
+        //            if (updated == null) return NotFound();
+        //            return Ok(updated);
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            _logger.LogWarning(ex, "Invalid Firebase token");
+        //            return Unauthorized("Invalid Firebase token.");
+        //        }
+        //    }
+        //}
+        // COMMIT: Updated PUT endpoint to allow local testing without Firebase auth
         [HttpPut("{ownerUid}")]
-        public async Task<IActionResult> UpdateUser(
-            string ownerUid,
-            [FromBody] UpdateUserRequest request)
+        public async Task<IActionResult> UpdateUser(string ownerUid, [FromBody] UpdateUserRequest request)
         {
-            var authHeader = Request.Headers.Authorization.ToString();
-            if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
-                return Unauthorized("Missing Authorization header.");
-
-            var idToken = authHeader["Bearer ".Length..];
-            try
+            // COMMIT: Skip Firebase auth locally when DefaultInstance is null
+            if (FirebaseAuth.DefaultInstance != null)
             {
-                FirebaseToken decodedToken = await FirebaseAuth
-                    .DefaultInstance.VerifyIdTokenAsync(idToken);
+                var authHeader = Request.Headers.Authorization.ToString();
+                if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
+                    return Unauthorized("Missing Authorization header.");
 
-                if (decodedToken.Uid != ownerUid)
-                    return Forbid();
-
-                var updated = await _repo.UpdateUserAsync(
-                    ownerUid,
-                    request.TelegramChatId,
-                    request.ReportFrequency,
-                    request.ReportEnabled);
-
-                if (updated == null) return NotFound();
-                return Ok(updated);
+                var idToken = authHeader["Bearer ".Length..];
+                try
+                {
+                    FirebaseToken decodedToken = await FirebaseAuth
+                        .DefaultInstance.VerifyIdTokenAsync(idToken);
+                    if (decodedToken.Uid != ownerUid)
+                        return Forbid();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Invalid Firebase token");
+                    return Unauthorized("Invalid Firebase token.");
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Invalid Firebase token");
-                return Unauthorized("Invalid Firebase token.");
-            }
+
+            var updated = await _repo.UpdateUserAsync(
+                ownerUid,
+                request.TelegramChatId,
+                request.ReportFrequency,
+                request.ReportEnabled);
+
+            if (updated == null) return NotFound();
+            return Ok(updated);
         }
-    }
 
-    // COMMIT: Request model for updating user preferences
-    public class UpdateUserRequest
+        // COMMIT: Request model for updating user preferences
+        public class UpdateUserRequest
     {
         public string? TelegramChatId { get; set; }
         public int ReportFrequency { get; set; } = 7; // 1=daily, 7=weekly, 30=monthly
