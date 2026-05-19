@@ -96,7 +96,7 @@ def send_to_api(frame, timestamp, confidence):
     payload = {
         "ImageDataBase64": image_b64,
         "ImageType": "image/jpeg",
-        "Description": "person",
+        "Description": "There is a person at the kamera",
         "DetectedObject": "person",
         "Confidence": round(confidence, 4),
         "TimeStamp": timestamp.isoformat(timespec = 'minutes'),

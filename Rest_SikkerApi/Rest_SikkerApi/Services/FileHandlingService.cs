@@ -1,4 +1,4 @@
-﻿namespace Rest_SikkerApi;
+﻿namespace Rest_SikkerApi.Services;
 
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -16,7 +16,7 @@ public class FileHandlingService
 
 	public async Task<BlobContentInfo> UploadImageAsync(int id, byte[] image)
 	{
-		BinaryData imageData = new BinaryData(image);
+		var imageData = new BinaryData(image);
 		return await _blobContainerClient.UploadBlobAsync(id.ToString(), imageData);
 	}
 
