@@ -15,7 +15,6 @@ public class DatabaseHandlingService
 
 	public async Task SaveImageAsync(Image imageEntity)
 	{
-		imageEntity.ImagePath = "images";
 		_context.Images.Add(imageEntity);
 		await _context.SaveChangesAsync();
 	}

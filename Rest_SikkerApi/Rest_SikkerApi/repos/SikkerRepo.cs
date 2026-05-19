@@ -28,6 +28,9 @@ namespace Rest_SikkerApi.repos
 
         public async Task<Image> SaveImageAsync(Image imageEntity)
         {
+            if (!string.IsNullOrWhiteSpace(imageEntity.ImagePath))
+                _blobServiceClient.GetBlobContainerClient(imageEntity.ImagePath);
+
             await _databaseHandlingService.SaveImageAsync(imageEntity);
             await _fileHandlerService.UploadImageAsync(imageEntity.Id, imageEntity.ImageData);
             return imageEntity;
