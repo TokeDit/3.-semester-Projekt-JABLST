@@ -88,11 +88,21 @@ builder.Services.AddScoped(provider =>
         provider.GetRequiredService<ISikkerRepo>()
     )
 );
+////////////////MUST  DECOMMENT////////////
 
-string connectionStringFileServer = builder.Configuration["Azure:BlobConnectionString"]!;
-BlobServiceClient blobServiceClient = new BlobServiceClient(connectionStringFileServer);
+//string connectionStringFileServer = builder.Configuration["Azure:BlobConnectionString"]!;
+//BlobServiceClient blobServiceClient = new BlobServiceClient(connectionStringFileServer);
 
-builder.Services.AddSingleton(blobServiceClient);
+//builder.Services.AddSingleton(blobServiceClient);
+
+/////MUST CHANGE BACK///////
+
+builder.Services.AddScoped<FileHandlingService>();
+builder.Services.AddScoped<DatabaseHandlingService>();
+
+
+
+
 
 // builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();
 // Jwt Authentication -----------------------------------------------------------------------------
