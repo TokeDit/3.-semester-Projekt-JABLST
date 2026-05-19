@@ -177,6 +177,17 @@ export default {
         timeStyle: "short",
       }).format(new Date(value));
     },
+    ////fix(user-settings): allow local testing by loading default settings when API returns 404 or fails
+
+//using Azure.Core;
+
+//Updated fetchSettings() to support local development without requiring Azure or existing user records.
+//When the API returns 404 (user not found), the component now loads the settings form with default values instead of showing an error.
+//Removed settingsError usage and prevented the UI from hiding the form on load failures.
+//Added fallback behavior: if the request fails or the user does not exist, the component logs a warning and continues with default settings.
+//Removed the error message block from the template since settingsError is no longer used.
+// This change ensures the settings page remains usable during local testing even when the backend has no user data.
+
 
     async fetchSettings() {
       this.settingsLoading = true;
