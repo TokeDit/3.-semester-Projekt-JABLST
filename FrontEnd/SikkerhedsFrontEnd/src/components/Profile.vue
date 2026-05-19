@@ -473,4 +473,21 @@ export default {
   text-align: center;
   color: #94a3b8;
 }
+
+<style scoped>
+.profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #e2e8f0;
+  text-decoration: none;
+  font-size: 13px;
+}
+.profile-btn:hover {
+  background: #334155;
+}
 </style>
