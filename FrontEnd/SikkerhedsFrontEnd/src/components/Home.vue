@@ -619,7 +619,8 @@ export default {
     this.unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       this.user = user;
       if (user) {
-        this.loadEvents(); // MOVE HERE — only load after user is known
+        this.loadEvents();
+        this.getResentImages();
         console.log("UID:", this.user.uid);
       }
     });
@@ -773,18 +774,20 @@ export default {
       }
     },
 
-    async getResentImages()
-    {
+    async getResentImages() {
+      if (!this.user) return;
       this.imagesLoading = true;
       try {
-        const res = await fetch("https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/image");
+        const token = await this.user.getIdToken();
+        const res = await fetch(`${this.apiBase}/api/image`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
         console.log("Fetched images:", data);
-        this.images = data || [];
+        this.images = Array.isArray(data) ? data : [data];
       } catch {
         this.images = [];
-      }
-      finally {
+      } finally {
         this.imagesLoading = false;
       }
     }
