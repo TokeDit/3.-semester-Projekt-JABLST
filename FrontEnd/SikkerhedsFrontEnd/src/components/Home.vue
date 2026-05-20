@@ -176,7 +176,7 @@
               <span>Camera snapshot preview</span>
             </div>
             <div v-else v-for="image in images">
-              <img :src="`data:image/jpeg;base64,${image.imageDataBase64}`" alt="Captured Image" class="captured-image" />
+              <img :src="`data:image/jpeg;base64,${image.imageData}`" alt="Captured Image" class="captured-image" />
             </div>
           </div>
           <div class="panel-meta">
