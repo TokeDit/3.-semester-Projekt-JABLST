@@ -22,7 +22,7 @@ public class FirebaseHandler : IFirebaseHandler
 
 		var httpContext = _httpContextAccessor.HttpContext
 			?? throw new InvalidOperationException("no active http context");
-		var firebaseUid = httpContext.Items["firebaseUid"] as string
+		var firebaseUid = httpContext.Items["FirebaseUid"] as string
 			?? httpContext.User?.FindFirst("firebase_uid")?.Value ?? string.Empty;
 		
 		return firebaseUid;
