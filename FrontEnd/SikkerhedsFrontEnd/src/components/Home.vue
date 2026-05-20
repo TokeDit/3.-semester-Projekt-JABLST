@@ -775,21 +775,21 @@ export default {
     },
 
     async getResentImages() {
-      if (!this.user) return;
-      this.imagesLoading = true;
-      try {
-        const token = await this.user.getIdToken();
-        const res = await fetch(`${this.apiBase}/api/image`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        console.log("Fetched images:", data);
-        this.images = Array.isArray(data) ? data : [data];
-      } catch {
-        this.images = [];
-      } finally {
-        this.imagesLoading = false;
-      }
+      // if (!this.user) return;
+      // this.imagesLoading = true;
+      // try {
+      //   const token = await this.user.getIdToken();
+      //   const res = await fetch(`${this.apiBase}/api/image`, {
+      //     headers: { Authorization: `Bearer ${token}` },
+      //   });
+      //   const data = await res.json();
+      //   console.log("Fetched images:", data);
+      //   this.images = Array.isArray(data) ? data : [data];
+      // } catch {
+      //   this.images = [];
+      // } finally {
+      //   this.imagesLoading = false;
+      // }
     }
   },
 };
