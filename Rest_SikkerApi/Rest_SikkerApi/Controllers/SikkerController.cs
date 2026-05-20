@@ -6,6 +6,7 @@ using Rest_SikkerApi.repos;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Rest_SikkerApi.interfaces;
 
 
 namespace Rest_SikkerApi.Controllers
@@ -19,13 +20,16 @@ namespace Rest_SikkerApi.Controllers
         private readonly ILogger<SikkerController> _logger;
         private readonly TelegramBotService _telegramService;
         private readonly string _dashboardUrl;
+        private readonly IFirebaseHandler _firebaseHandler;
 
-        public SikkerController(ILogger<SikkerController> logger, SikkerRepo repo, TelegramBotService telegramService, IConfiguration configuration)
+        public SikkerController(ILogger<SikkerController> logger, SikkerRepo repo, TelegramBotService telegramService, IConfiguration configuration,
+        IFirebaseHandler firebaseHandler)
         {
             _logger = logger;
             _repo = repo;
             _telegramService = telegramService;
             _dashboardUrl = configuration["DashboardUrl"] ?? "https://localhost:5173/dashboard";
+            _firebaseHandler = firebaseHandler;
         }
 
         // POST: /Sikker/UploadImage
@@ -89,7 +93,8 @@ namespace Rest_SikkerApi.Controllers
         [HttpGet("Image/{id}", Name = "GetImageById")]
         public async Task<IActionResult> GetImageById(int id)
         {
-            var image = await _repo.GetImageByIdAsync(id);
+            string uid = await _firebaseHandler.GetFirebaseUidAsync();
+            var image = await _repo.GetImageByIdAsync(id, uid);
             if (image == null)
             {
                 return NotFound();

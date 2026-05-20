@@ -61,7 +61,7 @@ public class ImageController : ControllerBase
     [ProducesResponseType (StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Get()
     {
-        string uid = await _firebaseHandler.GetFirebaseUid();
+        string uid = await _firebaseHandler.GetFirebaseUidAsync();
         Image? image = await m_repo.GetResentImage(uid);
 
         if (image == null)
@@ -86,7 +86,7 @@ public class ImageController : ControllerBase
             {
                 return BadRequest("ID must be a positive integer.");
             }
-            string uid = await _firebaseHandler.GetFirebaseUid();
+            string uid = await _firebaseHandler.GetFirebaseUidAsync();
             image = await m_repo.GetImageByIdAsync(id, uid);
         }
         catch (Exception ex) when (ex is Azure.RequestFailedException || ex is AggregateException || ex is FormatException ||

@@ -37,7 +37,7 @@ public class PIController : ControllerBase
                 return BadRequest("No image uploaded.");
             }
 
-            string firebaseUid = await _firebaseHandler.GetFirebaseUid();
+            string firebaseUid = await _firebaseHandler.GetFirebaseUidAsync();
             
             if (string.IsNullOrWhiteSpace(firebaseUid))
             {

@@ -11,7 +11,7 @@ public class FirebaseHandler : IFirebaseHandler
 		_httpContextAccessor = httpContextAccessor;
 	}
 
-	public async Task<string> GetFirebaseUid()
+	public async Task<string> GetFirebaseUidAsync()
 	{
 		// tilgiver FirebaseUid i både HttpContext og User.Claims for at sikre kompatibilitet med forskellige autentificeringsmetoder
 		// var firebaseUid = HttpContext.Items["FirebaseUid"] as string

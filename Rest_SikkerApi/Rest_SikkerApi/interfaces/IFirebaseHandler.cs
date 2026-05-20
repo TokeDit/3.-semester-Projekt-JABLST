@@ -2,5 +2,5 @@
 
 public interface IFirebaseHandler
 {
-	Task<string> GetFirebaseUid();
+	Task<string> GetFirebaseUidAsync();
 }
