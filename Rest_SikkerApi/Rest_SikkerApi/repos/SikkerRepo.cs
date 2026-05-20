@@ -149,6 +149,13 @@ namespace Rest_SikkerApi.repos
             .OrderBy(x => Math.Abs(
                 EF.Functions.DateDiffSecond(x.TimeStamp, dateTime)))
             .FirstOrDefaultAsync();
+
+            if (image != null)
+            {
+                Image? imageData = await _fileHandlerService.GetImageAsync(image.Id);
+                image.ImageData = (imageData != null) ? imageData.ImageData : "";
+            }
+
             return image;
         }
 
