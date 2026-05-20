@@ -97,8 +97,8 @@ builder.Services.AddSingleton(blobServiceClient);
 builder.Services.AddScoped<FileHandlingService>();
 builder.Services.AddScoped<DatabaseHandlingService>();
 
-
-
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IFirebaseHandler, FirebaseHandler>();
 
 
 // builder.Services.AddHttpClient<IImageAnalysisService, GeminiImageAnalysisService>();

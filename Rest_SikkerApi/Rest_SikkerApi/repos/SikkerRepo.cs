@@ -86,8 +86,12 @@ namespace Rest_SikkerApi.repos
 
         // Failure occurs Azure.RequestFailedException. Multiple failures occur, an AggregateException will be thrown
         // Exceptions thrown (Azure.RequestFailedException, AggregateException)
-        public async Task<Image?> GetImageByIdAsync(int id)
+        public async Task<Image?> GetImageByIdAsync(int id, string uid)
         {
+            if (! await _databaseHandlingService.CheckIdUidMatch(id, uid))
+            {
+                throw new InvalidDataException("id or uid does not match the image");
+            }
             return await _fileHandlerService.GetImageAsync(id);
         }
 
@@ -136,6 +140,16 @@ namespace Rest_SikkerApi.repos
         public bool GetSystemState()
         {
             return _systemOnline;
+        }
+
+        public async Task<Image?> GetResentImage(string uid)
+        {
+            DateTime dateTime = DateTime.UtcNow;
+            Image? image = await _context.Images.Where(x => x.OwnerUid == uid)
+            .OrderBy(x => Math.Abs(
+                EF.Functions.DateDiffSecond(x.TimeStamp, dateTime)))
+            .FirstOrDefaultAsync();
+            return image;
         }
 
         public bool SetSystemState(bool state)

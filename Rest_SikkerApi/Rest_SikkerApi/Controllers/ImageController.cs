@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Rest_SikkerApi.repos;
 using Rest_SikkerApi.models;
+using Rest_SikkerApi.interfaces;
 namespace Rest_SikkerApi;
 
 [ApiController]
@@ -8,10 +9,12 @@ namespace Rest_SikkerApi;
 public class ImageController : ControllerBase
 {
     private readonly SikkerRepo m_repo;
+    private readonly IFirebaseHandler _firebaseHandler;
 
-    public ImageController(SikkerRepo repo)
+    public ImageController(SikkerRepo repo, IFirebaseHandler firebaseHandler)
     {
         m_repo = repo;
+        _firebaseHandler = firebaseHandler;
     }
 
     // if id is provided, get images after that id, otherwise get the latest images.
@@ -53,9 +56,27 @@ public class ImageController : ControllerBase
         return Ok(images);
     }
 
+    [HttpGet]
+    [ProducesResponseType (StatusCodes.Status200OK)]
+    [ProducesResponseType (StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> Get()
+    {
+        string uid = await _firebaseHandler.GetFirebaseUidAsync();
+        Image? image = await m_repo.GetResentImage(uid);
+
+        if (image == null)
+        {
+            return NoContent();
+        }
+        return Ok(image);
+    }
+
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Get(int id)
     {
         Image? image;
@@ -65,13 +86,19 @@ public class ImageController : ControllerBase
             {
                 return BadRequest("ID must be a positive integer.");
             }
-            image = await m_repo.GetImageByIdAsync(id);
+            string uid = await _firebaseHandler.GetFirebaseUidAsync();
+            image = await m_repo.GetImageByIdAsync(id, uid);
         }
-        catch (Exception ex) when (ex is Azure.RequestFailedException || ex is AggregateException || ex is FormatException)
+        catch (Exception ex) when (ex is Azure.RequestFailedException || ex is AggregateException || ex is FormatException ||
+        ex is InvalidOperationException)
         {
             if (ex is FormatException)
             {
                 return BadRequest("ID must be a valid number."); 
+            }
+            else if (ex is InvalidDataException)
+            {
+                return Forbid();
             }
             else
             {
