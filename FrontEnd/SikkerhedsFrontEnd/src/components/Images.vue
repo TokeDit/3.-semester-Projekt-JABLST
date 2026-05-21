@@ -21,8 +21,7 @@
 
 <script>
   import AppSidebar from './Sidebar.vue'
-  import { auth } from '../firebase'
-  import { onAuthStatChanged } from '../firebase/auth'
+  import { auth, onAuthStateChanged } from '../firebase'
 
   const baseUrl = 'https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/Image/images'
 
@@ -56,10 +55,9 @@
       window.addEventListener('scroll', this.handleScroll)
       window.addEventListener('wheel', this.handleScroll, { passive: true })
       window.addEventListener('touchmove', this.handleScroll, { passive: true })
-      this.unsubscribeAuth = onAuthStatChanged(auth, async (user) => {
-        if (user)
-        {
-          this.authToken = user.getIdToken()
+      this.unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          this.authToken = await user.getIdToken()
           this.getImagesStartup(this.loadImagesCount)
         }
       })
@@ -69,9 +67,7 @@
       window.removeEventListener('scroll', this.handleScroll)
       window.removeEventListener('wheel', this.handleScroll, { passive: true })
       window.removeEventListener('touchmove', this.handleScroll, { passive: true })
-      if (this.unsubscribeAuth) {
-        this.unsubscribeAuth()
-      }
+      if (this.unsubscribeAuth) this.unsubscribeAuth()
     },
 
     methods: {
@@ -99,7 +95,9 @@
             url.searchParams.set('amount', amount);
           }
 
-          const response = await fetch(url, {headers: {Authorization: `Bearer ${this.authToken}`}});
+          const response = await fetch(url, {
+            headers: { Authorization: `Bearer ${this.authToken}` }
+          });
 
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`)

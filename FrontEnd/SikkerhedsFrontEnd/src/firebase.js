@@ -16,6 +16,7 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase services
 export const auth = getAuth(app);
+export { onAuthStateChanged };
 
 // Log JWT token when user is logged in
 onAuthStateChanged(auth, async (user) => {
