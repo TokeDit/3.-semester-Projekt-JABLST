@@ -35,4 +35,9 @@ public class DatabaseHandlingService
 	{
 		return _context.Images.Where(i => i.Id < id && i.OwnerUid == uid).OrderByDescending(i => i.Id).Take(amount);
 	}
+
+	public IEnumerable<Image> GetAmountImage(string uid, int amount)
+	{
+		return _context.Images.Where(i => i.OwnerUid == uid).OrderByDescending(i => i.Id).Take(amount);
+	}
 }

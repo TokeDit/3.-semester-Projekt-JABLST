@@ -69,7 +69,7 @@ public class ImageController : ControllerBase
         }
         else
         {
-            images = m_repo.GetAmountImage(uid, amount);
+            images = await m_repo.GetAmountImageAsync(uid, amount);
         }
 
         if (images.Count() == 0)
