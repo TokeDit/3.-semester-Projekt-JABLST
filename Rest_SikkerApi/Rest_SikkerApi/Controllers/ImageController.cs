@@ -30,24 +30,27 @@ public class ImageController : ControllerBase
     [ProducesResponseType (StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetFixedAmount([FromQuery] int? id, [FromQuery] int amount = 20)
     {
-        string uid = "";
+        string uid = string.Empty;
         try
         {
             uid = await _firebaseHandler.GetFirebaseUidAsync();
         }
-        // catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentNullException)
-        catch
+        catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentNullException)
         {
-            return BadRequest("you have a small pp");
-            // if (ex is InvalidOperationException)
-            // {
-            //     return StatusCode(StatusCodes.Status500InternalServerError);
-            // }
+            if (ex is InvalidOperationException)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
 
-            // if (ex is ArgumentNullException)
-            // {
-            //     return Unauthorized("User must have a valid firebase uid");
-            // }
+            if (ex is ArgumentNullException)
+            {
+                return Unauthorized("User must have a valid firebase uid");
+            }
+        }
+
+        if (uid == string.Empty)
+        {
+            return Unauthorized("User must have a valid firebase uid");
         }
 
         if (amount < 0)
