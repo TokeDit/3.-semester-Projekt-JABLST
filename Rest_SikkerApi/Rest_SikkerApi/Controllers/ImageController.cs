@@ -25,6 +25,9 @@ public class ImageController : ControllerBase
     [ProducesResponseType (StatusCodes.Status200OK)]
     [ProducesResponseType (StatusCodes.Status204NoContent)]
     [ProducesResponseType (StatusCodes.Status404NotFound)]
+    [ProducesResponseType (StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType (StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType (StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetFixedAmount([FromQuery] int? id, [FromQuery] int amount = 20)
     {
         string uid = "";
