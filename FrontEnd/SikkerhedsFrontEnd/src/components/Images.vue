@@ -6,7 +6,7 @@
       <div v-else class="images-grid">
         <div v-for="(image, index) in images" :key="index" class="image-card">
           <button type="button" class="image-button">
-            <img :src="`data:image/jpeg;base64,${image.imageDataBase64}`" :alt="'Image ' + (index + 1)" />
+            <img :src="`data:image/jpeg;base64,${image.imageData}`" :alt="'Image ' + (index + 1)" />
           </button>
         </div>
       </div>
