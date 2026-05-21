@@ -119,9 +119,26 @@ namespace Rest_SikkerApi.repos
             return await _context.Users.FirstOrDefaultAsync(u => u.TelegramChatId == telegramChatId);
         }
 
-        public IEnumerable<Image> GetAmountImage(string uid, int amount = 20)
+        public async Task<IEnumerable<Image>> GetAmountImageAsync(string uid, int amount = 20)
         {
-            return _context.Images.Where(i => i.OwnerUid == uid).OrderByDescending(i => i.Id).Take(amount);
+            IEnumerable<Image> images = _databaseHandlingService.GetAmountImage(uid, amount);
+            foreach (Image image in images)
+            {
+                try
+                {
+                    Image? imageData = await _fileHandlerService.GetImageAsync(image.Id);
+
+                    if (imageData != null)
+                    {
+                        image.ImageData = imageData.ImageData;
+                    }
+                }
+                catch (ArgumentNullException)
+                {
+                    Console.WriteLine("Image is not base64 convertable");
+                }
+            }
+            return images;
         }
 
         public IEnumerable<Image> GetAfterIDImage(int id, int amount = 20)
