@@ -35,17 +35,19 @@ public class ImageController : ControllerBase
         {
             uid = await _firebaseHandler.GetFirebaseUidAsync();
         }
-        catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentNullException)
+        // catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentNullException)
+        catch
         {
-            if (ex is InvalidOperationException)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            return BadRequest("you have a small pp");
+            // if (ex is InvalidOperationException)
+            // {
+            //     return StatusCode(StatusCodes.Status500InternalServerError);
+            // }
 
-            if (ex is ArgumentNullException)
-            {
-                return Unauthorized("User must have a valid firebase uid");
-            }
+            // if (ex is ArgumentNullException)
+            // {
+            //     return Unauthorized("User must have a valid firebase uid");
+            // }
         }
 
         if (amount < 0)
