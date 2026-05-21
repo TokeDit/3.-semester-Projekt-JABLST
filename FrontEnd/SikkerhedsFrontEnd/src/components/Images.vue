@@ -20,8 +20,9 @@
 
 
 <script>
-  import { ref, onMounted } from 'vue'
   import AppSidebar from './Sidebar.vue'
+  import { auth } from '../firebase'
+  import { onAuthStatChanged } from '../firebase/auth'
 
   const baseUrl = 'https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/Image/images'
 
@@ -41,7 +42,9 @@
         loadImagesCount: 20,
         test: [],
         startTime: new Date(),
-        endTime: new Date()
+        endTime: new Date(),
+        authToken: null,
+        unsubscribeAuth: null
       }
     },
 
@@ -50,16 +53,25 @@
     },
 
     mounted() {
-      // window.addEventListener('scroll', this.handleScroll)
-      // window.addEventListener('wheel', this.handleScroll, { passive: true })
-      // window.addEventListener('touchmove', this.handleScroll, { passive: true })
-      // this.getImagesStartup(this.loadImagesCount)
+      window.addEventListener('scroll', this.handleScroll)
+      window.addEventListener('wheel', this.handleScroll, { passive: true })
+      window.addEventListener('touchmove', this.handleScroll, { passive: true })
+      this.unsubscribeAuth = onAuthStatChanged(auth, async (user) => {
+        if (user)
+        {
+          this.authToken = user.getIdToken()
+          this.getImagesStartup(this.loadImagesCount)
+        }
+      })
     },
 
     beforeUnmount() {
-      // window.removeEventListener('scroll', this.handleScroll)
-      // window.removeEventListener('wheel', this.handleScroll, { passive: true })
-      // window.removeEventListener('touchmove', this.handleScroll, { passive: true })
+      window.removeEventListener('scroll', this.handleScroll)
+      window.removeEventListener('wheel', this.handleScroll, { passive: true })
+      window.removeEventListener('touchmove', this.handleScroll, { passive: true })
+      if (this.unsubscribeAuth) {
+        this.unsubscribeAuth()
+      }
     },
 
     methods: {
@@ -87,7 +99,7 @@
             url.searchParams.set('amount', amount);
           }
 
-          const response = await fetch(url);
+          const response = await fetch(url, {headers: {Authorization: `Bearer ${this.authToken}`}});
 
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`)
