@@ -23,7 +23,7 @@
   import { ref, onMounted } from 'vue'
   import AppSidebar from './Sidebar.vue'
 
-  const baseUrl = 'https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/image'
+  const baseUrl = 'https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/Image/images'
 
   export default {
     name: 'Images',
