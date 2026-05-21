@@ -30,4 +30,9 @@ public class DatabaseHandlingService
 		}
 		return true;
 	}
+
+	public IEnumerable<Image> GetBeforeIDImage(string uid, int id, int amount = 20)
+	{
+		return _context.Images.Where(i => i.Id < id && i.OwnerUid == uid).OrderByDescending(i => i.Id).Take(amount);
+	}
 }
