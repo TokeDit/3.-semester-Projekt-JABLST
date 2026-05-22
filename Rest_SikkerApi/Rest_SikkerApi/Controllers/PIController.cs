@@ -30,6 +30,7 @@ public class PIController : ControllerBase
     [Consumes("application/json")]
     public async Task<IActionResult> Post([FromBody] Image image)
     {
+
         try
         {
             if (image is null || image.ImageData.Length == 0)
