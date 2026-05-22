@@ -1,4 +1,4 @@
-﻿using System.Data.Entity;
+﻿using Microsoft.EntityFrameworkCore;
 using Rest_SikkerApi.data;
 using Rest_SikkerApi.models;
 using Rest_SikkerApi.repos;
@@ -28,6 +28,26 @@ public class DatabaseHandlingService
 		{
 			return false;
 		}
+		return true;
+	}
+
+	public async Task<bool> CheckIfUserExist(string uid)
+	{
+		User? user = null;
+		try
+		{
+			user = await _context.Users.FirstOrDefaultAsync(u => u.OwnerUid == uid);
+		}
+		catch (ArgumentNullException)
+		{
+			return false;
+		}
+
+		if (user == null)
+		{
+			return false;
+		}
+		
 		return true;
 	}
 

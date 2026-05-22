@@ -21,6 +21,7 @@ namespace Rest_SikkerApi.repos
         Task<IEnumerable<Image>> GetAmountImageAsync(string uid, int amount = 20);
         IEnumerable<Image> GetAfterIDImage(int id, int amount = 20);
         Task<IEnumerable<Image>> GetBeforeIDImageAsync(string uid, int id, int amount = 20);
+        Task<bool> CheckIfUserExist(string uid);
 
         bool GetSystemState();
         bool SetSystemState(bool state);

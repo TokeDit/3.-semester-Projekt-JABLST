@@ -21,8 +21,7 @@
 
 <script>
   import AppSidebar from './Sidebar.vue'
-  import { auth } from '../firebase'
-  import { onAuthStatChanged } from '../firebase/auth'
+  import { auth, onAuthStateChanged } from '../firebase'
 
   const baseUrl = 'https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/Image/images'
 
