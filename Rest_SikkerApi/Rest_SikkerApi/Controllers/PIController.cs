@@ -41,7 +41,19 @@ public class PIController : ControllerBase
             
             if (string.IsNullOrWhiteSpace(firebaseUid))
             {
-                return BadRequest("No firebase id found");
+                return Unauthorized("No firebase id found");
+            }
+
+            try
+            {
+                if (!await _repo.CheckIfUserExist(firebaseUid))
+                {
+                    return Unauthorized("No firebase id found");
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(500, "could not connect to the database");
             }
 
             await _repo.SaveImageAsync(image);

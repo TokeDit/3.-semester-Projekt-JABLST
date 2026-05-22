@@ -65,6 +65,11 @@ namespace Rest_SikkerApi.repos
             return user;
         }
 
+        public async Task<bool> CheckIfUserExist(string uid)
+        {
+            return await _databaseHandlingService.CheckIfUserExist(uid);
+        }
+
         public async Task<Image> SaveImageAsync(Image imageEntity)
         {
             await _databaseHandlingService.SaveImageAsync(imageEntity);

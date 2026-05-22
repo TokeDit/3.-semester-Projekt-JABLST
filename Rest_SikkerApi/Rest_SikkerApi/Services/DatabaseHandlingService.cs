@@ -31,6 +31,26 @@ public class DatabaseHandlingService
 		return true;
 	}
 
+	public async Task<bool> CheckIfUserExist(string uid)
+	{
+		User? user = null;
+		try
+		{
+			user = await _context.Users.FirstOrDefaultAsync(u => u.OwnerUid == uid);
+		}
+		catch (ArgumentNullException)
+		{
+			return false;
+		}
+
+		if (user == null)
+		{
+			return false;
+		}
+		
+		return true;
+	}
+
 	public IEnumerable<Image> GetBeforeIDImage(string uid, int id, int amount = 20)
 	{
 		return _context.Images.Where(i => i.Id < id && i.OwnerUid == uid).OrderByDescending(i => i.Id).Take(amount);
