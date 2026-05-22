@@ -91,10 +91,10 @@ def send_to_api(frame, timestamp, confidence):
         return False
 
     image_b64 = base64.b64encode(buffer.tobytes()).decode("utf-8")
-    timestamp = datetime.now(timezone.utc)
+    timestamp = datetime.datetime.now(timezone.utc)
 
     payload = {
-        "ImageDataBase64": image_b64,
+        "ImageData": image_b64,
         "ImageType": "image/jpeg",
         "Description": "person",
         "DetectedObject": "person",
