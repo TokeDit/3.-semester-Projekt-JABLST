@@ -91,7 +91,7 @@ namespace TestAPI
         }
 
         [Fact]
-        public async Task Post_Returns400_WhenFirebaseUidIsEmpty()
+        public async Task Post_Returns401_WhenFirebaseUidIsEmpty()
         {
             var firebaseMock = new Mock<IFirebaseHandler>();
             firebaseMock.Setup(f => f.GetFirebaseUidAsync()).ReturnsAsync(string.Empty);
@@ -102,7 +102,7 @@ namespace TestAPI
 
             var result = await controller.Post(image);
 
-            Assert.IsType<BadRequestObjectResult>(result);
+            Assert.IsType<UnauthorizedResult>(result);
         }
     }
 
