@@ -30,7 +30,7 @@ public class PIController : ControllerBase
     [Consumes("application/json")]
     public async Task<IActionResult> Post([FromBody] Image image)
     {
-        string firebaseUid = await _firebaseHandler.GetFirebaseUidAsync();
+        // string firebaseUid = await _firebaseHandler.GetFirebaseUidAsync();
         try
         {
             if (image is null || image.ImageData.Length == 0)
@@ -45,7 +45,7 @@ public class PIController : ControllerBase
 
             try
             {
-                if (!await _repo.CheckIfUserExist(firebaseUid))
+                if (!await _repo.CheckIfUserExist(image.OwnerUid))
                 {
                     return Unauthorized("No firebase id found");
                 }
