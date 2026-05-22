@@ -52,68 +52,69 @@
     },
 
     mounted() {
-      window.addEventListener('scroll', this.handleScroll)
-      window.addEventListener('wheel', this.handleScroll, { passive: true })
-      window.addEventListener('touchmove', this.handleScroll, { passive: true })
-      this.unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          this.authToken = await user.getIdToken()
-          this.getImagesStartup(this.loadImagesCount)
-        }
-      })
+      // window.addEventListener('scroll', this.handleScroll)
+      // window.addEventListener('wheel', this.handleScroll, { passive: true })
+      // window.addEventListener('touchmove', this.handleScroll, { passive: true })
+      // this.unsubscribeAuth = onAuthStatChanged(auth, async (user) => {
+      //   if (user)
+      //   {
+      //     this.authToken = user.getIdToken()
+      //     this.getImagesStartup(this.loadImagesCount)
+      //   }
+      // })
     },
 
     beforeUnmount() {
-      window.removeEventListener('scroll', this.handleScroll)
-      window.removeEventListener('wheel', this.handleScroll, { passive: true })
-      window.removeEventListener('touchmove', this.handleScroll, { passive: true })
-      if (this.unsubscribeAuth) this.unsubscribeAuth()
+      // window.removeEventListener('scroll', this.handleScroll)
+      // window.removeEventListener('wheel', this.handleScroll, { passive: true })
+      // window.removeEventListener('touchmove', this.handleScroll, { passive: true })
+      // if (this.unsubscribeAuth) {
+      //   this.unsubscribeAuth()
+      // }
     },
 
     methods: {
 
       async getImages(id, amount) {
-        if (this.noMoreImages) {
-          this.endTime = new Date()
-          const timeDiff = (this.endTime - this.startTime) / 1000
-          if (timeDiff > 10) {
-            this.noMoreImages = false
-          } else {
-            return
-          }
-        }
+        // if (this.noMoreImages) {
+        //   this.endTime = new Date()
+        //   const timeDiff = (this.endTime - this.startTime) / 1000
+        //   if (timeDiff > 10) {
+        //     this.noMoreImages = false
+        //   } else {
+        //     return
+        //   }
+        // }
 
-        this.isLoading = true
-        this.error = null
+        // this.isLoading = true
+        // this.error = null
 
-        try {
-          const url = new URL(baseUrl)
+        // try {
+        //   const url = new URL(baseUrl)
 
-          if (!this.noMoreImages)
-          {
-            url.searchParams.set('id', id);
-            url.searchParams.set('amount', amount);
-          }
+        //   if (!this.noMoreImages)
+        //   {
+        //     url.searchParams.set('id', id);
+        //     url.searchParams.set('amount', amount);
+        //   }
 
-          const response = await fetch(url, {
-            headers: { Authorization: `Bearer ${this.authToken}` }
-          });
+        //   const response = await fetch(url, {headers: {Authorization: `Bearer ${this.authToken}`}});
 
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-          }
-          const data = await response.json()
-          this.images = this.images.concat(data || [])
-          // this.noMoreImages = data.length < amount ? true : false;
-        } catch (err) {
-          this.error = 'Failed to load images: ' + err.message
-          if (err.message.includes('404')) {
-            this.noMoreImages = true
-            this.startTime = new Date()
-          }
-        } finally {
-          this.isLoading = false
-        }
+        //   if (!response.ok) {
+        //     throw new Error(`HTTP error! status: ${response.status}`)
+        //   }
+        //   const data = await response.json()
+        //   this.images = this.images.concat(data || [])
+        //   // this.noMoreImages = data.length < amount ? true : false;
+        // } catch (err) {
+        //   this.error = 'Failed to load images: ' + err.message
+        //   if (err.message.includes('404')) {
+        //     this.noMoreImages = true
+        //     this.startTime = new Date()
+        //   }
+        // } finally {
+        //   this.isLoading = false
+        // }
       },
 
       async getImagesStartup(amount) {
