@@ -1,457 +1,310 @@
-﻿// using Azure.Storage.Blobs;
-// using Microsoft.EntityFrameworkCore;
-// using Moq;
-// using Rest_SikkerApi;
-// using Rest_SikkerApi.data;
-// using Rest_SikkerApi.models;
-// using Rest_SikkerApi.repos;
+using Azure.Storage.Blobs;
+using Microsoft.EntityFrameworkCore;
+using Moq;
+using Rest_SikkerApi;
+using Rest_SikkerApi.data;
+using Rest_SikkerApi.models;
+using Rest_SikkerApi.repos;
 
-// namespace TestAPI
-// {
-//     public class TestSikkerRepo
-//     {
-//         private DbContextOptions<AppDbContext> CreateInMemoryDatabaseOptions()
-//         {
-//             return new DbContextOptionsBuilder<AppDbContext>()
-//                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-//                 .Options;
-//         }
+namespace TestAPI
+{
+    public class TestSikkerRepo
+    {
+        private static DbContextOptions<AppDbContext> CreateInMemoryOptions() =>
+            new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
 
-//         private BlobServiceClient CreateMockedBlobServiceClient()
-//         {
-//             var mockBlobServiceClient = new Mock<BlobServiceClient>();
-//             return mockBlobServiceClient.Object;
-//         }
+        private static (Mock<BlobServiceClient> blob, Mock<BlobContainerClient> container) CreateMockedBlob()
+        {
+            var container = new Mock<BlobContainerClient>();
+            var blob = new Mock<BlobServiceClient>();
+            blob.Setup(c => c.GetBlobContainerClient(It.IsAny<string>())).Returns(container.Object);
+            return (blob, container);
+        }
 
-//         [Fact]
-//         public async Task SaveImageAsync_ShouldSaveImageToDatabase()
-//         {
-//             // Arrange
-//             var options = CreateInMemoryDatabaseOptions();
-//             using var context = new AppDbContext(options);
-//             var blobServiceClient = CreateMockedBlobServiceClient();
-//             var fileHandlingService = new FileHandlingService(blobServiceClient);
-//             var databaseHandlingService = new DatabaseHandlingService(context);
-//             var repo = new SikkerRepo(context, blobServiceClient, fileHandlingService, databaseHandlingService);
+        private static (SikkerRepo repo, AppDbContext context) CreateRepo()
+        {
+            var options = CreateInMemoryOptions();
+            var context = new AppDbContext(options);
+            var (blobMock, _) = CreateMockedBlob();
+            var fileHandlingService = new FileHandlingService(blobMock.Object);
+            var dbHandlingService = new DatabaseHandlingService(context);
+            var repo = new SikkerRepo(context, blobMock.Object, fileHandlingService, dbHandlingService);
+            return (repo, context);
+        }
 
-//             var imageEntity = new Image
-//             {
-//                 Id = 1,
-//                 TimeStamp = DateTime.Parse("2026-04-29T10:00:00"),
-//                 ImageType = "image/jpeg",
-//                 Description = "Test image",
-//                 Confidence = 0.95f,
-//                 DetectedObject = "person",
-//                 OwnerUid = "user123"
-//             };
-//             imageEntity.SetImageBytes(new byte[] { 1, 2, 3, 4, 5 });
+        // --- SikkerRepo: GetAllImagesAsync ---
 
-//             // Act
-//             var result = await repo.SaveImageAsync(imageEntity);
+        [Fact]
+        public async Task GetAllImagesAsync_ReturnsEmpty_WhenNoImages()
+        {
+            var (repo, _) = CreateRepo();
+            var result = await repo.GetAllImagesAsync();
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
 
-//             // Assert
-//             Assert.NotNull(result);
-//             Assert.Equal(1, result.Id);
-//             Assert.Equal("2026-04-29T10:00:00", result.TimeStamp.ToString());
-//             Assert.Equal("image/jpeg", result.ImageType);
-//             Assert.Equal(new byte[] { 1, 2, 3, 4, 5 }, result.GetImageBytes());
-//             Assert.Equal("Test image", result.Description);
-//             Assert.Equal(0.95f, result.Confidence);
-//             Assert.Equal("person", result.DetectedObject);
-//             Assert.Equal("user123", result.OwnerUid);
+        [Fact]
+        public async Task GetAllImagesAsync_ReturnsAll_WhenImagesExist()
+        {
+            var (repo, context) = CreateRepo();
+            context.Images.AddRange(
+                new Image { Id = 1, TimeStamp = DateTime.UtcNow, ImageType = "image/jpeg", OwnerUid = "uid1" },
+                new Image { Id = 2, TimeStamp = DateTime.UtcNow, ImageType = "image/png", OwnerUid = "uid2" }
+            );
+            await context.SaveChangesAsync();
 
-//             // Verify it's actually in the database
-//             var savedImage = await context.Images.FindAsync(1);
-//             Assert.NotNull(savedImage);
-//             Assert.Equal(1, savedImage.Id);
-//         }
+            var result = await repo.GetAllImagesAsync();
+            Assert.Equal(2, result.Count);
+        }
 
-//         [Fact]
-//         public async Task SaveImageAsync_ShouldReturnImageWithAllProperties()
-//         {
-//             // Arrange
-//             var options = CreateInMemoryDatabaseOptions();
-//             using var context = new AppDbContext(options);
-//             var blobServiceClient = CreateMockedBlobServiceClient();
-//             var fileHandlingService = new FileHandlingService(blobServiceClient);
-//             var databaseHandlingService = new DatabaseHandlingService(context);
-//             var repo = new SikkerRepo(context, blobServiceClient, fileHandlingService, databaseHandlingService);
+        // --- SikkerRepo: SaveUserAsync ---
 
-//             var imageEntity = new Image
-//             {
-//                 Id = 2,
-//                 TimeStamp = DateTime.Parse("2026-04-29T11:30:00"),
-//                 ImageType = "image/png",
-//                 Description = "Another test image",
-//                 Confidence = 0.85f,
-//                 DetectedObject = "car",
-//                 OwnerUid = "user456"
-//             };
-//             imageEntity.SetImageBytes(new byte[] { 10, 20, 30 });
+        [Fact]
+        public async Task SaveUserAsync_PersistsUser()
+        {
+            var (repo, context) = CreateRepo();
+            var user = new User { OwnerUid = "firebase-uid-1", TelegramChatId = null };
 
-//             // Act
-//             var result = await repo.SaveImageAsync(imageEntity);
+            await repo.SaveUserAsync(user);
 
-//             // Assert
-//             Assert.Same(imageEntity, result);
-//         }
+            var saved = await context.Users.FindAsync("firebase-uid-1");
+            Assert.NotNull(saved);
+            Assert.Equal("firebase-uid-1", saved.OwnerUid);
+        }
 
-//         [Fact]
-//         public async Task GetAllImagesAsync_ShouldReturnEmptyList_WhenNoImagesExist()
-//         {
-//             // Arrange
-//             var options = CreateInMemoryDatabaseOptions();
-//             using var context = new AppDbContext(options);
-//             var blobServiceClient = CreateMockedBlobServiceClient();
-//             var fileHandlingService = new FileHandlingService(blobServiceClient);
-//             var databaseHandlingService = new DatabaseHandlingService(context);
-//             var repo = new SikkerRepo(context, blobServiceClient, fileHandlingService, databaseHandlingService);
+        // --- SikkerRepo: GetUserByFirebaseIdAsync ---
 
-//             // Act
-//             var result = await repo.GetAllImagesAsync();
+        [Fact]
+        public async Task GetUserByFirebaseIdAsync_ReturnsUser_WhenExists()
+        {
+            var (repo, context) = CreateRepo();
+            context.Users.Add(new User { OwnerUid = "uid-abc", TelegramChatId = "12345" });
+            await context.SaveChangesAsync();
 
-//             // Assert
-//             Assert.NotNull(result);
-//             Assert.Empty(result);
-//         }
+            var result = await repo.GetUserByFirebaseIdAsync("uid-abc");
+            Assert.NotNull(result);
+            Assert.Equal("12345", result!.TelegramChatId);
+        }
 
-//         [Fact]
-//         public async Task GetAllImagesAsync_ShouldReturnSingleImage_WhenOneImageExists()
-//         {
-//             // Arrange
-//             var options = CreateInMemoryDatabaseOptions();
-//             using var context = new AppDbContext(options);
-//             var blobServiceClient = CreateMockedBlobServiceClient();
-//             var fileHandlingService = new FileHandlingService(blobServiceClient);
-//             var databaseHandlingService = new DatabaseHandlingService(context);
-//             var repo = new SikkerRepo(context, blobServiceClient, fileHandlingService, databaseHandlingService);
+        [Fact]
+        public async Task GetUserByFirebaseIdAsync_ReturnsNull_WhenNotFound()
+        {
+            var (repo, _) = CreateRepo();
+            var result = await repo.GetUserByFirebaseIdAsync("nonexistent-uid");
+            Assert.Null(result);
+        }
 
-//             var imageEntity = new Image
-//             {
-//                 Id = 69,
-//                 TimeStamp = DateTime.Parse("2026-04-29T12:00:00"),
-//                 ImageType = "image/gif",
-//                 Description = "Single image",
-//                 Confidence = 0.78f,
-//                 DetectedObject = "dog",
-//                 OwnerUid = "user789"
-//             };
-//             imageEntity.SetImageBytes(new byte[] { 5, 10, 15 });
-//             await repo.SaveImageAsync(imageEntity);
+        // --- SikkerRepo: UpdateUserChatIdAsync ---
 
-//             // Act
-//             var result = await repo.GetAllImagesAsync();
+        [Fact]
+        public async Task UpdateUserChatIdAsync_ReturnsFalse_WhenUserNotFound()
+        {
+            var (repo, _) = CreateRepo();
+            var result = await repo.UpdateUserChatIdAsync("no-such-uid", "999");
+            Assert.False(result);
+        }
 
-//             // Assert
-//             Assert.NotNull(result);
-//             Assert.Single(result);
-//             Assert.Equal(69, result[0].Id);
-//             Assert.Equal("2026-04-29T12:00:00", result[0].TimeStamp.ToString());
-//             Assert.Equal(0.78f, result[0].Confidence);
-//             Assert.Equal("dog", result[0].DetectedObject);
-//             Assert.Equal("user789", result[0].OwnerUid);
-//         }
+        [Fact]
+        public async Task UpdateUserChatIdAsync_UpdatesChatId_WhenUserExists()
+        {
+            var (repo, context) = CreateRepo();
+            context.Users.Add(new User { OwnerUid = "uid-xyz" });
+            await context.SaveChangesAsync();
 
-//         [Fact]
-//         public async Task GetAllImagesAsync_ShouldReturnAllImages_WhenMultipleImagesExist()
-//         {
-//             // Arrange
-//             var options = CreateInMemoryDatabaseOptions();
-//             using var context = new AppDbContext(options);
-//             var blobServiceClient = CreateMockedBlobServiceClient();
-//             var fileHandlingService = new FileHandlingService(blobServiceClient);
-//             var databaseHandlingService = new DatabaseHandlingService(context);
-//             var repo = new SikkerRepo(context, blobServiceClient, fileHandlingService, databaseHandlingService);
+            var result = await repo.UpdateUserChatIdAsync("uid-xyz", "777777");
 
-//             var image1 = new Image
-//             {
-//                 Id = 1,
-//                 TimeStamp = DateTime.Parse("2026-04-29T13:00:00"),
-//                 ImageType = "image/jpeg",
-//                 Description = "First image",
-//                 Confidence = 0.92f,
-//                 DetectedObject = "cat",
-//                 OwnerUid = "user001"
-//             };
-//             image1.SetImageBytes(new byte[] { 1, 2, 3 });
+            Assert.True(result);
+            var user = await context.Users.FindAsync("uid-xyz");
+            Assert.Equal("777777", user!.TelegramChatId);
+        }
 
-//             var image2 = new Image
-//             {
-//                 Id = 2,
-//                 TimeStamp = DateTime.Parse("2026-04-29T14:00:00"),
-//                 ImageType = "image/png",
-//                 Description = "Second image",
-//                 Confidence = 0.88f,
-//                 DetectedObject = "bird",
-//                 OwnerUid = "user002"
-//             };
-//             image2.SetImageBytes(new byte[] { 4, 5, 6 });
+        // --- SikkerRepo: GetUserByChatIdAsync ---
 
-//             var image3 = new Image
-//             {
-//                 Id = 3,
-//                 TimeStamp = DateTime.Parse("2026-04-29T15:00:00"),
-//                 ImageType = "image/webp",
-//                 Description = "Third image",
-//                 Confidence = 0.75f,
-//                 DetectedObject = "bicycle",
-//                 OwnerUid = "user003"
-//             };
-//             image3.SetImageBytes(new byte[] { 7, 8, 9 });
+        [Fact]
+        public async Task GetUserByChatIdAsync_ReturnsUser_WhenChatIdMatches()
+        {
+            var (repo, context) = CreateRepo();
+            context.Users.Add(new User { OwnerUid = "uid-chat", TelegramChatId = "555" });
+            await context.SaveChangesAsync();
 
-//             await repo.SaveImageAsync(image1);
-//             await repo.SaveImageAsync(image2);
-//             await repo.SaveImageAsync(image3);
+            var result = await repo.GetUserByChatIdAsync("555");
+            Assert.NotNull(result);
+            Assert.Equal("uid-chat", result!.OwnerUid);
+        }
 
-//             // Act
-//             var result = await repo.GetAllImagesAsync();
+        [Fact]
+        public async Task GetUserByChatIdAsync_ReturnsNull_WhenNoMatch()
+        {
+            var (repo, _) = CreateRepo();
+            var result = await repo.GetUserByChatIdAsync("no-such-chat-id");
+            Assert.Null(result);
+        }
 
-//             // Assert
-//             Assert.NotNull(result);
-//             Assert.Equal(3, result.Count);
-//             Assert.Contains(result, i => i.Id == 1);
-//             Assert.Contains(result, i => i.Id == 2);
-//             Assert.Contains(result, i => i.Id == 3);
-//         }
+        // --- SikkerRepo: GetSystemState / SetSystemState ---
 
-//         [Fact]
-//         public async Task GetAllImagesAsync_ShouldReturnImagesWithCorrectData()
-//         {
-//             // Arrange
-//             var options = CreateInMemoryDatabaseOptions();
-//             using var context = new AppDbContext(options);
-//             var blobServiceClient = CreateMockedBlobServiceClient();
-//             var fileHandlingService = new FileHandlingService(blobServiceClient);
-//             var databaseHandlingService = new DatabaseHandlingService(context);
-//             var repo = new SikkerRepo(context, blobServiceClient, fileHandlingService, databaseHandlingService);
+        [Fact]
+        public void SetSystemState_True_ThenGetSystemState_ReturnsTrue()
+        {
+            var (repo, _) = CreateRepo();
+            repo.SetSystemState(true);
+            Assert.True(repo.GetSystemState());
+            repo.SetSystemState(false); // reset static field
+        }
 
-//             var expectedImageData = new byte[] { 100, 101, 102, 103 };
-//             var imageEntity = new Image
-//             {
-//                 Id = 1,
-//                 TimeStamp = DateTime.Parse("2026-04-29T16:00:00"),
-//                 ImageType = "image/bmp",
-//                 Description = "Data validation test",
-//                 Confidence = 0.99f,
-//                 DetectedObject = "truck",
-//                 OwnerUid = "user999"
-//             };
-//             imageEntity.SetImageBytes(expectedImageData);
-//             await repo.SaveImageAsync(imageEntity);
+        [Fact]
+        public void SetSystemState_False_ThenGetSystemState_ReturnsFalse()
+        {
+            var (repo, _) = CreateRepo();
+            repo.SetSystemState(false);
+            Assert.False(repo.GetSystemState());
+        }
 
-//             // Act
-//             var result = await repo.GetAllImagesAsync();
+        [Fact]
+        public void SetSystemState_ReturnsUpdatedState()
+        {
+            var (repo, _) = CreateRepo();
+            Assert.True(repo.SetSystemState(true));
+            Assert.False(repo.SetSystemState(false));
+        }
 
-//             // Assert
-//             var retrievedImage = result.First();
-//             Assert.Equal(expectedImageData, retrievedImage.GetImageBytes());
-//             Assert.Equal("Data validation test", retrievedImage.Description);
-//             Assert.Equal(0.99f, retrievedImage.Confidence);
-//             Assert.Equal("truck", retrievedImage.DetectedObject);
-//             Assert.Equal("user999", retrievedImage.OwnerUid);
-//         }
+        // --- SikkerRepo: GetImagesByOwnerUidAsync ---
 
-//         [Fact]
-//         public async Task SaveImageAsync_ShouldHandleEmptyImageData()
-//         {
-//             // Arrange
-//             var options = CreateInMemoryDatabaseOptions();
-//             using var context = new AppDbContext(options);
-//             var blobServiceClient = CreateMockedBlobServiceClient();
-//             var fileHandlingService = new FileHandlingService(blobServiceClient);
-//             var databaseHandlingService = new DatabaseHandlingService(context);
-//             var repo = new SikkerRepo(context, blobServiceClient, fileHandlingService, databaseHandlingService);
+        [Fact]
+        public async Task GetImagesByOwnerUidAsync_ReturnsOnlyMatchingOwner()
+        {
+            var (repo, context) = CreateRepo();
+            context.Images.AddRange(
+                new Image { Id = 10, TimeStamp = DateTime.UtcNow, ImageType = "image/jpeg", OwnerUid = "owner-A" },
+                new Image { Id = 11, TimeStamp = DateTime.UtcNow, ImageType = "image/jpeg", OwnerUid = "owner-B" },
+                new Image { Id = 12, TimeStamp = DateTime.UtcNow, ImageType = "image/jpeg", OwnerUid = "owner-A" }
+            );
+            await context.SaveChangesAsync();
 
-//             var imageEntity = new Image
-//             {
-//                 Id = 0,
-//                 TimeStamp = DateTime.Parse("2026-04-29T17:00:00"),
-//                 ImageType = "image/jpeg",
-//                 Description = "Empty data image",
-//                 Confidence = 0f,
-//                 DetectedObject = string.Empty,
-//                 OwnerUid = "user111"
-//             };
-//             imageEntity.SetImageBytes(Array.Empty<byte>());
+            var result = await repo.GetImagesByOwnerUidAsync("owner-A");
+            Assert.Equal(2, result.Count);
+            Assert.All(result, img => Assert.Equal("owner-A", img.OwnerUid));
+        }
 
-//             // Act
-//             var result = await repo.SaveImageAsync(imageEntity);
+        // --- SikkerRepo: GetUsersWithReportsEnabledAsync ---
 
-//             // Assert
-//             Assert.NotNull(result);
-//             Assert.Empty(result.ImageData);
-//             Assert.Equal(0f, result.Confidence);
-//         }
+        [Fact]
+        public async Task GetUsersWithReportsEnabledAsync_ReturnsOnlyEnabledWithChatId()
+        {
+            var (repo, context) = CreateRepo();
+            context.Users.AddRange(
+                new User { OwnerUid = "u1", TelegramChatId = "100", ReportEnabled = true },
+                new User { OwnerUid = "u2", TelegramChatId = null, ReportEnabled = true },
+                new User { OwnerUid = "u3", TelegramChatId = "200", ReportEnabled = false }
+            );
+            await context.SaveChangesAsync();
 
-//         [Fact]
-//         public async Task SaveImageAsync_ShouldHandleLargeImageData()
-//         {
-//             // Arrange
-//             var options = CreateInMemoryDatabaseOptions();
-//             using var context = new AppDbContext(options);
-//             var blobServiceClient = CreateMockedBlobServiceClient();
-//             var fileHandlingService = new FileHandlingService(blobServiceClient);
-//             var databaseHandlingService = new DatabaseHandlingService(context);
-//             var repo = new SikkerRepo(context, blobServiceClient, fileHandlingService, databaseHandlingService);
+            var result = await repo.GetUsersWithReportsEnabledAsync();
+            Assert.Single(result);
+            Assert.Equal("u1", result[0].OwnerUid);
+        }
 
-//             var largeImageData = new byte[1024 * 100]; // 100KB
-//             for (int i = 0; i < largeImageData.Length; i++)
-//             {
-//                 largeImageData[i] = (byte)(i % 256);
-//             }
+        // --- SikkerRepo: GetImagesByOwnerUidAndMonthAsync ---
 
-//             var imageEntity = new Image
-//             {
-//                 Id = 999,
-//                 TimeStamp = DateTime.Parse("2026-04-29T18:00:00"),
-//                 ImageType = "image/jpeg",
-//                 Description = "Large image test",
-//                 Confidence = 0.87f,
-//                 DetectedObject = "building",
-//                 OwnerUid = "user222"
-//             };
-//             imageEntity.SetImageBytes(largeImageData);
+        [Fact]
+        public async Task GetImagesByOwnerUidAndMonthAsync_FiltersCorrectly()
+        {
+            var (repo, context) = CreateRepo();
+            context.Images.AddRange(
+                new Image { Id = 20, TimeStamp = new DateTime(2026, 3, 15), ImageType = "image/jpeg", OwnerUid = "owner-X" },
+                new Image { Id = 21, TimeStamp = new DateTime(2026, 4, 10), ImageType = "image/jpeg", OwnerUid = "owner-X" },
+                new Image { Id = 22, TimeStamp = new DateTime(2026, 3, 20), ImageType = "image/jpeg", OwnerUid = "owner-X" }
+            );
+            await context.SaveChangesAsync();
 
-//             // Act
-//             var result = await repo.SaveImageAsync(imageEntity);
+            var result = await repo.GetImagesByOwnerUidAndMonthAsync("owner-X", 2026, 3);
+            Assert.Equal(2, result.Count);
+            Assert.All(result, img => Assert.Equal(3, img.TimeStamp.Month));
+        }
+    }
 
-//             // Assert
-//             Assert.NotNull(result);
-//             Assert.Equal(1024 * 100, result.ImageData.Length);
-//             Assert.Equal(0.87f, result.Confidence);
-//             Assert.Equal("building", result.DetectedObject);
-//         }
+    public class TestDatabaseHandlingService
+    {
+        private static DbContextOptions<AppDbContext> CreateInMemoryOptions() =>
+            new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
 
-//         [Fact]
-//         public async Task SaveImageAsync_ShouldHandleDefaultPropertyValues()
-//         {
-//             // Arrange
-//             var options = CreateInMemoryDatabaseOptions();
-//             using var context = new AppDbContext(options);
-//             var blobServiceClient = CreateMockedBlobServiceClient();
-//             var fileHandlingService = new FileHandlingService(blobServiceClient);
-//             var databaseHandlingService = new DatabaseHandlingService(context);
-//             var repo = new SikkerRepo(context, blobServiceClient, fileHandlingService, databaseHandlingService);
+        [Fact]
+        public async Task SaveImageAsync_SetsImagePathAndPersists()
+        {
+            var context = new AppDbContext(CreateInMemoryOptions());
+            var service = new DatabaseHandlingService(context);
+            var image = new Image { Id = 1, TimeStamp = DateTime.UtcNow, ImageType = "image/jpeg" };
 
-//             var imageEntity = new Image
-//             {
-//                 Id = 78,
-//                 TimeStamp = DateTime.Parse("2026-04-29T19:00:00"),
-//                 ImageType = "image/jpeg",
-//                 DetectedObject = "",
-//                 OwnerUid = ""
-//                 // Using default values for Description, Confidence, DetectedObject, OwnerUid
-//             };
-//             imageEntity.SetImageBytes(new byte[] { 1, 2, 3 });
+            await service.SaveImageAsync(image);
 
-//             // Act
-//             var result = await repo.SaveImageAsync(imageEntity);
+            var saved = await context.Images.FindAsync(1);
+            Assert.NotNull(saved);
+            Assert.Equal("images", saved!.ImagePath);
+        }
 
-//             // Assert
-//             Assert.NotNull(result);
-//             Assert.Equal(string.Empty, result.Description);
-//             Assert.Equal(0f, result.Confidence);
-//             Assert.Equal(string.Empty, result.DetectedObject);
-//             Assert.Equal(string.Empty, result.OwnerUid);
-//         }
+        [Fact]
+        public async Task CheckIdUidMatch_ReturnsFalse_WhenImageNotFound()
+        {
+            var context = new AppDbContext(CreateInMemoryOptions());
+            var service = new DatabaseHandlingService(context);
 
-//         [Fact]
-//         public async Task GetAllImagesAsync_ShouldFilterByOwnerUid()
-//         {
-//             // Arrange
-//             var options = CreateInMemoryDatabaseOptions();
-//             using var context = new AppDbContext(options);
-//             var blobServiceClient = CreateMockedBlobServiceClient();
-//             var fileHandlingService = new FileHandlingService(blobServiceClient);
-//             var databaseHandlingService = new DatabaseHandlingService(context);
-//             var repo = new SikkerRepo(context, blobServiceClient, fileHandlingService, databaseHandlingService);
+            var result = await service.CheckIdUidMatch(999, "some-uid");
+            Assert.False(result);
+        }
 
-//             var image1 = new Image
-//             {
-//                 Id = 1,
-//                 TimeStamp = DateTime.Parse("2026-04-29T20:00:00"),
-//                 ImageType = "image/jpeg",
-//                 OwnerUid = "owner1"
-//             };
-//             image1.SetImageBytes(new byte[] { 1 });
+        [Fact]
+        public async Task CheckIdUidMatch_ReturnsFalse_WhenUidMismatch()
+        {
+            var context = new AppDbContext(CreateInMemoryOptions());
+            var service = new DatabaseHandlingService(context);
+            context.Images.Add(new Image { Id = 5, TimeStamp = DateTime.UtcNow, ImageType = "image/jpeg", OwnerUid = "correct-uid" });
+            await context.SaveChangesAsync();
 
-//             var image2 = new Image
-//             {
-//                 Id = 2,
-//                 TimeStamp = DateTime.Parse("2026-04-29T20:10:00"),
-//                 ImageType = "image/jpeg",
-//                 OwnerUid = "owner2"
-//             };
-//             image2.SetImageBytes(new byte[] { 2 });
+            var result = await service.CheckIdUidMatch(5, "wrong-uid");
+            Assert.False(result);
+        }
 
-//             await repo.SaveImageAsync(image1);
-//             await repo.SaveImageAsync(image2);
+        [Fact]
+        public async Task CheckIdUidMatch_ReturnsTrue_WhenMatch()
+        {
+            var context = new AppDbContext(CreateInMemoryOptions());
+            var service = new DatabaseHandlingService(context);
+            context.Images.Add(new Image { Id = 7, TimeStamp = DateTime.UtcNow, ImageType = "image/jpeg", OwnerUid = "uid-7" });
+            await context.SaveChangesAsync();
 
-//             // Act
-//             var allImages = await repo.GetAllImagesAsync();
-//             var owner1Images = allImages.Where(i => i.OwnerUid == "owner1").ToList();
+            var result = await service.CheckIdUidMatch(7, "uid-7");
+            Assert.True(result);
+        }
 
-//             // Assert
-//             Assert.Single(owner1Images);
-//             Assert.Equal(1, owner1Images[0].Id);
-//         }
+        [Fact]
+        public async Task GetAmountImage_ReturnsCorrectCount()
+        {
+            var context = new AppDbContext(CreateInMemoryOptions());
+            var service = new DatabaseHandlingService(context);
+            for (int i = 1; i <= 5; i++)
+                context.Images.Add(new Image { Id = i, TimeStamp = DateTime.UtcNow, ImageType = "image/jpeg", OwnerUid = "uid-amt" });
+            await context.SaveChangesAsync();
 
-//         [Fact]
-//         public void GetSystemState_ShouldReturnFalseByDefault()
-//         {
-//             // Arrange
-//             var options = CreateInMemoryDatabaseOptions();
-//             using var context = new AppDbContext(options);
-//             var blobServiceClient = CreateMockedBlobServiceClient();
-//             var fileHandlingService = new FileHandlingService(blobServiceClient);
-//             var databaseHandlingService = new DatabaseHandlingService(context);
-//             var repo = new SikkerRepo(context, blobServiceClient, fileHandlingService, databaseHandlingService);
+            var result = service.GetAmountImage("uid-amt", 3).ToList();
+            Assert.Equal(3, result.Count);
+            Assert.All(result, img => Assert.Equal("uid-amt", img.OwnerUid));
+        }
 
-//             // Act
-//             var result = repo.GetSystemState();
+        [Fact]
+        public async Task GetBeforeIDImage_ReturnsImagesWithIdLessThan()
+        {
+            var context = new AppDbContext(CreateInMemoryOptions());
+            var service = new DatabaseHandlingService(context);
+            for (int i = 1; i <= 5; i++)
+                context.Images.Add(new Image { Id = i, TimeStamp = DateTime.UtcNow, ImageType = "image/jpeg", OwnerUid = "uid-before" });
+            await context.SaveChangesAsync();
 
-//             // Assert
-//             Assert.False(result);
-//         }
-
-//         [Fact]
-//         public void SetSystemState_ShouldUpdateState()
-//         {
-//             // Arrange
-//             var options = CreateInMemoryDatabaseOptions();
-//             using var context = new AppDbContext(options);
-//             var blobServiceClient = CreateMockedBlobServiceClient();
-//             var fileHandlingService = new FileHandlingService(blobServiceClient);
-//             var databaseHandlingService = new DatabaseHandlingService(context);
-//             var repo = new SikkerRepo(context, blobServiceClient, fileHandlingService, databaseHandlingService);
-
-//             // Act
-//             var resultTrue = repo.SetSystemState(true);
-//             var stateAfterTrue = repo.GetSystemState();
-//             var resultFalse = repo.SetSystemState(false);
-//             var stateAfterFalse = repo.GetSystemState();
-
-//             // Assert
-//             Assert.True(resultTrue);
-//             Assert.True(stateAfterTrue);
-//             Assert.False(resultFalse);
-//             Assert.False(stateAfterFalse);
-//         }
-
-//         [Fact]
-//         public void SetSystemState_ShouldReturnUpdatedState()
-//         {
-//             // Arrange
-//             var options = CreateInMemoryDatabaseOptions();
-//             using var context = new AppDbContext(options);
-//             var blobServiceClient = CreateMockedBlobServiceClient();
-//             var fileHandlingService = new FileHandlingService(blobServiceClient);
-//             var databaseHandlingService = new DatabaseHandlingService(context);
-//             var repo = new SikkerRepo(context, blobServiceClient, fileHandlingService, databaseHandlingService);
-
-//             // Act & Assert
-//             Assert.True(repo.SetSystemState(true));
-//             Assert.False(repo.SetSystemState(false));
-//         }
-//     }
-// }
+            var result = service.GetBeforeIDImage("uid-before", 4, 10).ToList();
+            Assert.Equal(3, result.Count);
+            Assert.All(result, img => Assert.True(img.Id < 4));
+        }
+    }
+}
