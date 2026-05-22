@@ -30,15 +30,13 @@ public class PIController : ControllerBase
     [Consumes("application/json")]
     public async Task<IActionResult> Post([FromBody] Image image)
     {
-
+        string firebaseUid = await _firebaseHandler.GetFirebaseUidAsync();
         try
         {
             if (image is null || image.ImageData.Length == 0)
             {
                 return BadRequest("No image uploaded.");
             }
-
-            string firebaseUid = await _firebaseHandler.GetFirebaseUidAsync();
             
             if (string.IsNullOrWhiteSpace(firebaseUid))
             {
