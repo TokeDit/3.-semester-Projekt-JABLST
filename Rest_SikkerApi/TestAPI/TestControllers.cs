@@ -102,7 +102,7 @@ namespace TestAPI
 
             var result = await controller.Post(image);
 
-            Assert.IsType<UnauthorizedResult>(result);
+            Assert.IsType<UnauthorizedObjectResult>(result);
         }
     }
 
