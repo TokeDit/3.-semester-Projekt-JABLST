@@ -19,12 +19,13 @@ export const auth = getAuth(app);
 export { onAuthStateChanged };
 
 // Log JWT token when user is logged in
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    const token = await user.getIdToken();
-    console.log("JWT TOKEN:");
-    console.log(token);
-  }
-});
+// onAuthStateChanged(auth, async (user) => {
+  // if (user) {
+    // const token = await user.getIdToken();
+    // console.log("JWT TOKEN:");
+    // console.log(token);
+  // }
+//});
+
 // Export them so you can use them in Login.vue and Dashboard.vue
 export default app;
