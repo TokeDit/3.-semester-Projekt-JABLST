@@ -1,4 +1,4 @@
-﻿using System.Data.Entity;
+﻿using Microsoft.EntityFrameworkCore;
 using Rest_SikkerApi.data;
 using Rest_SikkerApi.models;
 using Rest_SikkerApi.repos;
