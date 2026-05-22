@@ -40,7 +40,7 @@ public class PIController : ControllerBase
 
             if (string.IsNullOrWhiteSpace(image.OwnerUid))
             {
-                return Unauthorized("No firebase id found");
+                return Unauthorized("Need to post a firebase id");
             }
 
             try
