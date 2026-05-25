@@ -1,0 +1,247 @@
+{
+  "info": {
+    "_postman_id": "d4ad10b6-ce64-4b1e-aef7-c2cc14380cd1",
+    "name": "Sikkerheds",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "52457396",
+    "_collection_link": "https://go.postman.co/collection/52457396-d4ad10b6-ce64-4b1e-aef7-c2cc14380cd1?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "/api/Auth/me",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImM5YTBjMWRlYWEyN2JjNjMyNTUzYmM4MWEyMmQ4NzY1MWM3MTMyY2IiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vc2VjdXJpdHktc3lzdGVtLWxvZ2luIiwiYXVkIjoic2VjdXJpdHktc3lzdGVtLWxvZ2luIiwiYXV0aF90aW1lIjoxNzc5MzUwNzY4LCJ1c2VyX2lkIjoiOXlkcEJSd1E3RGJocjBXeUlrNVJXUWdLV0tOMiIsInN1YiI6Ijl5ZHBCUndRN0RiaHIwV3lJazVSV1FnS1dLTjIiLCJpYXQiOjE3Nzk0MzM4NDksImV4cCI6MTc3OTQzNzQ0OSwiZW1haWwiOiJhbmRlcnNoZ3Jhc0BnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsiYW5kZXJzaGdyYXNAZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoicGFzc3dvcmQifX0.yFuD2cMKxKAib8sSglSrurKvJEhxcckDdLEWrzcjecsN2HM1Gs2b2aSHWuSaRzhLcCOGcDkdRh8RlQZm2yu0YW1Wd1ADySEdsqW8ERlIzvrKeFH--2hJ9v9IrHRU0e0VAbBjqaQ7vC4gqK_nU9LNSCSnMLzDp3Hn5h-uyvAOyeeBTXhEBEsWeYWCzJPC1KBXnjVSqt-HFaBwtQnyEfF6NIsSJK8AK3S0PigToyCqW8CcULYdHdf6sRyYs9xLzwOjLacHg4xWCYcPF11wRGfzPX2UNRi4oGJpdbslFCT6akL04gmntPQ2xYpOOUPqF9uy9SGWsY4IAtH26b3cgxzJSA",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/Api/Auth/me",
+          "protocol": "https",
+          "host": [
+            "sikkerheds-app-jablst-f0ewdphzhsf0hqcr",
+            "swedencentral-01",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "Api",
+            "Auth",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/Image",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/Api/image",
+          "protocol": "https",
+          "host": [
+            "sikkerheds-app-jablst-f0ewdphzhsf0hqcr",
+            "swedencentral-01",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "Api",
+            "image"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/PI/status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/Api/PI/status",
+          "protocol": "https",
+          "host": [
+            "sikkerheds-app-jablst-f0ewdphzhsf0hqcr",
+            "swedencentral-01",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "Api",
+            "PI",
+            "status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/Sikker/status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/Sikker/status",
+          "protocol": "https",
+          "host": [
+            "sikkerheds-app-jablst-f0ewdphzhsf0hqcr",
+            "swedencentral-01",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "Sikker",
+            "status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/telegram/update",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"message\": {\r\n    \"chat\": {\r\n      \"id\": 123456789\r\n    },\r\n    \"text\": \"/start\"\r\n  }\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/telegram/update",
+          "protocol": "https",
+          "host": [
+            "sikkerheds-app-jablst-f0ewdphzhsf0hqcr",
+            "swedencentral-01",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "telegram",
+            "update"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/Sikker/UploadImage",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"imageData\": \"SGVsbG8=\",\r\n  \"imageType\": \"image/jpeg\",\r\n  \"description\": \"Postman integrationstest\",\r\n  \"ownerUid\": \"DIN_FIREBASE_UID\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/Sikker/UploadImage",
+          "protocol": "https",
+          "host": [
+            "sikkerheds-app-jablst-f0ewdphzhsf0hqcr",
+            "swedencentral-01",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "Sikker",
+            "UploadImage"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/TelegramBot/message",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"description\": \"Postman integrationstest: bevægelse registreret\",\r\n  \"ownerUid\": \"0U6I8QhuAahceaNbRKF64Kdxy4I2\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/TelegramBot/message",
+          "protocol": "https",
+          "host": [
+            "sikkerheds-app-jablst-f0ewdphzhsf0hqcr",
+            "swedencentral-01",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "api",
+            "TelegramBot",
+            "message"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/User/{OwnerUid}",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImM5YTBjMWRlYWEyN2JjNjMyNTUzYmM4MWEyMmQ4NzY1MWM3MTMyY2IiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vc2VjdXJpdHktc3lzdGVtLWxvZ2luIiwiYXVkIjoic2VjdXJpdHktc3lzdGVtLWxvZ2luIiwiYXV0aF90aW1lIjoxNzc5MzUwNzY4LCJ1c2VyX2lkIjoiOXlkcEJSd1E3RGJocjBXeUlrNVJXUWdLV0tOMiIsInN1YiI6Ijl5ZHBCUndRN0RiaHIwV3lJazVSV1FnS1dLTjIiLCJpYXQiOjE3Nzk0MzM4NDksImV4cCI6MTc3OTQzNzQ0OSwiZW1haWwiOiJhbmRlcnNoZ3Jhc0BnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsiYW5kZXJzaGdyYXNAZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoicGFzc3dvcmQifX0.yFuD2cMKxKAib8sSglSrurKvJEhxcckDdLEWrzcjecsN2HM1Gs2b2aSHWuSaRzhLcCOGcDkdRh8RlQZm2yu0YW1Wd1ADySEdsqW8ERlIzvrKeFH--2hJ9v9IrHRU0e0VAbBjqaQ7vC4gqK_nU9LNSCSnMLzDp3Hn5h-uyvAOyeeBTXhEBEsWeYWCzJPC1KBXnjVSqt-HFaBwtQnyEfF6NIsSJK8AK3S0PigToyCqW8CcULYdHdf6sRyYs9xLzwOjLacHg4xWCYcPF11wRGfzPX2UNRi4oGJpdbslFCT6akL04gmntPQ2xYpOOUPqF9uy9SGWsY4IAtH26b3cgxzJSA",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"telegramChatId\": \"123456789\",\r\n  \"reportFrequency\": 7,\r\n  \"reportEnabled\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/User/9ydpBRwQ7Dbhr0WyIk5RWQgKWKN2",
+          "protocol": "https",
+          "host": [
+            "sikkerheds-app-jablst-f0ewdphzhsf0hqcr",
+            "swedencentral-01",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "api",
+            "User",
+            "9ydpBRwQ7Dbhr0WyIk5RWQgKWKN2"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
