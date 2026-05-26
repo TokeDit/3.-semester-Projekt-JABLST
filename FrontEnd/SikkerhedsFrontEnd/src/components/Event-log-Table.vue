@@ -98,7 +98,7 @@ onMounted(() => { // køre når komponenten er monteret
 })
 
 
-const url = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/Sikker/images"
+const url = "http://localhost:5180/Sikker/images"
 const items = ref([])
 const error = ref('')
 const loading = ref(false)

@@ -573,7 +573,7 @@ export default {
   data() {
     return {
       apiBase:
-        "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net",
+        "http://localhost:5180",
       telegramStatus: {
         lastMessage: "",
         lastMessageTime: null,
@@ -658,7 +658,7 @@ export default {
       this.statusClass = "status-unknown";
       try {
         const res = await fetch(
-          "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/Sikker/status",
+          "http://localhost:5180/Sikker/status",
         );
         const data = await res.json();
         this.status = data.status;
@@ -696,7 +696,7 @@ export default {
     async fetchPiStatus() {
       try {
         const res = await fetch(
-          "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/PI/status",
+          "http://localhost:5180/api/PI/status",
         );
         const data = await res.json();
         this.piStatus.lastSeen = data.lastSeen
@@ -775,21 +775,21 @@ export default {
     },
 
     async getResentImages() {
-      // if (!this.user) return;
-      // this.imagesLoading = true;
-      // try {
-      //   const token = await this.user.getIdToken();
-      //   const res = await fetch(`${this.apiBase}/api/image`, {
-      //     headers: { Authorization: `Bearer ${token}` },
-      //   });
-      //   const data = await res.json();
-      //   console.log("Fetched images:", data);
-      //   this.images = Array.isArray(data) ? data : [data];
-      // } catch {
-      //   this.images = [];
-      // } finally {
-      //   this.imagesLoading = false;
-      // }
+      if (!this.user) return;
+      this.imagesLoading = true;
+      try {
+        const token = await this.user.getIdToken();
+        const res = await fetch(`${this.apiBase}/api/image`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        console.log("Fetched images:", data);
+        this.images = Array.isArray(data) ? data : [data];
+      } catch {
+        this.images = [];
+      } finally {
+        this.imagesLoading = false;
+      }
     }
   },
 };
