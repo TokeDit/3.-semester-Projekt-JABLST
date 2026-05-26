@@ -37,7 +37,17 @@ namespace Rest_SikkerApi.Controllers
 
                 var existing = await _repo.GetUserByFirebaseIdAsync(uid);
                 if (existing == null)
-                    await _repo.SaveUserAsync(new User { OwnerUid = uid });
+                {
+                    try
+                    {
+                        await _repo.SaveUserAsync(new User { OwnerUid = uid });
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to save authenticated user {Uid} to the database.", uid);
+                        return StatusCode(500, "Could not persist user to the database.");
+                    }
+                }
 
                 return Ok(new
                 {

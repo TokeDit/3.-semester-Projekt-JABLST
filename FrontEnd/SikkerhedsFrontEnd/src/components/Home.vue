@@ -573,7 +573,7 @@ export default {
   data() {
     return {
       apiBase:
-        "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net",
+        "http://localhost:5180",
       telegramStatus: {
         lastMessage: "",
         lastMessageTime: null,
@@ -658,7 +658,7 @@ export default {
       this.statusClass = "status-unknown";
       try {
         const res = await fetch(
-          "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/Sikker/status",
+          "http://localhost:5180/Sikker/status",
         );
         const data = await res.json();
         this.status = data.status;
@@ -696,7 +696,7 @@ export default {
     async fetchPiStatus() {
       try {
         const res = await fetch(
-          "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/PI/status",
+          "http://localhost:5180/api/PI/status",
         );
         const data = await res.json();
         this.piStatus.lastSeen = data.lastSeen

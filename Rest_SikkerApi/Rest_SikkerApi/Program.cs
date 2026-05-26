@@ -19,18 +19,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.CaptureStartupErrors(true);
 builder.WebHost.UseSetting("detailedErrors", "true");
 
-if (builder.Environment.IsDevelopment())
+var sqlConnectionString = builder.Configuration.GetConnectionString("DbConnectionLocal")
+    ?? builder.Configuration.GetConnectionString("DbConnection")
+    ?? builder.Configuration.GetConnectionString("DbConnectionProd");
+
+if (string.IsNullOrWhiteSpace(sqlConnectionString))
 {
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnectionLocal")
-        ?? throw new InvalidOperationException("No SQL connection string configured.")));
+    throw new InvalidOperationException("No SQL connection string configured.");
 }
-else
-{
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection")
-        ?? throw new InvalidOperationException("No SQL connection string configured.")));
-}
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(sqlConnectionString));
 
 // COMMIT 1: Register HttpClient via AddHttpClient to use IHttpClientFactory under the hood
 // COMMIT 10: Register ITelegramService -> TelegramService for DI and testability
@@ -84,7 +83,8 @@ builder.Services.AddScoped(provider =>
         provider.GetRequiredService<ISikkerRepo>()
     )
 );
-string imageFolderPath = builder.Configuration["LocalStorage:ImageFolder"]
+string imageFolderPath = "/home/stefan/projects/SchoolShit/EksamenSys/images"
+// string imageFolderPath = builder.Configuration["LocalStorage:ImageFolder"]
     ?? Path.Combine(builder.Environment.ContentRootPath, "LocalImages");
 builder.Services.AddScoped(_ => new FileHandlingService(imageFolderPath));
 builder.Services.AddScoped<DatabaseHandlingService>();
@@ -211,30 +211,24 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-var connectionString = builder.Configuration.GetConnectionString("DbConnectionProd")
-    ?? builder.Configuration.GetConnectionString("DbConnection")
-    ?? builder.Configuration.GetConnectionString("DbConnectionDev")
-    ?? throw new InvalidOperationException("No SQL connection string configured.");
-
-// builder.Services.AddDbContext<AppDbContext>(options =>
-//     options.UseSqlServer(connectionString, sqlServerOptions =>
-//     {
-//         sqlServerOptions.EnableRetryOnFailure(
-//             maxRetryCount: 3,
-//             maxRetryDelay: TimeSpan.FromSeconds(5),
-//             errorNumbersToAdd: null
-//         );
-//     }));
 
 
 var app = builder.Build();
 
-// using (var scope = app.Services.CreateScope())
-// {
-//     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//     db.Database.EnsureDeleted();
-//     db.Database.EnsureCreated();
-// }
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    try
+    {
+        db.Database.EnsureCreated();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Failed to ensure database is created.");
+        throw;
+    }
+}
 
 // Configure the HTTP request pipeline.
 // Remove if you want swagger in production
