@@ -132,16 +132,15 @@ namespace Rest_SikkerApi.repos
         public async Task<IEnumerable<Image>> GetAmountImageAsync(string uid, int amount = 20)
         {
             IEnumerable<Image> images = _databaseHandlingService.GetAmountImage(uid, amount);
-            foreach (Image image in images)
+            await Task.WhenAll(images.Select(async image =>
             {
                 try
                 {
                     Image? imageData = await _fileHandlerService.GetImageAsync(image.Id);
-                    if (imageData != null)
-                        image.ImageData = imageData.ImageData;
+                    if (imageData != null) image.ImageData = imageData.ImageData;
                 }
                 catch (Exception) { }
-            }
+            }));
             return images;
         }
 
@@ -153,16 +152,15 @@ namespace Rest_SikkerApi.repos
         public async Task<IEnumerable<Image>> GetBeforeIDImageAsync(string uid, int id, int amount = 20)
         {
             IEnumerable<Image> images = _databaseHandlingService.GetBeforeIDImage(uid, id, amount);
-            foreach (Image image in images)
+            await Task.WhenAll(images.Select(async image =>
             {
                 try
                 {
                     Image? imageData = await _fileHandlerService.GetImageAsync(image.Id);
-                    if (imageData != null)
-                        image.ImageData = imageData.ImageData;
+                    if (imageData != null) image.ImageData = imageData.ImageData;
                 }
                 catch (Exception) { }
-            }
+            }));
             return images;
         }
 
@@ -176,11 +174,10 @@ namespace Rest_SikkerApi.repos
 
         public async Task<Image?> GetResentImage(string uid)
         {
-            DateTime dateTime = DateTime.UtcNow;
-            Image? image = await _context.Images.Where(x => x.OwnerUid == uid)
-            .OrderBy(x => Math.Abs(
-                EF.Functions.DateDiffSecond(x.TimeStamp, dateTime)))
-            .FirstOrDefaultAsync();
+            Image? image = await _context.Images
+                .Where(x => x.OwnerUid == uid)
+                .OrderByDescending(x => x.TimeStamp)
+                .FirstOrDefaultAsync();
 
             if (image != null)
             {
