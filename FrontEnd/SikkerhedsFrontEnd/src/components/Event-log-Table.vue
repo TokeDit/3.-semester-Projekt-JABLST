@@ -92,13 +92,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { API_BASE } from '../config'
 
 onMounted(() => { // køre når komponenten er monteret
   // asyncGetItems()
 })
 
 
-const url = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/Sikker/images"
+const url = `${API_BASE}/Sikker/images`
 const items = ref([])
 const error = ref('')
 const loading = ref(false)

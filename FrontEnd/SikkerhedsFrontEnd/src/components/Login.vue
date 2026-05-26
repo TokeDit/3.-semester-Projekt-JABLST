@@ -58,6 +58,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { auth } from '../firebase';
+import { API_BASE } from '../config';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword
@@ -150,7 +151,7 @@ async function handleRegister() {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
     const idToken = await userCredential.user.getIdToken();
-    await fetch('https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/api/Auth/me', {
+    await fetch(`${API_BASE}/api/Auth/me`, {
       headers: { Authorization: `Bearer ${idToken}` }
     });
     message.value = 'Bruger oprettet. Du bliver sendt til dashboard.';

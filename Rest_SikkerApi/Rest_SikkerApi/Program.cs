@@ -83,8 +83,7 @@ builder.Services.AddScoped(provider =>
         provider.GetRequiredService<ISikkerRepo>()
     )
 );
-string imageFolderPath = "/home/stefan/projects/SchoolShit/EksamenSys/images"
-// string imageFolderPath = builder.Configuration["LocalStorage:ImageFolder"]
+string imageFolderPath = builder.Configuration["LocalStorage:ImageFolder"]
     ?? Path.Combine(builder.Environment.ContentRootPath, "LocalImages");
 builder.Services.AddScoped(_ => new FileHandlingService(imageFolderPath));
 builder.Services.AddScoped<DatabaseHandlingService>();

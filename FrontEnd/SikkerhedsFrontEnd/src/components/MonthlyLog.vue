@@ -107,8 +107,9 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { auth } from '../firebase'
 import { onAuthStateChanged } from 'firebase/auth'
+import { API_BASE } from '../config'
 
-const apiBase = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net"
+const apiBase = API_BASE
 
 const items = ref([])
 const error = ref('')
