@@ -1,6 +1,6 @@
 <template>
   <div class="layout">
-    <AppSidebar :activePage="images" />
+    <AppSidebar activePage="images" />
     <div class="content">
       <div v-if="images.length === 0">No images available.</div>
       <div v-else class="images-grid">
@@ -55,10 +55,10 @@
       window.addEventListener('scroll', this.handleScroll)
       window.addEventListener('wheel', this.handleScroll, { passive: true })
       window.addEventListener('touchmove', this.handleScroll, { passive: true })
-      this.unsubscribeAuth = onAuthStatChanged(auth, async (user) => {
+      this.unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
         if (user)
         {
-          this.authToken = user.getIdToken()
+          this.authToken = await user.getIdToken()
           this.getImagesStartup(this.loadImagesCount)
         }
       })
