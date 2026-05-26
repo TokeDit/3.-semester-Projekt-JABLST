@@ -1,4 +1,3 @@
-using Azure.Storage.Blobs;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Rest_SikkerApi;
@@ -15,22 +14,14 @@ namespace TestAPI
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
 
-        private static (Mock<BlobServiceClient> blob, Mock<BlobContainerClient> container) CreateMockedBlob()
-        {
-            var container = new Mock<BlobContainerClient>();
-            var blob = new Mock<BlobServiceClient>();
-            blob.Setup(c => c.GetBlobContainerClient(It.IsAny<string>())).Returns(container.Object);
-            return (blob, container);
-        }
-
         private static (SikkerRepo repo, AppDbContext context) CreateRepo()
         {
             var options = CreateInMemoryOptions();
             var context = new AppDbContext(options);
-            var (blobMock, _) = CreateMockedBlob();
-            var fileHandlingService = new FileHandlingService(blobMock.Object);
+            var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var fileHandlingService = new FileHandlingService(tempDir);
             var dbHandlingService = new DatabaseHandlingService(context);
-            var repo = new SikkerRepo(context, blobMock.Object, fileHandlingService, dbHandlingService);
+            var repo = new SikkerRepo(context, fileHandlingService, dbHandlingService);
             return (repo, context);
         }
 

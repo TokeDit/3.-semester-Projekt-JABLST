@@ -12,7 +12,6 @@ using Rest_SikkerApi.repos;
 using Rest_SikkerApi.Services;
 using System.Security.Claims;
 using System.Text;
-using Azure.Storage.Blobs;
 using Rest_SikkerApi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -85,16 +84,9 @@ builder.Services.AddScoped(provider =>
         provider.GetRequiredService<ISikkerRepo>()
     )
 );
-////////////////MUST  DECOMMENT////////////
-
-string connectionStringFileServer = builder.Configuration["Azure:BlobConnectionString"]!;
-BlobServiceClient blobServiceClient = new BlobServiceClient(connectionStringFileServer);
-
-builder.Services.AddSingleton(blobServiceClient);
-
-/////MUST CHANGE BACK///////
-
-builder.Services.AddScoped<FileHandlingService>();
+string imageFolderPath = builder.Configuration["LocalStorage:ImageFolder"]
+    ?? Path.Combine(builder.Environment.ContentRootPath, "LocalImages");
+builder.Services.AddScoped(_ => new FileHandlingService(imageFolderPath));
 builder.Services.AddScoped<DatabaseHandlingService>();
 
 builder.Services.AddHttpContextAccessor();

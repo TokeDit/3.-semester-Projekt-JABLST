@@ -1,31 +1,20 @@
 ﻿using Rest_SikkerApi.data;
 using Microsoft.EntityFrameworkCore;
 using Rest_SikkerApi.models;
-using Azure.Identity;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
-using Azure.Storage.Blobs.Specialized;
-using System.Security.Policy;
 
 namespace Rest_SikkerApi.repos
 {
     public class SikkerRepo : ISikkerRepo
     {
         private readonly AppDbContext _context;
-        
-        private readonly BlobServiceClient _blobServiceClient;
-        private readonly BlobContainerClient _blobContainerClient;
         private readonly FileHandlingService _fileHandlerService;
         private readonly DatabaseHandlingService _databaseHandlingService;
-        // måske implementer en user, så they can't get others imges
-        public SikkerRepo(AppDbContext context, BlobServiceClient blobServiceClient, FileHandlingService fileHandlingService, DatabaseHandlingService databaseHandlingService)
+
+        public SikkerRepo(AppDbContext context, FileHandlingService fileHandlingService, DatabaseHandlingService databaseHandlingService)
         {
             _context = context;
-            _blobServiceClient = blobServiceClient;
-            _blobContainerClient = _blobServiceClient.GetBlobContainerClient("images");
             _fileHandlerService = fileHandlingService;
             _databaseHandlingService = databaseHandlingService;
-
         }
 
         /// <summary>

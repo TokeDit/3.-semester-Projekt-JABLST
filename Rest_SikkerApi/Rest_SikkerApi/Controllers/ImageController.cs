@@ -116,8 +116,7 @@ public class ImageController : ControllerBase
             string uid = await _firebaseHandler.GetFirebaseUidAsync();
             image = await m_repo.GetImageByIdAsync(id, uid);
         }
-        catch (Exception ex) when (ex is Azure.RequestFailedException || ex is AggregateException || ex is FormatException ||
-        ex is InvalidOperationException)
+        catch (Exception ex) when (ex is AggregateException || ex is FormatException || ex is InvalidOperationException)
         {
             if (ex is FormatException)
             {

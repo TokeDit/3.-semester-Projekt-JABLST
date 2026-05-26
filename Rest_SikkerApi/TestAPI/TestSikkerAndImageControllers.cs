@@ -1,4 +1,3 @@
-using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -27,12 +26,10 @@ namespace TestAPI
         {
             var opts = InMemoryOptions();
             var context = new AppDbContext(opts);
-            var container = new Mock<BlobContainerClient>();
-            var blob = new Mock<BlobServiceClient>();
-            blob.Setup(b => b.GetBlobContainerClient(It.IsAny<string>())).Returns(container.Object);
-            var fileService = new FileHandlingService(blob.Object);
+            var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var fileService = new FileHandlingService(tempDir);
             var dbService = new DatabaseHandlingService(context);
-            var repo = new SikkerRepo(context, blob.Object, fileService, dbService);
+            var repo = new SikkerRepo(context, fileService, dbService);
             return (repo, context);
         }
     }
