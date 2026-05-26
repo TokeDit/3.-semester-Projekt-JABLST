@@ -60,6 +60,11 @@ namespace Rest_SikkerApi.data
                       .HasMaxLength(200)
                       .IsRequired(false);
 
+                // ImageData: base64-encoded image stored directly in DB
+                entity.Property(i => i.ImageData)
+                      .HasColumnType("nvarchar(max)")
+                      .IsRequired(false);
+
                 // OwnerUid (Firebase UID) - tie image to a user
                 // Allow null for legacy images; change IsRequired() if you want it mandatory
                 entity.Property(i => i.OwnerUid)

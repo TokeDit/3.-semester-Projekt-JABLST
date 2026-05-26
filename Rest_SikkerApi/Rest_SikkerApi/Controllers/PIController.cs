@@ -33,7 +33,7 @@ public class PIController : ControllerBase
         // string firebaseUid = await _firebaseHandler.GetFirebaseUidAsync();
         try
         {
-            if (image is null || image.ImageData.Length == 0)
+            if (image is null || string.IsNullOrEmpty(image.ImageData))
             {
                 return BadRequest("No image uploaded.");
             }
@@ -56,7 +56,7 @@ public class PIController : ControllerBase
             }
 
             await _repo.SaveImageAsync(image);
-            var dashboardUrl = "https://sikkerheds-app-jablst-f0ewdphzhsf0hqcr.swedencentral-01.azurewebsites.net/home";
+            var dashboardUrl = "http://localhost:5180/home";
 
             await _telegramService.SendImageLinkAsync(dashboardUrl, image.Description, image.OwnerUid);
 

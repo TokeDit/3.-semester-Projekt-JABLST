@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Rest_SikkerApi.models
 {
@@ -11,10 +10,8 @@ namespace Rest_SikkerApi.models
 
         public string ImageType { get; set; } = string.Empty;
 
-        // Stored as base64
-        // Store as bytes in database
-        [NotMapped]
-        public string ImageData { get; set; } = string.Empty;
+        // Stored as base64 in DB (nvarchar(max))
+        public string? ImageData { get; set; }
         public string ImagePath { get; set; } = string.Empty;
 
         public string Description { get; set; } = string.Empty;
@@ -32,7 +29,7 @@ namespace Rest_SikkerApi.models
 
         public byte[] GetImageBytes()
         {
-            return Convert.FromBase64String(ImageData);
+            return Convert.FromBase64String(ImageData ?? string.Empty);
         }
 
         // Helper method to set image from bytes

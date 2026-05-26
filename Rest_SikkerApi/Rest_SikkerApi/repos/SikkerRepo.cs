@@ -73,7 +73,8 @@ namespace Rest_SikkerApi.repos
         public async Task<Image> SaveImageAsync(Image imageEntity)
         {
             await _databaseHandlingService.SaveImageAsync(imageEntity);
-            await _fileHandlerService.UploadImageAsync(imageEntity.Id, imageEntity.ImageData);
+            try { await _fileHandlerService.UploadImageAsync(imageEntity.Id, imageEntity.ImageData ?? string.Empty); }
+            catch (Exception ex) { Console.WriteLine($"Blob upload skipped: {ex.Message}"); }
             return imageEntity;
         }
 
@@ -89,15 +90,19 @@ namespace Rest_SikkerApi.repos
             return await _context.Images.ToListAsync() ?? new List<Image>();
         }
 
-        // Failure occurs Azure.RequestFailedException. Multiple failures occur, an AggregateException will be thrown
-        // Exceptions thrown (Azure.RequestFailedException, AggregateException)
         public async Task<Image?> GetImageByIdAsync(int id, string uid)
         {
-            if (! await _databaseHandlingService.CheckIdUidMatch(id, uid))
-            {
+            if (!await _databaseHandlingService.CheckIdUidMatch(id, uid))
                 throw new InvalidDataException("id or uid does not match the image");
+
+            try
+            {
+                var blobImage = await _fileHandlerService.GetImageAsync(id);
+                if (blobImage != null) return blobImage;
             }
-            return await _fileHandlerService.GetImageAsync(id);
+            catch (Exception) { }
+
+            return await _context.Images.FirstOrDefaultAsync(i => i.Id == id);
         }
 
         public async Task<User?> GetUserByFirebaseIdAsync(string ownerUid)
@@ -132,16 +137,10 @@ namespace Rest_SikkerApi.repos
                 try
                 {
                     Image? imageData = await _fileHandlerService.GetImageAsync(image.Id);
-
                     if (imageData != null)
-                    {
                         image.ImageData = imageData.ImageData;
-                    }
                 }
-                catch (ArgumentNullException)
-                {
-                    Console.WriteLine("Image is not base64 convertable");
-                }
+                catch (Exception) { }
             }
             return images;
         }
@@ -159,16 +158,10 @@ namespace Rest_SikkerApi.repos
                 try
                 {
                     Image? imageData = await _fileHandlerService.GetImageAsync(image.Id);
-
                     if (imageData != null)
-                    {
                         image.ImageData = imageData.ImageData;
-                    }
                 }
-                catch (ArgumentNullException)
-                {
-                    Console.WriteLine("Image is not base64 convertable");
-                }
+                catch (Exception) { }
             }
             return images;
         }
@@ -191,8 +184,12 @@ namespace Rest_SikkerApi.repos
 
             if (image != null)
             {
-                Image? imageData = await _fileHandlerService.GetImageAsync(image.Id);
-                image.ImageData = (imageData != null) ? imageData.ImageData : "";
+                try
+                {
+                    Image? imageData = await _fileHandlerService.GetImageAsync(image.Id);
+                    if (imageData != null) image.ImageData = imageData.ImageData;
+                }
+                catch (Exception) { }
             }
 
             return image;

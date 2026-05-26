@@ -87,7 +87,8 @@ builder.Services.AddScoped(provider =>
 );
 ////////////////MUST  DECOMMENT////////////
 
-string connectionStringFileServer = builder.Configuration["Azure:BlobConnectionString"]!;
+string connectionStringFileServer = builder.Configuration["Azure:BlobConnectionString"]
+    ?? "UseDevelopmentStorage=true";
 BlobServiceClient blobServiceClient = new BlobServiceClient(connectionStringFileServer);
 
 builder.Services.AddSingleton(blobServiceClient);
@@ -237,12 +238,21 @@ var connectionString = builder.Configuration.GetConnectionString("DbConnectionPr
 
 var app = builder.Build();
 
-// using (var scope = app.Services.CreateScope())
-// {
-//     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//     db.Database.EnsureDeleted();
-//     db.Database.EnsureCreated();
-// }
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
+    if (app.Environment.IsDevelopment() && !db.Users.Any())
+    {
+        db.Users.Add(new Rest_SikkerApi.models.User
+        {
+            OwnerUid = "demo-uid-local-showcase",
+            ReportFrequency = 7,
+            ReportEnabled = true
+        });
+        db.SaveChanges();
+    }
+}
 
 // Configure the HTTP request pipeline.
 // Remove if you want swagger in production
@@ -257,6 +267,15 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseAuthentication(); // Checks "Who are you?"
+
+if (app.Environment.IsDevelopment() && FirebaseApp.DefaultInstance is null)
+{
+    app.Use(async (context, next) =>
+    {
+        context.Items["FirebaseUid"] = "demo-uid-local-showcase";
+        await next();
+    });
+}
 
 // Middleware: verify Firebase ID token (if present) and store UID in HttpContext
 app.Use(async (context, next) =>
