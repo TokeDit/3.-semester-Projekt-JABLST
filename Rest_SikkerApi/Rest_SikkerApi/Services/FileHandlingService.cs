@@ -1,42 +1,39 @@
 ﻿namespace Rest_SikkerApi;
 
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 using Rest_SikkerApi.models;
-using Xunit.Sdk;
+using System.IO;
 
 public class FileHandlingService
 {
-	private readonly BlobServiceClient _blobServiceClient;
-	private readonly BlobContainerClient _blobContainerClient;
+	private readonly string _imageFolderPath;
 
-	public FileHandlingService(BlobServiceClient blobServiceClient)
+	public FileHandlingService()
 	{
-		_blobServiceClient = blobServiceClient;
-		_blobContainerClient = _blobServiceClient.GetBlobContainerClient("images");
+		_imageFolderPath = Path.Combine("/home/stefan/projects/SchoolShit/EksamenSys", "images");
+		Directory.CreateDirectory(_imageFolderPath);
 	}
 
 	public async Task<Image?> GetImageAsync(int id)
 	{
-		BlobClient blobClient = _blobContainerClient.GetBlobClient(id.ToString());
-            if (await blobClient.ExistsAsync())
-            {                
-                Azure.Response<BlobDownloadResult> download = await blobClient.DownloadContentAsync();
-                var image = new Image
-                {
-                    Id = id,
-                    ImageData = Convert.ToBase64String(download.Value.Content.ToArray())
-                };
-                return image;
-            }
-            return null;
+		string filePath = Path.Combine(_imageFolderPath, id.ToString());
+		if (!File.Exists(filePath))
+		{
+			return null;
+		}
+
+		byte[] imageBytes = await File.ReadAllBytesAsync(filePath);
+		return new Image
+		{
+			Id = id,
+			ImageData = Convert.ToBase64String(imageBytes),
+			ImagePath = Path.Combine("images", id.ToString())
+		};
 	}
 
-	public async Task<BlobContentInfo> UploadImageAsync(int id, string image)
+	public async Task UploadImageAsync(int id, string image)
 	{
 		byte[] imageByteData = Convert.FromBase64String(image);
-		BinaryData imageData = new BinaryData(imageByteData);
-		return await _blobContainerClient.UploadBlobAsync(id.ToString(), imageData);
+		string filePath = Path.Combine(_imageFolderPath, id.ToString());
+		await File.WriteAllBytesAsync(filePath, imageByteData);
 	}
-
 }
