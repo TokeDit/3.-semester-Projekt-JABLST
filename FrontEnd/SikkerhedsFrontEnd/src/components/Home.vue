@@ -1136,6 +1136,15 @@ export default {
   font-size: 0.8rem;
 }
 
+.captured-image {
+  max-width: 100%;
+  max-height: 220px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--r-l);
+}
+
 .panel-meta {
   display: flex;
   justify-content: space-between;
