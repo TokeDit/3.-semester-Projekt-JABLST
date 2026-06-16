@@ -175,7 +175,7 @@
               <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               <span>Camera snapshot preview</span>
             </div>
-            <div v-else v-for="image in images">
+            <div v-else v-for="image in images" class="image-frame">
               <img :src="`data:image/jpeg;base64,${image.imageData}`" alt="Captured Image" class="captured-image" />
             </div>
           </div>
@@ -1121,12 +1121,7 @@ export default {
 .img-preview {
   min-height: 185px;
   border-radius: var(--r-l);
-  background:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px), var(--raised);
-  background-size:
-    26px 26px,
-    26px 26px;
+  background: var(--raised);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1136,13 +1131,29 @@ export default {
   font-size: 0.8rem;
 }
 
+.img-preview:has(.image-frame) {
+  background: none;
+}
+
+.image-frame {
+  display: inline-flex;
+  border-radius: var(--r-l);
+  overflow: hidden;
+  background:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px), var(--raised);
+  background-size:
+    26px 26px,
+    26px 26px;
+}
+
 .captured-image {
   max-width: 100%;
   max-height: 220px;
   width: auto;
   height: auto;
   object-fit: contain;
-  border-radius: var(--r-l);
+  display: block;
 }
 
 .panel-meta {
