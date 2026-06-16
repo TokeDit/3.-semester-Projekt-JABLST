@@ -73,8 +73,8 @@ namespace Rest_SikkerApi.repos
         public async Task<Image> SaveImageAsync(Image imageEntity)
         {
             await _databaseHandlingService.SaveImageAsync(imageEntity);
-            try { await _fileHandlerService.UploadImageAsync(imageEntity.Id, imageEntity.ImageData ?? string.Empty); }
-            catch (Exception ex) { Console.WriteLine($"Blob upload skipped: {ex.Message}"); }
+            // try { await _fileHandlerService.UploadImageAsync(imageEntity.Id, imageEntity.ImageData ?? string.Empty); }
+            // catch (Exception ex) { Console.WriteLine($"Blob upload skipped: {ex.Message}"); }
             return imageEntity;
         }
 
@@ -132,15 +132,15 @@ namespace Rest_SikkerApi.repos
         public async Task<IEnumerable<Image>> GetAmountImageAsync(string uid, int amount = 20)
         {
             IEnumerable<Image> images = _databaseHandlingService.GetAmountImage(uid, amount);
-            await Task.WhenAll(images.Select(async image =>
-            {
-                try
-                {
-                    Image? imageData = await _fileHandlerService.GetImageAsync(image.Id);
-                    if (imageData != null) image.ImageData = imageData.ImageData;
-                }
-                catch (Exception) { }
-            }));
+            // await Task.WhenAll(images.Select(async image =>
+            // {
+            //     try
+            //     {
+            //         Image? imageData = await _fileHandlerService.GetImageAsync(image.Id);
+            //         if (imageData != null) image.ImageData = imageData.ImageData;
+            //     }
+            //     catch (Exception) { }
+            // }));
             return images;
         }
 
@@ -152,15 +152,15 @@ namespace Rest_SikkerApi.repos
         public async Task<IEnumerable<Image>> GetBeforeIDImageAsync(string uid, int id, int amount = 20)
         {
             IEnumerable<Image> images = _databaseHandlingService.GetBeforeIDImage(uid, id, amount);
-            await Task.WhenAll(images.Select(async image =>
-            {
-                try
-                {
-                    Image? imageData = await _fileHandlerService.GetImageAsync(image.Id);
-                    if (imageData != null) image.ImageData = imageData.ImageData;
-                }
-                catch (Exception) { }
-            }));
+            // await Task.WhenAll(images.Select(async image =>
+            // {
+            //     try
+            //     {
+            //         Image? imageData = await _fileHandlerService.GetImageAsync(image.Id);
+            //         if (imageData != null) image.ImageData = imageData.ImageData;
+            //     }
+            //     catch (Exception) { }
+            // }));
             return images;
         }
 
@@ -179,15 +179,15 @@ namespace Rest_SikkerApi.repos
                 .OrderByDescending(x => x.TimeStamp)
                 .FirstOrDefaultAsync();
 
-            if (image != null)
-            {
-                try
-                {
-                    Image? imageData = await _fileHandlerService.GetImageAsync(image.Id);
-                    if (imageData != null) image.ImageData = imageData.ImageData;
-                }
-                catch (Exception) { }
-            }
+            // if (image != null)
+            // {
+            //     try
+            //     {
+            //         Image? imageData = await _fileHandlerService.GetImageAsync(image.Id);
+            //         if (imageData != null) image.ImageData = imageData.ImageData;
+            //     }
+            //     catch (Exception) { }
+            // }
 
             return image;
         }
